@@ -5,8 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#050612">
-<link rel="manifest" href='data:application/manifest+json,{"name":"AI深空短视频平台","short_name":"AI深空","start_url":".","display":"standalone","background_color":"#050612","theme_color":"#050612","icons":[{"src":"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 stop-color=%22%2300ccff%22/><stop offset=%22100%25%22 stop-color=%22%23bb44ff%22/></linearGradient></defs><circle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22url(%23g)%22/></svg>","sizes":"192x192","type":"image/svg+xml"}]}'>
-<title>AI 科技短视频平台</title>
+<title>AI 深空短视频平台</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2300ccff'/><stop offset='100%25' stop-color='%23bb44ff'/></linearGradient></defs><circle cx='50' cy='50' r='40' fill='url(%23g)'/></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui,sans-serif}
@@ -183,11 +182,9 @@ body{
 <body>
 <canvas id="particleCanvas"></canvas>
 <div class="bg-layer" id="bgLayer"></div>
-
 <div class="marquee-wrap">
   <div class="marquee" id="marqueeText">✨ AI科技短视频平台 欢迎来到深空霓虹世界 ✨</div>
 </div>
-
 <div class="page active" id="loginPage">
   <div class="glass login-card float">
     <h1 class="neon-title" style="font-size:30px;text-align:center;margin-bottom:20px">AI 深空短视频</h1>
@@ -201,7 +198,6 @@ body{
     <div class="notice-box" id="loginNotice">公告加载中...</div>
   </div>
 </div>
-
 <div class="page" id="homePage">
   <div class="glass user-card-mini">
     <img class="avatar-img" id="homeAvatar" src="">
@@ -215,7 +211,6 @@ body{
     <button id="adminBtn" title="管理后台" style="display:none">⚙️</button>
   </div>
 </div>
-
 <div class="page" id="userProfilePage">
   <div class="glass profile-header">
     <button class="back-btn" id="backToHomeBtn">←</button>
@@ -227,7 +222,6 @@ body{
   </div>
   <div class="douyin-wrap" id="profileDouyinWrap"></div>
 </div>
-
 <div class="comment-panel" id="commentPanel">
   <h3 class="neon-title">💬 作品评论 <span id="closeComment" style="float:right;cursor:pointer">×</span></h3>
   <div class="comment-list" id="commentList"></div>
@@ -236,7 +230,6 @@ body{
     <button class="btn-neon" id="sendCommentBtn">发送</button>
   </div>
 </div>
-
 <div class="modal-mask" id="uploadModal">
   <div class="glass modal upload-modal-body">
     <span class="close-x" onclick="closeUpload()">×</span>
@@ -244,7 +237,6 @@ body{
     <input type="file" id="fileUpload" accept="video/*,image/*">
   </div>
 </div>
-
 <div class="modal-mask" id="chatModal">
   <div class="glass modal">
     <span class="close-x" onclick="closeChat()">×</span>
@@ -260,7 +252,6 @@ body{
     </div>
   </div>
 </div>
-
 <div class="modal-mask" id="dmModal">
   <div class="glass modal">
     <span class="close-x" onclick="closeDm()">×</span>
@@ -276,18 +267,15 @@ body{
     </div>
   </div>
 </div>
-
 <div class="modal-mask" id="adminModal">
   <div class="glass modal">
     <span class="close-x" onclick="closeAdmin()">×</span>
     <h2 class="neon-title">⚙️ 管理后台 <span id="adminLevel" style="font-size:14px"></span></h2>
-
     <div class="admin-section">
       <h3>📊 实时状态</h3>
       <div>在线人数：<span class="online-num" id="onlineCount">0</span></div>
       <div id="dbInfo">数据库信息加载中...</div>
     </div>
-
     <div class="admin-section">
       <h3>👥 用户管理</h3>
       <div id="userList">加载用户...</div>
@@ -298,7 +286,6 @@ body{
       </div>
       <button class="btn-ghost" id="addAdminBtn">增加管理员</button>
     </div>
-
     <div class="admin-section">
       <h3>🎨 页面背景 & 透明度设置</h3>
       <div class="admin-row">
@@ -313,7 +300,6 @@ body{
       </div>
       <div id="bgShowInfo">当前背景：未读取</div>
     </div>
-
     <div class="admin-section">
       <h3>📢 跑马灯 & 公告</h3>
       <div class="admin-row">
@@ -325,18 +311,15 @@ body{
         <button class="btn-neon" id="pushNoticeBtn">发布公告</button>
       </div>
     </div>
-
     <div class="admin-section">
       <h3>🎬 视频管理</h3>
       <button class="btn-neon" id="playAllVideoBtn">▶️ 一键播放所有视频</button>
       <button class="btn-ghost" id="delAllVideoBtn">🗑 删除全部视频</button>
     </div>
-
     <div class="admin-section">
       <h3>💬 评论管理</h3>
       <button class="btn-ghost" id="clearCommentBtn">清空全部评论</button>
     </div>
-
     <div class="admin-section">
       <h3>🌐 网页设置 & 分享二维码</h3>
       <div class="admin-row">
@@ -346,12 +329,10 @@ body{
       <button class="btn-neon" id="genQrBtn">生成分享二维码</button>
       <div class="qrcode-box glass" id="qrBox"></div>
     </div>
-
     <div class="admin-section">
       <h3>💬 聊天管理</h3>
       <button class="btn-ghost" id="clearChatBtn">清空全部聊天内容</button>
     </div>
-
     <div class="admin-section">
       <h3>✏️ 修改昵称 & 上传头像</h3>
       <div class="admin-row">
@@ -363,13 +344,37 @@ body{
     </div>
   </div>
 </div>
-
 <div class="glass toast" id="toast"></div>
 
 <script type="module">
+// ========== ✅ 动态生成Manifest，修复浏览器Manifest语法报错 ==========
+const manifestObj = {
+  name:"AI深空短视频平台",
+  short_name:"AI深空",
+  start_url:".",
+  display:"standalone",
+  background_color:"#050612",
+  theme_color:"#050612",
+  icons:[
+    {
+      src:"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2300ccff'/><stop offset='100%25' stop-color='%23bb44ff'/></linearGradient></defs><circle cx='50' cy='50' r='40' fill='url(%23g)'/></svg>",
+      sizes:"192x192",
+      type:"image/svg+xml"
+    }
+  ]
+};
+const manifestBlob = new Blob([JSON.stringify(manifestObj)], {type:"application/manifest+json"});
+const manifestURL = URL.createObjectURL(manifestBlob);
+const manifestLink = document.createElement('link');
+manifestLink.rel = 'manifest';
+manifestLink.href = manifestURL;
+document.head.appendChild(manifestLink);
+// ========== Manifest修复完毕 ==========
+
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 import bcrypt from 'https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js'
 
+// ========== 修改这里填入你自己Supabase信息 ==========
 const SUPABASE_URL = "https://pzcwzaoebvlghoahpcdr.supabase.co"
 const SUPABASE_ANON_KEY = "sb_publishable_mzLfUNyJzIXTX04ORjOuYg_dt-23zIV"
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -387,7 +392,7 @@ let userMap = {}
 const saltRounds = 10
 const defaultAvatar = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='38' r='22' fill='%236688ff'/><path d='M20,90 Q50,60 80,90 Z' fill='%236688ff'/></svg>"
 
-// PWA
+// ========== PWA Service Worker ==========
 if('serviceWorker' in navigator){
   const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());`
   const blob = new Blob([swCode],{type:'text/javascript'})
@@ -395,7 +400,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register(swUrl).catch(()=>{})
 }
 
-// 粒子星空
+// ========== 粒子星空背景 ==========
 const canvas = document.getElementById('particleCanvas')
 const ctx = canvas.getContext('2d')
 let particles = []
@@ -430,17 +435,21 @@ function animParticles(){
 }
 animParticles()
 
+// ========== Toast提示 ==========
 function showToast(txt){
   const t=document.getElementById('toast')
   t.innerText=txt;t.style.display='block'
   t.style.background="linear-gradient(90deg,#0099ff,#a040ff)"
   setTimeout(()=>t.style.display='none',2200)
 }
+
+// ========== 页面切换 ==========
 function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.getElementById(name).classList.add('active')
 }
 
+// ========== 加载全部用户缓存 userMap ==========
 async function loadUserMap(){
   const {data} = await supabase.from('users').select('account,nickname,avatar_url')
   userMap = {}
@@ -452,7 +461,7 @@ async function loadUserMap(){
   })
 }
 
-// 登录注册
+// ========== 登录 / 注册 bcrypt加密 ==========
 document.getElementById('tabLogin').onclick=()=>{
   document.getElementById('tabLogin').className="btn-neon"
   document.getElementById('tabReg').className="btn-ghost"
@@ -499,7 +508,7 @@ document.getElementById('loginBtn').onclick = async ()=>{
   }
 }
 
-// 修改昵称头像
+// ========== 保存昵称+上传头像 ==========
 document.getElementById('saveProfileBtn').onclick = async ()=>{
   const nick = document.getElementById('nickName').value.trim()
   let newAvatarUrl = currentUserRow.avatar_url || ""
@@ -507,7 +516,7 @@ document.getElementById('saveProfileBtn').onclick = async ()=>{
   if(avatarFile){
     const ext = avatarFile.name.split('.').pop()
     const fname = "avatar_"+Date.now()+"_"+Math.random().toString(36).slice(2)+"."+ext
-    const {data:upRes,error} = await supabase.storage.from('media').upload(fname,avatarFile)
+    const {error} = await supabase.storage.from('media').upload(fname,avatarFile)
     if(error){showToast("头像上传失败:"+error.message);return}
     const {data:pubUrl} = supabase.storage.from('media').getPublicUrl(fname)
     newAvatarUrl = pubUrl.data.publicUrl
@@ -522,6 +531,7 @@ document.getElementById('saveProfileBtn').onclick = async ()=>{
   showToast("昵称&头像保存成功 ✅")
   loadMedia()
 }
+
 document.getElementById('avatarFile').onchange = (e)=>{
   const file = e.target.files[0]
   if(!file) return
@@ -541,7 +551,7 @@ document.getElementById('fileUpload').onchange = async (e)=>{
   if(!file) return
   const ext = file.name.split('.').pop()
   const fname = Date.now()+"_"+Math.random().toString(36).slice(2)+"."+ext
-  const {data:upRes,error} = await supabase.storage.from('media').upload(fname,file)
+  const {error} = await supabase.storage.from('media').upload(fname,file)
   if(error){showToast("上传失败:"+error.message);return}
   const {data:pubUrl} = supabase.storage.from('media').getPublicUrl(fname)
   const type = file.type.startsWith('video')?'video':'image'
@@ -551,7 +561,7 @@ document.getElementById('fileUpload').onchange = async (e)=>{
   loadMedia()
 }
 
-// 渲染作品
+// ========== 渲染作品通用函数 ==========
 async function renderMediaList(mediaArr, wrapDom){
   wrapDom.innerHTML = ''
   for(const item of mediaArr){
@@ -734,7 +744,7 @@ async function loadChat(){
   box.scrollTop = box.scrollHeight
 }
 
-// ✅ 私信DM完整代码（本次补齐，无截断）
+// ========== 一对一私信DM +未读红点 ==========
 document.getElementById('openDmBtn').onclick = ()=>{
   document.getElementById('dmModal').classList.add('open')
 }
@@ -752,6 +762,9 @@ document.getElementById('loadDmBtn').onclick = async ()=>{
   dmTargetAccount = target
   loadDmList()
 }
+document.getElementById('dmTargetAcc').addEventListener('keydown',e=>{if(e.key==='Enter') document.getElementById('loadDmBtn').click()})
+document.getElementById('dmInput').addEventListener('keydown',e=>{if(e.key==='Enter') document.getElementById('sendDmBtn').click()})
+
 async function loadDmList(){
   if(!dmTargetAccount) return
   const {data} = await supabase.from('private_msgs')
@@ -775,7 +788,6 @@ async function loadDmList(){
     box.appendChild(el)
   })
   box.scrollTop = box.scrollHeight
-  // ✅ 打开对话后，清零未读
   await supabase.from('dm_unread').delete().eq('to_account',currentAccount).eq('from_account',dmTargetAccount)
   refreshDmUnread()
 }
@@ -789,7 +801,6 @@ document.getElementById('sendDmBtn').onclick = async ()=>{
     content:txt,
     created_at:new Date().toISOString()
   }])
-  // ✅ 写入未读计数（对方未读+1）
   await supabase.from('dm_unread').upsert([{
     to_account:dmTargetAccount,
     from_account:currentAccount,
@@ -799,11 +810,178 @@ document.getElementById('sendDmBtn').onclick = async ()=>{
   showToast("私信发送成功 ✅")
   loadDmList()
 }
-// ✅ 刷新私信未读红点总数
 async function refreshDmUnread(){
+  if(!currentAccount) return
   const {data} = await supabase.from('dm_unread').select('unread_count').eq('to_account',currentAccount)
   let total = 0
   data?.forEach(i=> total += i.unread_count)
   const badge = document.getElementById('dmBadge')
   badge.innerText = total
   if(total>0){badge.classList.add('show')}else{badge.classList.remove('show')}
+}
+
+// ==========管理员后台功能 ==========
+document.getElementById('playAllVideoBtn').onclick = ()=>{
+  document.querySelectorAll('.douyin-item video').forEach(v=>v.play())
+  showToast("全部视频开始播放")
+}
+document.getElementById('delAllVideoBtn').onclick = async ()=>{
+  if(currentAccount!==SUPER_ADMIN){showToast("仅超级管理员可删除全部视频");return}
+  if(!confirm("确认删除全部视频图片？不可恢复！")) return
+  await supabase.from('medias').delete().neq('id',0)
+  await supabase.from('comments').delete().neq('id',0)
+  await supabase.from('likes').delete().neq('id',0)
+  await supabase.from('views').delete().neq('id',0)
+  showToast("全部媒体已删除")
+  loadMedia()
+}
+
+document.getElementById('clearChatBtn').onclick = async ()=>{
+  if(!confirm("确认清空全部聊天？")) return
+  await supabase.from('chats').delete().neq('id',0)
+  showToast("聊天已清空")
+  loadChat()
+}
+
+document.getElementById('addAdminBtn').onclick = async ()=>{
+  if(currentAccount!==SUPER_ADMIN){showToast("仅超级管理员可以新增管理员");return}
+  const acc = prompt("输入要设置为管理员的账号")
+  if(!acc) return
+  await supabase.from('users').update({is_admin:true}).eq('account',acc)
+  showToast("已添加管理员")
+  loadUsers()
+}
+document.getElementById('resetUserPwdBtn').onclick = async ()=>{
+  const acc = document.getElementById('resetPwdAcc').value.trim()
+  const np = document.getElementById('resetPwdNew').value.trim()
+  if(!acc||!np){showToast("不能为空");return}
+  if(acc===SUPER_ADMIN && currentAccount!==SUPER_ADMIN){showToast("普通管理员不能修改超级管理员密码");return}
+  const hashPwd = bcrypt.hashSync(np, saltRounds)
+  await supabase.from('users').update({password_hash:hashPwd}).eq('account',acc)
+  showToast("密码修改成功（已加密）")
+}
+
+document.getElementById('saveBgBtn').onclick = async ()=>{
+  const pageSel = document.getElementById('bgPageSel').value
+  const color = document.getElementById('bgColorPick').value
+  const op = Number(document.getElementById('bgOpacity').value)
+  const {data:old} = await supabase.from('site_config').select('*').eq('key','bg_config').single()
+  let cfg = old?JSON.parse(old.value):{login:{color:"#120b2e",opacity:0.7},home:{color:"#06152b",opacity:0.7},admin:{color:"#120b2e",opacity:0.7}}
+  cfg[pageSel] = {color,opacity:op}
+  await supabase.from('site_config').upsert([{key:'bg_config',value:JSON.stringify(cfg)}])
+  showToast("背景保存成功 ✅")
+  loadBgSetting()
+}
+async function loadBgSetting(){
+  const {data} = await supabase.from('site_config').select('*').eq('key','bg_config').single()
+  if(data){
+    const cfg = JSON.parse(data.value)
+    document.getElementById('bgShowInfo').innerText = `登录页:${cfg.login.color} 透明度${cfg.login.opacity} | 主页:${cfg.home.color} 透明度${cfg.home.opacity}`
+  }
+}
+
+document.getElementById('pushMarqueeBtn').onclick = async ()=>{
+  const txt = document.getElementById('marqueeInput').value.trim()
+  if(!txt) return
+  await supabase.from('site_config').upsert([{key:'marquee',value:txt}])
+  showToast("跑马灯推送成功")
+  loadMarquee()
+}
+async function loadMarquee(){
+  const {data} = await supabase.from('site_config').select('value').eq('key','marquee').single()
+  if(data) document.getElementById('marqueeText').innerText = data.value
+}
+
+document.getElementById('pushNoticeBtn').onclick = async ()=>{
+  const txt = document.getElementById('noticeInput').value.trim()
+  if(!txt) return
+  await supabase.from('site_config').upsert([{key:'login_notice',value:txt}])
+  showToast("公告发布成功 ✅")
+  loadNotice()
+}
+async function loadNotice(){
+  const {data} = await supabase.from('site_config').select('value').eq('key','login_notice').single()
+  document.getElementById('loginNotice').innerText = data?.value || "暂无公告"
+}
+
+document.getElementById('saveWebTitleBtn').onclick = async ()=>{
+  const t = document.getElementById('webTitleInput').value.trim()
+  if(!t) return
+  await supabase.from('site_config').upsert([{key:'web_title',value:t}])
+  document.title = t
+  showToast("网页标题修改成功 ✅")
+}
+document.getElementById('genQrBtn').onclick = async ()=>{
+  const url = location.href
+  const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`
+  document.getElementById('qrBox').innerHTML = `<img src="${qrApi}" style="width:220px">`
+}
+
+async function refreshOnline(){
+  const t = new Date(Date.now()-3*60*1000).toISOString()
+  const {data} = await supabase.from('online_users').select('account').gte('last_time',t)
+  document.getElementById('onlineCount').innerText = data?.length || 0
+}
+
+async function loadUsers(){
+  const {data} = await supabase.from('users').select('*')
+  const wrap = document.getElementById('userList')
+  wrap.innerHTML = ''
+  data?.forEach(u=>{
+    const row = document.createElement('div')
+    row.style.cssText="padding:6px;border-bottom:1px solid #333;display:flex;align-items:center;gap:8px"
+    row.innerHTML = `<img class="avatar-img" style="width:28px;height:28px" src="${u.avatar_url||defaultAvatar}">${u.account} | 昵称:${u.nickname} | 管理员:${u.is_admin?'✅':'❌'} <button class="btn-ghost" style="padding:3px 8px;font-size:12px;margin-left:8px" onclick="delUser('${u.account}')">删除账户</button>`
+    wrap.appendChild(row)
+  })
+}
+window.delUser = async (acc)=>{
+  if(acc===SUPER_ADMIN){showToast("不能删除超级管理员账户");return}
+  if(currentAccount!==SUPER_ADMIN){
+    const {data:target} = await supabase.from('users').select('is_admin').eq('account',acc).single()
+    if(target?.is_admin){showToast("普通管理员无权删除其他管理员");return}
+  }
+  await supabase.from('users').delete().eq('account',acc)
+  showToast("已删除账户")
+  loadUsers()
+  await loadUserMap()
+}
+
+async function loadDbInfo(){
+  const {count:uCount} = await supabase.from('users').select('*',{count:'exact',head:true})
+  const {count:mCount} = await supabase.from('medias').select('*',{count:'exact',head:true})
+  const {count:cCount} = await supabase.from('chats').select('*',{count:'exact',head:true})
+  const {count:cmtTotal} = await supabase.from('comments').select('*',{count:'exact',head:true})
+  const {count:likeTotal} = await supabase.from('likes').select('*',{count:'exact',head:true})
+  const {count:viewTotal} = await supabase.from('views').select('*',{count:'exact',head:true})
+  document.getElementById('dbInfo').innerText = `用户总数：${uCount} | 媒体文件：${mCount} | 公共聊天：${cCount} | 评论：${cmtTotal} | 点赞：${likeTotal} |浏览：${viewTotal}`
+}
+
+// Realtime订阅
+function subscribeRealtime(){
+  supabase.channel('all_sync')
+  .on('postgres_changes',{event:'*',schema:'public',table:'medias'},()=>loadMedia())
+  .on('postgres_changes',{event:'*',schema:'public',table:'likes'},()=>loadMedia())
+  .on('postgres_changes',{event:'*',schema:'public',table:'views'},()=>loadMedia())
+  .on('postgres_changes',{event:'*',schema:'public',table:'chats'},()=>loadChat())
+  .on('postgres_changes',{event:'*',schema:'public',table:'private_msgs'},()=>refreshDmUnread())
+  .on('postgres_changes',{event:'*',schema:'public',table:'dm_unread'},()=>refreshDmUnread())
+  .on('postgres_changes',{event:'*',schema:'public',table:'comments'},()=>{
+    loadMedia()
+    if(currentCommentMediaId) loadCommentList()
+  })
+  .on('postgres_changes',{event:'*',schema:'public',table:'site_config'},()=>{loadMarquee();loadNotice();loadBgSetting()})
+  .on('postgres_changes',{event:'*',schema:'public',table:'users'},async ()=>{
+    await loadUserMap()
+    loadUsers();loadDbInfo();loadMedia();loadCommentList();loadChat()
+  })
+  .subscribe()
+}
+
+setInterval(()=>{refreshOnline();loadMarquee();loadNotice()},30000)
+(async()=>{
+  const {data} = await supabase.from('site_config').select('value').eq('key','web_title').single()
+  if(data) document.title = data.value
+})()
+</script>
+</body>
+</html>
