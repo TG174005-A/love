@@ -1,186 +1,537 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>心动空间</title>
-  <meta name="theme-color" content="#e678a1" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="心动空间" />
-  <meta name="description" content="属于两个人的私人情侣空间" />
-  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仿抖音网页</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <style>
+        * {margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+        body {background:#000;color:#fff;min-height:100vh;overflow-x:hidden}
+        .marquee-wrap {position:fixed;top:0;left:0;width:100%;z-index:999;background:rgba(0,0,0,0.7);padding:6px 0;overflow:hidden}
+        .marquee {white-space:nowrap;animation:marquee 20s linear infinite}
+        @keyframes marquee {0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+        .container {max-width:1200px;margin:0 auto;padding:15px;padding-top:45px}
+        .page {display:none}
+        .page.active {display:block}
+        .form-box {max-width:400px;margin:50px auto;background:#1a1a1a;padding:25px;border-radius:12px}
+        input,textarea,select {width:100%;padding:12px;margin:8px 0;border:none;border-radius:8px;background:#2a2a2a;color:#fff;font-size:16px}
+        button {padding:12px 16px;border:none;border-radius:8px;background:#fe2c55;color:#fff;font-weight:bold;cursor:pointer;margin:6px}
+        button.gray {background:#444}
+        button.blue {background:#0099ff}
+        button.green {background:#00c853}
+        button.red {background:#f44336}
+        .nav {display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+        .card {background:#1e1e1e;padding:15px;border-radius:10px;margin:10px 0}
+        .media-item {margin:10px 0}
+        video,img {max-width:100%;border-radius:8px}
+        .modal {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;padding:15px}
+        .modal.show {display:flex}
+        .modal-content {background:#181818;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;padding:20px;border-radius:12px}
+        .chat-box {height:400px;overflow-y:auto;background:#222;padding:10px;border-radius:8px;margin-bottom:10px}
+        .chat-msg {margin:6px 0;padding:8px;border-radius:6px;max-width:75%}
+        .chat-left {background:#333;text-align:left;margin-right:auto}
+        .chat-right {background:#0088ff;text-align:right;margin-left:auto}
+        .admin-tag {font-size:12px;color:#ffd700}
+        .grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:15px}
+        .admin-panel {display:none}
+        .admin-panel.show {display:block}
+        .user-row {display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:#333 1px solid}
+        .bg-preview {width:100%;height:120px;background:#333;margin:8px 0;border-radius:8px;background-size:cover;background-position:center}
+        .qrcode-wrap {text-align:center;margin:10px 0}
+        .toast {position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#222;padding:10px 20px;border-radius:8px;z-index:9999;display:none}
+        .toast.show {display:block}
+        @media(max-width:768px){
+            .grid {grid-template-columns:1fr}
+            .modal-content {width:95%}
+        }
+    </style>
 </head>
 <body>
-  <div class="ambient a1"></div><div class="ambient a2"></div><div class="ambient a3"></div>
-  <main class="app-shell" id="appShell">
-    <section class="view active" id="loginView">
-      <div class="login-card glass">
-        <div class="brand-mark">♡</div>
-        <p class="eyebrow">OUR PRIVATE PLACE</p>
-        <h1 id="loginTitle">心动空间</h1>
-        <p class="subtitle">把喜欢藏进每一个平凡日子里。</p>
-        <div class="hero-photo" id="loginHero">
-          <div class="hero-overlay"><span>Today, with you.</span></div>
-        </div>
-        <div class="form-grid">
-          <label>邮箱<input id="account" type="email" placeholder="you@example.com" /></label>
-          <label>密码<input id="password" type="password" placeholder="至少 6 位密码" /></label>
-          <label class="full">昵称<input id="nickname" placeholder="注册时填写" /></label>
-        </div>
-        <div class="actions">
-          <button class="primary" id="loginBtn">登录并进入</button>
-          <button class="ghost" id="registerBtn">注册并进入</button>
-        </div>
-        <button class="admin-link" id="openAdmin">👑 管理后台</button><p class="auth-hint">首次使用请先注册；若项目开启邮箱确认，请到邮箱完成验证后再登录。</p>
-      </div>
-    </section>
+    <!-- 跑马灯 -->
+    <div class="marquee-wrap">
+        <div class="marquee" id="marqueeText">欢迎来到仿抖音平台</div>
+    </div>
 
-    <section class="view" id="homeView">
-      <header class="topbar glass">
-        <div><span class="mini-heart">♥</span><strong id="siteName">心动空间</strong></div>
-        <nav><button data-scroll="story">我们的故事</button><button data-scroll="gallery">照片</button><button data-scroll="moments">纪念日</button><button id="homeAdmin">设置</button><button id="logoutBtn">退出</button></nav>
-      </header>
-      <section class="home-hero glass" id="homeHero">
-        <div class="home-copy">
-          <span class="tag">SINCE 2024.02.14</span>
-          <h2>和你一起，<br>把日子过成喜欢的样子。</h2>
-          <p>这里存放我们的照片、纪念日、碎碎念，还有只有彼此知道的小秘密。</p>
-          <div class="couple-stats">
-            <div><b id="daysTogether">0</b><span>相爱天数</span></div>
-            <div><b>128</b><span>共同回忆</span></div>
-            <div><b>∞</b><span>未来计划</span></div>
-          </div>
-        </div>
-      </section>
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
 
-      <section class="content-section" id="story">
-        <div class="section-title"><span>01</span><div><h3>我们的故事</h3><p>一些值得被反复翻看的片段</p></div></div>
-        <div class="story-grid">
-          <article class="glass story-card"><em>第一次见面</em><h4>春天的风刚刚好</h4><p>那天并没有发生什么惊天动地的事，但后来每次想起，都觉得是故事最好的开场。</p></article>
-          <article class="glass story-card"><em>第一次旅行</em><h4>一起去看海</h4><p>凌晨出发，傍晚看落日，手机里从此多了一个怎么拍都好看的人。</p></article>
-          <article class="glass story-card"><em>现在</em><h4>把普通生活过得认真</h4><p>吃饭、散步、分享天气，爱不一定轰轰烈烈，但可以一直在场。</p></article>
-        </div>
-      </section>
-
-      <section class="content-section" id="gallery">
-        <div class="section-title"><span>02</span><div><h3>照片墙</h3><p>每一张都是时间留下的证据</p></div></div>
-        <div class="photo-grid" id="photoGrid"></div><label class="upload-box gallery-upload">上传共同照片<input id="galleryUpload" type="file" accept="image/*"><span>选择一张图片（最大 10MB）</span></label>
-      </section>
-
-      <section class="content-section" id="moments">
-        <div class="section-title"><span>03</span><div><h3>纪念日</h3><p>把重要日期写进时间里</p></div></div>
-        <div class="timeline glass">
-          <div><time>2024.02.14</time><b>我们在一起啦</b><p>故事正式开始。</p></div>
-          <div><time>2024.05.20</time><b>第一次一起过 520</b><p>送了一束花，也收到了一个很长的拥抱。</p></div>
-          <div><time>2025.02.14</time><b>一周年</b><p>原来一年可以这么快，也可以装下这么多回忆。</p></div>
-        </div>
-      </section>
-
-      <section class="content-section">
-        <div class="section-title"><span>04</span><div><h3>只言片语</h3><p>想说的话，就留在这里</p></div></div>
-        <div class="message-box glass">
-          <div id="messages"><p class="muted">登录后会同步你们的悄悄话。</p></div>
-          <div class="composer"><input id="messageInput" placeholder="写一句悄悄话…"><button id="sendMessage">发送 ♡</button></div>
-        </div>
-      </section>
-      <footer>Made with ♥ for two people.</footer>
-    </section>
-
-    <section class="view" id="adminView">
-      <div class="admin-shell">
-        <aside class="admin-sidebar glass">
-          <div class="admin-brand"><span>👑</span><div><b>最高权限后台</b><small>V1.0 · Couple Space</small></div></div>
-          <button class="tab active" data-tab="layout">网页 / 布局</button>
-          <button class="tab" data-tab="page">登录 / 主页面</button>
-          <button class="tab" data-tab="media">照片 / 视频</button>
-          <button class="tab" data-tab="interaction">互动功能</button>
-          <button class="tab" data-tab="logic">底层逻辑</button>
-          <button class="tab super-only" data-tab="super" style="display:none">👑 最高权限</button>
-          <button class="back-site" id="backSite">← 返回网页</button>
-        </aside>
-        <section class="admin-panel glass">
-          <div class="admin-head"><div><p>ADMIN CONSOLE</p><h2 id="panelTitle">网页 / 布局</h2></div><span class="status">● 已连接</span></div>
-
-          <div class="panel active" data-panel="layout">
-            <h3>网页名称与显示</h3>
-            <div class="setting-grid">
-              <label>网页名称<input id="setName" value="心动空间"></label>
-              <label>页面宽度<input id="setWidth" type="range" min="900" max="1500" value="1180"><output id="widthOut">1180 px</output></label>
-              <label>文字大小<input id="setFont" type="range" min="14" max="20" value="16"><output id="fontOut">16 px</output></label>
-              <label>面板透明度<input id="setOpacity" type="range" min="55" max="98" value="78"><output id="opacityOut">78%</output></label>
-              <label>模糊<input id="setBlur" type="range" min="0" max="30" value="18"><output id="blurOut">18 px</output></label>
-              <label>圆角<input id="setRadius" type="range" min="10" max="36" value="28"><output id="radiusOut">28 px</output></label>
+    <!-- 登录注册页 -->
+    <div class="page active" id="pageLogin">
+        <div class="container">
+            <div class="form-box">
+                <h2>登录 / 注册</h2>
+                <div id="loginNotice" style="color:#ffdd00;margin:10px 0"></div>
+                <input type="text" id="inpAccount" placeholder="数字账号">
+                <input type="password" id="inpPwd" placeholder="密码">
+                <button onclick="doLogin()">登录</button>
+                <button onclick="doRegister()" class="gray">注册</button>
             </div>
-            <button class="save" id="saveLayout">保存并应用</button>
-          </div>
+        </div>
+    </div>
 
-          <div class="panel" data-panel="page">
-            <h3>登录与主页文案</h3>
-            <div class="setting-grid one">
-              <label>登录标题<input id="setLoginTitle" value="心动空间"></label>
-              <label>开始纪念日<input id="setDate" type="date" value="2024-02-14"></label>
-              <label>主页大标题<textarea id="setHeroText">和你一起，把日子过成喜欢的样子。</textarea></label>
+    <!-- 主页 -->
+    <div class="page" id="pageHome">
+        <div class="container">
+            <div class="nav">
+                <button onclick="showProfileModal()">个人资料</button>
+                <button onclick="showChatModal()">聊天</button>
+                <button onclick="uploadMedia()" class="blue">上传图片/视频</button>
+                <button onclick="doLogout()" class="red">退出登录</button>
+                <button id="btnAdmin" onclick="showAdminModal()" style="display:none" class="green">后台管理</button>
             </div>
-            <button class="save" id="savePage">保存并应用</button>
-          </div>
+            <h3>我的作品</h3>
+            <div id="myMediaList" class="grid"></div>
+            <h3>全部作品</h3>
+            <div id="allMediaList" class="grid"></div>
+        </div>
+    </div>
 
-          <div class="panel" data-panel="media">
-            <h3>照片 / 视频</h3><p class="muted">图片会上传到 Supabase 私有存储，仅当前空间成员可读取。</p>
-            <label class="upload-box">登录页照片<input id="loginUpload" type="file" accept="image/*"><span>点击选择图片</span></label>
-            <label class="upload-box">主页封面<input id="homeUpload" type="file" accept="image/*"><span>点击选择图片</span></label>
-          </div>
+    <!-- 个人资料弹窗 -->
+    <div class="modal" id="modalProfile">
+        <div class="modal-content">
+            <h3>编辑个人资料</h3>
+            <input type="text" id="editNick" placeholder="昵称">
+            <input type="text" id="editAvatar" placeholder="头像图片链接">
+            <textarea id="editBio" placeholder="个人简介"></textarea>
+            <button onclick="saveProfile()">保存</button>
+            <button onclick="closeModal('modalProfile')" class="gray">关闭</button>
+        </div>
+    </div>
 
-          <div class="panel" data-panel="interaction">
-            <h3>互动功能</h3>
-            <div class="toggle-row"><div><b>悄悄话</b><span>允许双方发布留言</span></div><label class="switch"><input id="toggleMessage" type="checkbox" checked><i></i></label></div>
-            <div class="toggle-row"><div><b>照片墙</b><span>展示共同照片</span></div><label class="switch"><input id="toggleGallery" type="checkbox" checked><i></i></label></div>
-            <div class="toggle-row"><div><b>纪念日</b><span>显示时间线与天数</span></div><label class="switch"><input id="toggleMoments" type="checkbox" checked><i></i></label></div>
-          </div>
-
-          <div class="panel" data-panel="super">
-            <h3>👑 最高权限控制台</h3>
-            <p class="muted">仅空间创建者可见。关键权限由 Supabase RLS 强制执行，前端隐藏不是安全边界。</p>
-            <div class="super-grid">
-              <div class="logic-card"><b>空间状态</b><span id="superState">读取中…</span></div>
-              <div class="logic-card"><b>当前身份</b><span>最高权限 / Owner</span></div>
+    <!-- 聊天弹窗 -->
+    <div class="modal" id="modalChat">
+        <div class="modal-content">
+            <h3>聊天室</h3>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+                <button onclick="switchChatType('all')" id="btnChatAll" class="blue">全部聊天</button>
+                <button onclick="switchChatType('admin')" id="btnChatAdmin">联系管理员</button>
             </div>
-            <h4>全站控制</h4>
-            <div class="toggle-row"><div><b>维护模式</b><span>开启后普通成员暂时无法读取互动数据</span></div><label class="switch"><input id="maintenanceMode" type="checkbox"><i></i></label></div>
-            <div class="toggle-row"><div><b>锁定空间</b><span>紧急锁定普通成员的数据访问</span></div><label class="switch"><input id="siteLocked" type="checkbox"><i></i></label></div>
-            <h4>成员管理</h4>
-            <div id="memberAdmin" class="member-admin"><p class="muted">正在读取成员…</p></div>
-            <h4>数据管理</h4>
-            <div class="danger-zone">
-              <button class="danger" id="clearMessages">清空全部悄悄话</button>
-              <button class="danger" id="clearPhotos">清空全部照片</button>
-            </div>
-            <h4>权限审计</h4>
-            <div id="auditLogs" class="audit-list"><p class="muted">暂无记录</p></div>
-          </div>
+            <div class="chat-box" id="chatBox"></div>
+            <input type="text" id="chatInput" placeholder="输入消息">
+            <button onclick="sendChatMsg()">发送</button>
+            <button onclick="closeModal('modalChat')" class="gray">关闭</button>
+        </div>
+    </div>
 
-          <div class="panel" data-panel="logic">
-            <h3>底层逻辑</h3>
-            <div class="logic-card"><b>登录系统</b><span>Supabase Auth 邮箱 + 密码</span></div>
-            <div class="logic-card"><b>数据存储</b><span>Supabase PostgreSQL + RLS 权限隔离</span></div>
-            <div class="logic-card"><b>云相册</b><span>Supabase Storage 私有 Bucket</span></div>
-            <button class="danger" id="resetAll">恢复默认设置</button>
-          </div>
-        </section>
-      </div>
-    </section>
-  </main>
-  <div class="toast" id="toast"></div>
-  <script type="module" src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
-    }
-  </script>
+    <!-- 后台弹窗 -->
+    <div class="modal" id="modalAdmin">
+        <div class="modal-content">
+            <h2>后台管理面板</h2>
+            <div class="admin-panel" id="adminPanel">
+                <div>
+                    <h4>在线人数：<span id="onlineCount">0</span></h4>
+                    <h4>数据库内存信息：<span id="dbInfo">加载中</span></h4>
+                </div>
+                <hr style="margin:12px 0;border-color:#333">
+                <h4>用户管理</h4>
+                <div id="userList"></div>
+                <hr style="margin:12px 0;border-color:#333">
+                <h4>页面背景设置</h4>
+                <div>登录页背景URL:<input type="text" id="bgLogin"></div>
+                <div>主页背景URL:<input type="text" id="bgHome"></div>
+                <div>后台页背景URL:<input type="text" id="bgAdmin"></div>
+                <div>登录页透明度:<input type="number" step="0.1" min="0" max="1" id="opLogin"></div>
+                <div>主页透明度:<input type="number" step="0.1" min="0" max="1" id="opHome"></div>
+                <div>后台页透明度:<input type="number" step="0.1" min="0" max="1" id="opAdmin"></div>
+                <div class="bg-preview" id="previewBgLogin"></div>
+                <div class="bg-preview" id="previewBgHome"></div>
+                <div class="bg-preview" id="previewBgAdmin"></div>
+                <button onclick="saveBgConfig()">保存背景配置</button>
+                <hr style="margin:12px 0;border-color:#333">
+                <h4>视频管理</h4>
+                <button onclick="playAllVideo()" class="blue">一键播放全部视频</button>
+                <button onclick="deleteAllVideo()" class="red">删除全部视频</button>
+                <hr style="margin:12px 0;border-color:#333">
+                <h4>跑马灯消息推送</h4>
+                <input type="text" id="marqueeInput" placeholder="跑马灯内容">
+                <button onclick="pushMarqueeMsg()">发送跑马灯消息</button>
+                <hr style="margin:12px 0;border-color:#333">
+                <h4>网页设置</h4>
+                <input type="text" id="siteTitle" placeholder="网页标题">
+                <input type="text" id="shareIconUrl" placeholder="分享图标链接">
+                <textarea id="loginNoticeText" placeholder="登录页公告"></textarea>
+                <button onclick="saveSiteSetting()">保存网页设置</button>
+                <hr style="margin:12px 0;border-color:#333">
+                <h4>分享二维码</h4>
+                <div class="qrcode-wrap" id="qrcodeDiv"></div>
+                <button onclick="createShortcut()">添加到桌面快捷方式</button>
+                <hr style="margin:12px 0;border-color:#333">
+                <h4>聊天管理</h4>
+                <button onclick="clearAllChat()" class="red">删除全部聊天记录</button>
+            </div>
+            <button onclick="closeModal('modalAdmin')" class="gray">关闭后台</button>
+        </div>
+    </div>
+
+    <!-- 文件上传隐藏input -->
+    <input type="file" id="fileInput" accept="image/*,video/*" style="display:none" onchange="handleFileSelect()">
+
+    <script>
+        // Supabase初始化
+        const SUPABASE_URL = "https://pzcwzaoebvlghoahpcdr.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_mzLfUNyJzIXTX04ORjOuYg_dt-23zIV";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let chatMode = "all";
+        let siteConfig = {};
+
+        // 工具函数
+        function showToast(msg){
+            const el = document.getElementById("toast");
+            el.innerText = msg;
+            el.classList.add("show");
+            setTimeout(()=>el.classList.remove("show"),2000);
+        }
+        function openModal(id){document.getElementById(id).classList.add("show");}
+        function closeModal(id){document.getElementById(id).classList.remove("show");}
+        function switchPage(id){
+            document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+            document.getElementById(id).classList.add("active");
+        }
+
+        // 登录注册
+        async function doLogin(){
+            const acc = document.getElementById("inpAccount").value.trim();
+            const pwd = document.getElementById("inpPwd").value.trim();
+            if(!acc || !pwd) return showToast("账号密码不能为空");
+            const {data,error} = await supabase.from("users").select("*").eq("account",acc).single();
+            if(error || !data){
+                return showToast("账号不存在，请先注册");
+            }
+            if(data.password !== pwd){
+                return showToast("密码错误");
+            }
+            currentUser = data;
+            await updateOnlineStatus(true);
+            renderUserUI();
+            switchPage("pageHome");
+            loadSiteConfig();
+            loadMedia();
+            showToast("登录成功");
+        }
+
+        async function doRegister(){
+            const acc = document.getElementById("inpAccount").value.trim();
+            const pwd = document.getElementById("inpPwd").value.trim();
+            if(!acc || !pwd) return showToast("账号密码不能为空");
+            if(!/^\d+$/.test(acc)) return showToast("账号只能为数字");
+            const {data,error} = await supabase.from("users").insert([{account:acc,password:pwd,nickname:"用户"+acc}]);
+            if(error){
+                return showToast("注册失败，账号已存在");
+            }
+            showToast("注册成功，请登录");
+        }
+
+        async function doLogout(){
+            await updateOnlineStatus(false);
+            currentUser = null;
+            switchPage("pageLogin");
+            showToast("已退出登录");
+        }
+
+        function renderUserUI(){
+            // 管理员显示后台按钮
+            const btnAdmin = document.getElementById("btnAdmin");
+            if(currentUser.account === "306680070"){
+                btnAdmin.style.display="block";
+            }else{
+                btnAdmin.style.display="none";
+            }
+        }
+
+        // 在线状态
+        async function updateOnlineStatus(isOnline){
+            if(!currentUser) return;
+            if(isOnline){
+                await supabase.from("online_users").upsert([{user_id:currentUser.id,last_active:new Date()}],{onConflict:"user_id"});
+            }else{
+                await supabase.from("online_users").delete().eq("user_id",currentUser.id);
+            }
+        }
+
+        // 个人资料
+        async function showProfileModal(){
+            if(!currentUser)return;
+            document.getElementById("editNick").value = currentUser.nickname || "";
+            document.getElementById("editAvatar").value = currentUser.avatar || "";
+            document.getElementById("editBio").value = currentUser.bio || "";
+            openModal("modalProfile");
+        }
+        async function saveProfile(){
+            const nick = document.getElementById("editNick").value.trim();
+            const ava = document.getElementById("editAvatar").value.trim();
+            const bio = document.getElementById("editBio").value.trim();
+            const {error} = await supabase.from("users").update({nickname:nick,avatar:ava,bio:bio}).eq("id",currentUser.id);
+            if(!error){
+                currentUser.nickname = nick;
+                currentUser.avatar = ava;
+                currentUser.bio = bio;
+                showToast("资料保存成功");
+                closeModal("modalProfile");
+            }else{
+                showToast("保存失败");
+            }
+        }
+
+        // 文件上传（这里使用supabase storage，需要在supabase创建bucket名为media）
+        function uploadMedia(){
+            if(!currentUser) return showToast("请登录");
+            document.getElementById("fileInput").click();
+        }
+        async function handleFileSelect(e){
+            const file = e.target.files[0];
+            if(!file)return;
+            const fileName = `${Date.now()}_${file.name}`;
+            const {data,error} = await supabase.storage.from("media").upload(fileName,file);
+            if(error){
+                return showToast("上传失败，请确认storage bucket media已创建");
+            }
+            const url = supabase.storage.from("media").getPublicUrl(fileName).data.publicUrl;
+            const type = file.type.startsWith("video")?"video":"image";
+            await supabase.from("media").insert([{user_id:currentUser.id,file_url:url,file_type:type}]);
+            showToast("上传成功");
+            loadMedia();
+        }
+
+        async function loadMedia(){
+            const {data:myList} = await supabase.from("media").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
+            const {data:allList} = await supabase.from("media").select("*").order("created_at",{ascending:false});
+            const myDom = document.getElementById("myMediaList");
+            const allDom = document.getElementById("allMediaList");
+            myDom.innerHTML="";
+            allDom.innerHTML="";
+            myList.forEach(item=>{
+                myDom.innerHTML+=renderMediaItem(item);
+            });
+            allList.forEach(item=>{
+                allDom.innerHTML+=renderMediaItem(item);
+            });
+        }
+        function renderMediaItem(item){
+            if(item.file_type === "video"){
+                return `<div class="media-item card"><video controls src="${item.file_url}" width="100%"></video></div>`;
+            }else{
+                return `<div class="media-item card"><img src="${item.file_url}" alt="图片"></div>`;
+            }
+        }
+
+        // 聊天模块
+        async function showChatModal(){
+            if(!currentUser)return showToast("请登录");
+            openModal("modalChat");
+            loadChatMsg();
+        }
+        function switchChatType(t){
+            chatMode = t;
+            loadChatMsg();
+        }
+        async function loadChatMsg(){
+            let q = supabase.from("chat_messages").select("*").order("created_at",{ascending:true});
+            if(chatMode === "admin"){
+                q = q.or(`is_admin_reply.eq(true),user_id.eq(${currentUser.id})`);
+            }
+            const {data} = await q;
+            const box = document.getElementById("chatBox");
+            box.innerHTML="";
+            data.forEach(m=>{
+                const cls = m.user_id === currentUser.id ? "chat-right":"chat-left";
+                let tag = "";
+                if(m.is_admin_reply) tag = `<span class="admin-tag">[管理员]</span>`;
+                box.innerHTML+=`<div class="chat-msg ${cls}">${tag}${m.username}:${m.content}</div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        }
+        async function sendChatMsg(){
+            const txt = document.getElementById("chatInput").value.trim();
+            if(!txt)return;
+            const uname = currentUser.nickname || currentUser.account;
+            await supabase.from("chat_messages").insert([{
+                user_id:currentUser.id,
+                username:uname,
+                content:txt,
+                is_admin_reply:false
+            }]);
+            document.getElementById("chatInput").value="";
+            loadChatMsg();
+        }
+
+        // 后台管理
+        async function showAdminModal(){
+            if(currentUser.account !== "306680070")return;
+            openModal("modalAdmin");
+            document.getElementById("adminPanel").classList.add("show");
+            await loadAdminData();
+            generateQrcode();
+        }
+
+        async function loadAdminData(){
+            //在线人数
+            const {data:onlineData} = await supabase.from("online_users").select("*");
+            document.getElementById("onlineCount").innerText = onlineData.length;
+
+            // 用户列表
+            const {data:userList} = await supabase.from("users").select("*");
+            const userDom = document.getElementById("userList");
+            userDom.innerHTML="";
+            userList.forEach(u=>{
+                userDom.innerHTML+=`
+                <div class="user-row">
+                    <div>账号:${u.account} | 昵称:${u.nickname}</div>
+                    <div>
+                        <button onclick="editUserPwd(${u.id})" class="blue">改密码</button>
+                        <button onclick="deleteUser(${u.id})" class="red">删除账号</button>
+                    </div>
+                </div>
+                `;
+            });
+
+            // 加载配置
+            const {data:cfg} = await supabase.from("site_config").select("*").limit(1).single();
+            siteConfig = cfg;
+            document.getElementById("bgLogin").value = cfg.login_bg||"";
+            document.getElementById("bgHome").value = cfg.home_bg||"";
+            document.getElementById("bgAdmin").value = cfg.admin_bg||"";
+            document.getElementById("opLogin").value = cfg.login_opacity||1;
+            document.getElementById("opHome").value = cfg.home_opacity||1;
+            document.getElementById("opAdmin").value = cfg.admin_opacity||1;
+            document.getElementById("siteTitle").value = cfg.site_title||"";
+            document.getElementById("shareIconUrl").value = cfg.share_icon||"";
+            document.getElementById("loginNoticeText").value = cfg.notice||"";
+            document.getElementById("marqueeInput").value = cfg.marquee_text||"";
+
+            document.getElementById("previewBgLogin").style.backgroundImage = `url(${cfg.login_bg})`;
+            document.getElementById("previewBgHome").style.backgroundImage = `url(${cfg.home_bg})`;
+            document.getElementById("previewBgAdmin").style.backgroundImage = `url(${cfg.admin_bg})`;
+
+            document.getElementById("dbInfo").innerText = "已获取配置，存储大小需要数据库扩展支持";
+        }
+
+        async function editUserPwd(uid){
+            const newPwd = prompt("输入新密码");
+            if(!newPwd)return;
+            await supabase.from("users").update({password:newPwd}).eq("id",uid);
+            showToast("密码修改完成");
+            loadAdminData();
+        }
+        async function deleteUser(uid){
+            if(!confirm("确认删除该账号？"))return;
+            await supabase.from("users").delete().eq("id",uid);
+            showToast("账号已删除");
+            loadAdminData();
+        }
+
+        async function saveBgConfig(){
+            const loginBg = document.getElementById("bgLogin").value.trim();
+            const homeBg = document.getElementById("bgHome").value.trim();
+            const adminBg = document.getElementById("bgAdmin").value.trim();
+            const opLogin = Number(document.getElementById("opLogin").value);
+            const opHome = Number(document.getElementById("opHome").value);
+            const opAdmin = Number(document.getElementById("opAdmin").value);
+            await supabase.from("site_config").update({
+                login_bg:loginBg,
+                home_bg:homeBg,
+                admin_bg:adminBg,
+                login_opacity:opLogin,
+                home_opacity:opHome,
+                admin_opacity:opAdmin,
+                updated_at:new Date()
+            }).eq("id",1);
+            showToast("背景配置保存成功");
+            loadSiteConfig();
+            loadAdminData();
+        }
+
+        async function playAllVideo(){
+            const {data} = await supabase.from("media").select("file_url").eq("file_type","video");
+            data.forEach(item=>{
+                const v = document.createElement("video");
+                v.src = item.file_url;
+                v.play();
+            });
+            showToast("已触发全部视频播放");
+        }
+        async function deleteAllVideo(){
+            if(!confirm("确定删除全部视频？"))return;
+            await supabase.from("media").delete().eq("file_type","video");
+            showToast("全部视频已删除");
+            loadMedia();
+        }
+
+        async function pushMarqueeMsg(){
+            const txt = document.getElementById("marqueeInput").value.trim();
+            if(!txt)return;
+            await supabase.from("site_config").update({marquee_text:txt,updated_at:new Date()}).eq("id",1);
+            showToast("跑马灯消息已推送");
+            loadSiteConfig();
+        }
+
+        async function saveSiteSetting(){
+            const title = document.getElementById("siteTitle").value.trim();
+            const icon = document.getElementById("shareIconUrl").value.trim();
+            const notice = document.getElementById("loginNoticeText").value.trim();
+            await supabase.from("site_config").update({
+                site_title:title,
+                share_icon:icon,
+                notice:notice,
+                updated_at:new Date()
+            }).eq("id",1);
+            document.title = title;
+            showToast("网页设置保存成功");
+            loadSiteConfig();
+            generateQrcode();
+        }
+
+        async function clearAllChat(){
+            if(!confirm("确认清空全部聊天记录？"))return;
+            await supabase.from("chat_messages").delete();
+            showToast("聊天记录已清空");
+            loadChatMsg();
+        }
+
+        function generateQrcode(){
+            const div = document.getElementById("qrcodeDiv");
+            div.innerHTML="";
+            new QRCode(div,{
+                text:window.location.href,
+                width:180,
+                height:180
+            });
+        }
+
+        function createShortcut(){
+            if(window.hasOwnProperty('InstallTrigger')){
+                InstallTrigger.install({
+                    name:"仿抖音网页",
+                    URL:window.location.href,
+                    iconURL:siteConfig.share_icon
+                });
+            }else{
+                showToast("浏览器不支持一键添加桌面快捷方式，请手动添加");
+            }
+        }
+
+        // 加载全局配置
+        async function loadSiteConfig(){
+            const {data} = await supabase.from("site_config").select("*").limit(1).single();
+            siteConfig = data;
+            document.getElementById("marqueeText").innerText = data.marquee_text;
+            document.title = data.site_title;
+            document.getElementById("loginNotice").innerText = data.notice;
+        }
+
+        // 实时订阅
+        supabase.channel("all").on('postgres_changes',{event:'*',schema:'public',table:'site_config'},()=>{
+            loadSiteConfig();
+        }).subscribe();
+
+        // 页面初始化
+        window.onload = async ()=>{
+            await loadSiteConfig();
+        }
+    </script>
 </body>
 </html>
