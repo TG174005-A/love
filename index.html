@@ -1,84 +1,809 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Neon Space</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🌌</text></svg>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050612">
+<link rel="manifest" href='data:application/manifest+json,{"name":"AI深空短视频平台","short_name":"AI深空","start_url":".","display":"standalone","background_color":"#050612","theme_color":"#050612","icons":[{"src":"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 stop-color=%22%2300ccff%22/><stop offset=%22100%25%22 stop-color=%22%23bb44ff%22/></linearGradient></defs><circle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22url(%23g)%22/></svg>","sizes":"192x192","type":"image/svg+xml"}]}'>
+<title>AI 科技短视频平台</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2300ccff'/><stop offset='100%25' stop-color='%23bb44ff'/></linearGradient></defs><circle cx='50' cy='50' r='40' fill='url(%23g)'/></svg>">
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#02030b;color:#fff;font-family:Arial,sans-serif;overflow-x:hidden}
-#stars{position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 50% 20%,#202060,#02030b 55%)}
-.star{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;animation:tw 3s infinite}
-@keyframes tw{50%{opacity:.2;transform:scale(2)}}
-.glass{background:rgba(255,255,255,.08);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.18);box-shadow:0 0 40px #4b00ff55;border-radius:28px}
-.panel{width:min(95%,900px);margin:70px auto;padding:28px;animation:float 5s infinite ease-in-out}
-@keyframes float{50%{transform:translateY(-10px)}}
-h1{font-size:clamp(35px,8vw,70px);background:linear-gradient(90deg,#00eaff,#b000ff);-webkit-background-clip:text;color:transparent}
-button{border:0;border-radius:20px;padding:12px 20px;background:linear-gradient(90deg,#00eaff,#9b00ff);color:white;cursor:pointer}
-input,textarea{width:100%;margin:8px 0;padding:12px;border-radius:15px;background:#0008;color:white;border:1px solid #ffffff44}
-nav{position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:5}
-#marquee{position:fixed;top:0;width:100%;white-space:nowrap;overflow:hidden;background:#0008;padding:8px;color:#0ff}
-video,img{max-width:100%;border-radius:20px}.hidden{display:none}.chat{position:fixed;right:20px;bottom:20px}
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui,sans-serif}
+:root{
+  --neon-blue:#00ccff;
+  --neon-purple:#bb44ff;
+  --glass-bg:rgba(20,24,48,0.42);
+  --glass-border:rgba(180,120,255,0.28);
+  --text:#eef4ff;
+}
+body{
+  min-height:100vh;
+  background:#050612;
+  color:var(--text);
+  overflow:hidden;
+}
+#particleCanvas{position:fixed;inset:0;z-index:0;}
+.bg-layer{position:fixed;inset:0;z-index:-1;background:linear-gradient(135deg,#070818,#120b2e,#06152b);transition:opacity .5s ease;}
+.marquee-wrap{
+  position:fixed;top:0;left:0;width:100%;height:34px;z-index:99;
+  background:rgba(15,18,40,0.6);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--glass-border);overflow:hidden;display:flex;align-items:center;
+}
+.marquee{white-space:nowrap;animation:run 22s linear infinite;font-size:14px;color:#9be7ff;padding-left:100%;}
+@keyframes run{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--glass-border);
+  border-radius:18px;
+  box-shadow:0 8px 32px rgba(120,60,255,0.15);
+}
+.neon-title{
+  background:linear-gradient(90deg,var(--neon-blue),var(--neon-purple),var(--neon-blue));
+  background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:shine 4s linear infinite;font-weight:700;
+}
+@keyframes shine{to{background-position:200% center}}
+.float{animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.btn-neon{
+  padding:9px 18px;border:none;border-radius:12px;cursor:pointer;color:#fff;
+  background:linear-gradient(90deg,#0099ff,#a040ff);
+  box-shadow:0 0 16px rgba(120,80,255,0.4);transition:.25s;
+}
+.btn-neon:hover{transform:scale(1.04);box-shadow:0 0 24px rgba(120,80,255,0.7)}
+.btn-ghost{
+  padding:8px 14px;border:1px solid var(--glass-border);border-radius:12px;cursor:pointer;
+  background:rgba(30,35,70,0.35);color:#fff;transition:.25s;
+}
+.btn-ghost:hover{background:rgba(70,60,140,0.45)}
+.page{position:relative;z-index:2;display:none;height:100vh;}
+.page.active{display:block}
+#loginPage{display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.login-card{width:min(440px,95vw);padding:32px;}
+.login-card input{
+  width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid var(--glass-border);
+  background:rgba(10,14,32,0.5);color:#fff;outline:none;font-size:15px;
+}
+.login-card input:focus{border-color:var(--neon-blue);box-shadow:0 0 10px rgba(0,200,255,0.3)}
+.tabs{display:flex;gap:10px;margin-bottom:18px}
+.notice-box{margin-top:14px;padding:12px;border-radius:12px;background:rgba(160,70,255,0.12);font-size:13px;color:#d8bfff;min-height:44px}
+#homePage{padding-top:34px;height:100vh;overflow:hidden}
+.douyin-wrap{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
+.douyin-item{
+  height:100%;
+  scroll-snap-align:start;
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.douyin-item video,.douyin-item img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;
+  border-radius:8px;
+}
+.media-info{
+  position:absolute;left:16px;bottom:24px;
+  background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);
+  padding:10px 14px;border-radius:12px;font-size:14px;
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+}
+.media-info:hover{background:rgba(0,0,0,0.65)}
+.avatar-img{
+  width:36px;height:36px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--neon-blue);background:#222;
+}
+.side-action{
+  position:absolute;right:14px;bottom:90px;display:flex;flex-direction:column;gap:18px;align-items:center;z-index:10
+}
+.side-action button{
+  width:48px;height:48px;border-radius:50%;border:none;color:#fff;font-size:22px;
+  background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);cursor:pointer
+}
+.side-action button.liked{color:#ff4466}
+.count-text{font-size:12px;color:#fff;margin-top:-12px}
+#userProfilePage{padding-top:34px;height:100vh;overflow:hidden}
+.profile-header{
+  position:fixed;top:38px;left:12px;right:12px;z-index:30;
+  display:flex;align-items:center;gap:12px;padding:12px 16px;
+}
+.back-btn{
+  width:40px;height:40px;border-radius:50%;border:1px solid var(--glass-border);
+  background:rgba(25,30,60,0.6);color:#fff;font-size:20px;cursor:pointer;
+}
+.profile-avatar-big{
+  width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--neon-purple);
+}
+.profile-name{font-size:18px;font-weight:bold}
+.profile-stat{font-size:13px;color:#aac8ff;margin-top:3px}
+.float-btns{
+  position:fixed;right:14px;bottom:30px;z-index:50;
+  display:flex;flex-direction:column;gap:10px;
+}
+.float-btns button{
+  width:52px;height:52px;border-radius:50%;
+  border:1px solid var(--glass-border);color:#fff;font-size:20px;
+  background:rgba(25,30,60,0.6);backdrop-filter:blur(12px);cursor:pointer;
+  box-shadow:0 0 12px rgba(120,80,255,0.3);
+  position:relative;
+}
+.float-btns button:active{transform:scale(0.92)}
+.dm-badge{
+  position:absolute;top:-4px;right:-4px;
+  min-width:20px;height:20px;border-radius:10px;
+  background:#ff2244;color:#fff;font-size:11px;
+  display:none;align-items:center;justify-content:center;padding:0 5px;
+  z-index:99;font-weight:bold;
+}
+.dm-badge.show{display:flex}
+.upload-modal-body{padding:16px}
+.upload-modal-body input[type=file]{color:#fff;width:100%;padding:10px}
+.modal-mask{position:fixed;inset:0;background:rgba(3,4,12,0.7);backdrop-filter:blur(6px);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-mask.open{display:flex}
+.modal{width:min(900px,96vw);max-height:92vh;overflow-y:auto;padding:22px}
+.modal h2{margin-bottom:16px}
+.close-x{float:right;cursor:pointer;font-size:22px;color:#aaa}
+#chatModal .chat-body{height:420px;overflow-y:auto;margin:12px 0;padding:10px}
+.chat-msg{padding:8px 12px;margin:6px 0;border-radius:12px;background:rgba(40,45,90,0.4);font-size:14px;display:flex;align-items:center;gap:8px}
+.chat-input-row{display:flex;gap:8px}
+.chat-input-row input{flex:1;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(10,14,32,0.5);color:#fff}
+.chat-tabs{display:flex;gap:8px;margin-bottom:10px}
+#dmModal .dm-body{height:400px;overflow-y:auto;margin:12px 0;padding:10px}
+.dm-input-row{display:flex;gap:8px;margin-top:10px}
+.dm-target-row{display:flex;gap:8px;margin-bottom:10px}
+.dm-target-row input{flex:1;padding:10px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(10,14,32,0.5);color:#fff}
+.comment-panel{
+  position:fixed;left:0;bottom:0;width:100%;height:70vh;z-index:210;
+  background:rgba(18,20,40,0.92);backdrop-filter:blur(20px);
+  border-top-left-radius:20px;border-top-right-radius:20px;
+  transform:translateY(100%);transition:transform .3s ease;
+  display:flex;flex-direction:column;padding:16px
+}
+.comment-panel.open{transform:translateY(0)}
+.comment-list{flex:1;overflow-y:auto;margin:12px 0}
+.comment-item{padding:10px;border-bottom:1px solid rgba(180,120,255,0.15);font-size:14px;display:flex;align-items:center;gap:10px}
+.comment-item b{color:#9be7ff}
+.comment-input-row{display:flex;gap:8px;padding-top:8px;border-top:1px solid rgba(180,120,255,0.15)}
+.comment-input-row input{flex:1;padding:11px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(10,14,32,0.5);color:#fff}
+.admin-section{padding:14px;margin:12px 0;border-radius:14px;background:rgba(25,30,60,0.3)}
+.admin-section h3{margin-bottom:10px;color:#9be7ff}
+.admin-row{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0;align-items:center}
+.admin-row input,.admin-row select{padding:9px;border-radius:10px;border:1px solid var(--glass-border);background:rgba(10,14,32,0.5);color:#fff}
+.qrcode-box{padding:12px;margin-top:10px}
+.online-num{color:#7dffd0;font-weight:bold}
+.avatar-preview{width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--neon-blue);background:#222}
+.user-card-mini{
+  position:fixed;top:44px;left:12px;z-index:40;padding:10px 14px;font-size:13px;display:flex;align-items:center;gap:8px
+}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:999;padding:12px 24px;border-radius:12px;display:none}
 </style>
 </head>
 <body>
-<div id="stars"></div><div id="marquee">✨ 欢迎进入未来空间 ✨</div>
-<nav class="glass"><button onclick="show('home')">主页</button><button onclick="show('login')">登录</button><button id="adminBtn" class="hidden" onclick="show('admin')">后台</button></nav>
+<canvas id="particleCanvas"></canvas>
+<div class="bg-layer" id="bgLayer"></div>
 
-<section id="login" class="panel glass">
-<h1>NEON SPACE</h1>
-<h2>数字账户登录 / 注册</h2>
-<input id="uid" placeholder="数字账户">
-<input id="pwd" type="password" placeholder="密码">
-<button onclick="login()">进入</button>
-<button onclick="register()">注册</button>
-</section>
-
-<section id="home" class="panel glass hidden">
-<h1>未来短视频</h1>
-<div id="profile"></div>
-<input type="file" id="file" accept="video/*,image/*">
-<button onclick="upload()">上传</button>
-<div id="feed"></div>
-<button class="chat" onclick="openChat()">💬</button>
-</section>
-
-<section id="admin" class="panel glass hidden">
-<h1>控制中心</h1>
-<button onclick="announce()">发送跑马灯</button>
-<button onclick="clearChat()">删除聊天</button>
-<button onclick="document.title=prompt('标题')||document.title">修改标题</button>
-<div id="db"></div>
-</section>
-
-<div id="chat" class="glass panel hidden" style="position:fixed;right:10px;bottom:80px;width:330px">
-<h3>实时聊天</h3><div id="msgs"></div>
-<input id="msg"><button onclick="send()">发送</button>
+<div class="marquee-wrap">
+  <div class="marquee" id="marqueeText">✨ AI科技短视频平台 欢迎来到深空霓虹世界 ✨</div>
 </div>
 
+<div class="page active" id="loginPage">
+  <div class="glass login-card float">
+    <h1 class="neon-title" style="font-size:30px;text-align:center;margin-bottom:20px">AI 深空短视频</h1>
+    <div class="tabs">
+      <button class="btn-neon" id="tabLogin">登录</button>
+      <button class="btn-ghost" id="tabReg">注册</button>
+    </div>
+    <input type="text" id="loginAccount" placeholder="数字账号">
+    <input type="password" id="loginPwd" placeholder="密码">
+    <button class="btn-neon" style="width:100%;margin-top:14px" id="loginBtn">进入平台</button>
+    <div class="notice-box" id="loginNotice">公告加载中...</div>
+  </div>
+</div>
+
+<div class="page" id="homePage">
+  <div class="glass user-card-mini">
+    <img class="avatar-img" id="homeAvatar" src="">
+    <span id="curUser">--</span>
+  </div>
+  <div class="douyin-wrap" id="douyinWrap"></div>
+  <div class="float-btns">
+    <button id="openChatBtn" title="全局公共聊天">💬</button>
+    <button id="openDmBtn" title="一对一私信">✉️<span class="dm-badge" id="dmBadge">0</span></button>
+    <button id="uploadBtn" title="上传媒体">➕</button>
+    <button id="adminBtn" title="管理后台" style="display:none">⚙️</button>
+  </div>
+</div>
+
+<div class="page" id="userProfilePage">
+  <div class="glass profile-header">
+    <button class="back-btn" id="backToHomeBtn">←</button>
+    <img class="profile-avatar-big" id="profileBigAvatar">
+    <div>
+      <div class="profile-name" id="profileUserName">--</div>
+      <div class="profile-stat" id="profileStat">作品：0</div>
+    </div>
+  </div>
+  <div class="douyin-wrap" id="profileDouyinWrap"></div>
+</div>
+
+<div class="comment-panel" id="commentPanel">
+  <h3 class="neon-title">💬 作品评论 <span id="closeComment" style="float:right;cursor:pointer">×</span></h3>
+  <div class="comment-list" id="commentList"></div>
+  <div class="comment-input-row">
+    <input id="commentInput" placeholder="写下你的评论...">
+    <button class="btn-neon" id="sendCommentBtn">发送</button>
+  </div>
+</div>
+
+<div class="modal-mask" id="uploadModal">
+  <div class="glass modal upload-modal-body">
+    <span class="close-x" onclick="closeUpload()">×</span>
+    <h2 class="neon-title">📤 上传视频 / 图片</h2>
+    <input type="file" id="fileUpload" accept="video/*,image/*">
+  </div>
+</div>
+
+<div class="modal-mask" id="chatModal">
+  <div class="glass modal">
+    <span class="close-x" onclick="closeChat()">×</span>
+    <h2 class="neon-title">💬 公共聊天</h2>
+    <div class="chat-tabs">
+      <button class="btn-neon" id="tabAllChat">全部聊天</button>
+      <button class="btn-ghost" id="tabAdminChat">联系管理员</button>
+    </div>
+    <div class="chat-body" id="chatBox"></div>
+    <div class="chat-input-row">
+      <input id="chatInput" placeholder="输入消息...">
+      <button class="btn-neon" id="sendChatBtn">发送</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="dmModal">
+  <div class="glass modal">
+    <span class="close-x" onclick="closeDm()">×</span>
+    <h2 class="neon-title">✉️ 一对一私信</h2>
+    <div class="dm-target-row">
+      <input id="dmTargetAcc" placeholder="输入对方数字账号，回车加载对话">
+      <button class="btn-neon" id="loadDmBtn">加载对话</button>
+    </div>
+    <div class="dm-body" id="dmBox"></div>
+    <div class="dm-input-row">
+      <input id="dmInput" placeholder="输入私信内容...">
+      <button class="btn-neon" id="sendDmBtn">发送私信</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="adminModal">
+  <div class="glass modal">
+    <span class="close-x" onclick="closeAdmin()">×</span>
+    <h2 class="neon-title">⚙️ 管理后台 <span id="adminLevel" style="font-size:14px"></span></h2>
+
+    <div class="admin-section">
+      <h3>📊 实时状态</h3>
+      <div>在线人数：<span class="online-num" id="onlineCount">0</span></div>
+      <div id="dbInfo">数据库信息加载中...</div>
+    </div>
+
+    <div class="admin-section">
+      <h3>👥 用户管理</h3>
+      <div id="userList">加载用户...</div>
+      <div class="admin-row">
+        <input id="resetPwdAcc" placeholder="要修改密码的账号">
+        <input id="resetPwdNew" placeholder="新密码">
+        <button class="btn-neon" id="resetUserPwdBtn">修改账户密码</button>
+      </div>
+      <button class="btn-ghost" id="addAdminBtn">增加管理员</button>
+    </div>
+
+    <div class="admin-section">
+      <h3>🎨 页面背景 & 透明度设置</h3>
+      <div class="admin-row">
+        <select id="bgPageSel">
+          <option value="login">登录页背景</option>
+          <option value="home">主页背景</option>
+          <option value="admin">后台页背景</option>
+        </select>
+        <input type="color" id="bgColorPick" value="#120b2e">
+        <input type="range" id="bgOpacity" min="0.1" max="1" step="0.05" value="0.7">
+        <button class="btn-neon" id="saveBgBtn">保存背景设置</button>
+      </div>
+      <div id="bgShowInfo">当前背景：未读取</div>
+    </div>
+
+    <div class="admin-section">
+      <h3>📢 跑马灯 & 公告</h3>
+      <div class="admin-row">
+        <input id="marqueeInput" placeholder="推送实时信息到顶部跑马灯">
+        <button class="btn-neon" id="pushMarqueeBtn">推送跑马灯</button>
+      </div>
+      <div class="admin-row">
+        <input id="noticeInput" placeholder="发布登录页公告">
+        <button class="btn-neon" id="pushNoticeBtn">发布公告</button>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <h3>🎬 视频管理</h3>
+      <button class="btn-neon" id="playAllVideoBtn">▶️ 一键播放所有视频</button>
+      <button class="btn-ghost" id="delAllVideoBtn">🗑 删除全部视频</button>
+    </div>
+
+    <div class="admin-section">
+      <h3>💬 评论管理</h3>
+      <button class="btn-ghost" id="clearCommentBtn">清空全部评论</button>
+    </div>
+
+    <div class="admin-section">
+      <h3>🌐 网页设置 & 分享二维码</h3>
+      <div class="admin-row">
+        <input id="webTitleInput" placeholder="修改网页标题">
+        <button class="btn-neon" id="saveWebTitleBtn">保存标题</button>
+      </div>
+      <button class="btn-neon" id="genQrBtn">生成分享二维码</button>
+      <div class="qrcode-box glass" id="qrBox"></div>
+    </div>
+
+    <div class="admin-section">
+      <h3>💬 聊天管理</h3>
+      <button class="btn-ghost" id="clearChatBtn">清空全部聊天内容</button>
+    </div>
+
+    <div class="admin-section">
+      <h3>✏️ 修改昵称 & 上传头像</h3>
+      <div class="admin-row">
+        <img class="avatar-preview" id="avatarPreview">
+        <input id="nickName" placeholder="修改本人昵称">
+        <input type="file" id="avatarFile" accept="image/*">
+        <button class="btn-neon" id="saveProfileBtn">保存昵称+头像</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="glass toast" id="toast"></div>
+
 <script type="module">
-import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-const supabase=createClient(
-'https://pzcwzaoebvlghoahpcdr.supabase.co',
-'sb_publishable_mzLfUNyJzIXTX04ORjOuYg_dt-23zIV'
-)
-let user=null;
-const ADMIN='306680070';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+import bcrypt from 'https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js'
 
-for(let i=0;i<180;i++){let s=document.createElement('i');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';document.getElementById('stars').append(s)}
-function show(x){for(let e of document.querySelectorAll('section'))e.classList.add('hidden');document.getElementById(x).classList.remove('hidden')}
-window.show=show;
+const SUPABASE_URL = "https://pzcwzaoebvlghoahpcdr.supabase.co"
+const SUPABASE_ANON_KEY = "sb_publishable_mzLfUNyJzIXTX04ORjOuYg_dt-23zIV"
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+const SUPER_ADMIN = "306680070"
 
-window.register=async()=>{let id=uid.value,p=pwd.value;await supabase.from('users').insert({id,password:p,info:''});alert('注册完成')}
-window.login=async()=>{let {data}=await supabase.from('users').select('*').eq('id',uid.value).eq('password',pwd.value);if(data?.[0]){user=data[0];show('home');if(user.id==ADMIN)adminBtn.classList.remove('hidden');profile.innerHTML='账户:'+user.id}else alert('登录失败')}
-window.upload=async()=>{if(!user)return;let f=file.files[0];if(!f)return;let path=user.id+'/'+Date.now()+f.name;await supabase.storage.from('media').upload(path,f);await supabase.from('posts').insert({uid:user.id,path});load()}
-async function load(){let {data}=await supabase.from('posts').select('*').order('id',{ascending:false});feed.innerHTML='';data?.forEach(p=>feed.innerHTML+=`<div class=glass><p>${p.uid}</p><a href="${p.path}">${p.path}</a></div>`)}
-window.openChat=()=>chat.classList.toggle('hidden');
-window.send=async()=>{await supabase.from('chat').insert({uid:user.id,msg:msg.value,time:new Date().toISOString()});msg.value='';}
-window.announce=()=>marquee.textContent=prompt('实时信息')||'';
-window.clearChat=async()=>{await supabase.from('chat').delete().neq('id',0)}
-load();
-</script>
-</body>
-</html>
+let currentAccount = null
+let currentUserRow = null
+let chatMode = "all"
+let mediaList = []
+let currentPlayVideo = null
+let currentCommentMediaId = null
+let dmTargetAccount = null
+let profileViewAccount = null
+let userMap = {}
+const saltRounds = 10
+const defaultAvatar = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='38' r='22' fill='%236688ff'/><path d='M20,90 Q50,60 80,90 Z' fill='%236688ff'/></svg>"
+
+// PWA
+if('serviceWorker' in navigator){
+  const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());`
+  const blob = new Blob([swCode],{type:'text/javascript'})
+  const swUrl = URL.createObjectURL(blob)
+  navigator.serviceWorker.register(swUrl).catch(()=>{})
+}
+
+// 粒子星空
+const canvas = document.getElementById('particleCanvas')
+const ctx = canvas.getContext('2d')
+let particles = []
+function resizeCanvas(){canvas.width=innerWidth;canvas.height=innerHeight}
+resizeCanvas();window.addEventListener('resize',resizeCanvas)
+class Particle{
+  constructor(){
+    this.x=Math.random()*canvas.width
+    this.y=Math.random()*canvas.height
+    this.vx=(Math.random()-0.5)*0.35
+    this.vy=(Math.random()-0.5)*0.35
+    this.r=Math.random()*1.8+0.4
+    this.hue=Math.random()*120+180
+  }
+  update(){
+    this.x+=this.vx;this.y+=this.vy
+    if(this.x<0||this.x>canvas.width)this.vx*=-1
+    if(this.y<0||this.y>canvas.height)this.vy*=-1
+  }
+  draw(){
+    ctx.beginPath()
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2)
+    ctx.fillStyle=`hsla(${this.hue},100%,70%,0.7)`
+    ctx.fill()
+  }
+}
+for(let i=0;i<120;i++) particles.push(new Particle())
+function animParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height)
+  particles.forEach(p=>{p.update();p.draw()})
+  requestAnimationFrame(animParticles)
+}
+animParticles()
+
+function showToast(txt){
+  const t=document.getElementById('toast')
+  t.innerText=txt;t.style.display='block'
+  t.style.background="linear-gradient(90deg,#0099ff,#a040ff)"
+  setTimeout(()=>t.style.display='none',2200)
+}
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.getElementById(name).classList.add('active')
+}
+
+async function loadUserMap(){
+  const {data} = await supabase.from('users').select('account,nickname,avatar_url')
+  userMap = {}
+  data?.forEach(u=>{
+    userMap[u.account] = {
+      nickname:u.nickname,
+      avatar_url:u.avatar_url || defaultAvatar
+    }
+  })
+}
+
+// 登录注册
+document.getElementById('tabLogin').onclick=()=>{
+  document.getElementById('tabLogin').className="btn-neon"
+  document.getElementById('tabReg').className="btn-ghost"
+}
+document.getElementById('tabReg').onclick=()=>{
+  document.getElementById('tabReg').className="btn-neon"
+  document.getElementById('tabLogin').className="btn-ghost"
+}
+
+document.getElementById('loginBtn').onclick = async ()=>{
+  const acc = document.getElementById('loginAccount').value.trim()
+  const pwd = document.getElementById('loginPwd').value.trim()
+  if(!acc||!pwd){showToast("账号密码不能为空");return}
+  let {data:userRow} = await supabase.from('users').select('*').eq('account',acc).single()
+  const isRegTab = document.getElementById('tabReg').className.includes('btn-neon')
+  if(isRegTab){
+    if(userRow){showToast("该账号已存在");return}
+    const hashPwd = bcrypt.hashSync(pwd, saltRounds)
+    await supabase.from('users').insert([{account:acc,password_hash:hashPwd,nickname:"用户"+acc,is_admin:false,avatar_url:""}])
+    showToast("注册成功，请登录")
+    return
+  }else{
+    if(!userRow){showToast("账号不存在，请先注册");return}
+    const ok = bcrypt.compareSync(pwd, userRow.password_hash)
+    if(!ok){showToast("密码错误");return}
+    currentAccount = acc
+    currentUserRow = userRow
+    document.getElementById('curUser').innerText = userRow.nickname
+    document.getElementById('homeAvatar').src = userRow.avatar_url || defaultAvatar
+    document.getElementById('nickName').value = userRow.nickname
+    document.getElementById('avatarPreview').src = userRow.avatar_url || defaultAvatar
+    if(acc === SUPER_ADMIN || userRow.is_admin === true){
+      document.getElementById('adminBtn').style.display='block'
+      document.getElementById('adminLevel').innerText = acc===SUPER_ADMIN?"【超级管理员】":"【普通管理员】"
+    }else{
+      document.getElementById('adminBtn').style.display='none'
+    }
+    showPage('homePage')
+    await loadUserMap()
+    loadMedia();loadMarquee();loadNotice();loadUsers();loadDbInfo();refreshDmUnread()
+    await supabase.from('online_users').upsert([{account:acc,last_time:new Date().toISOString()}])
+    refreshOnline()
+    subscribeRealtime()
+  }
+}
+
+// 修改昵称头像
+document.getElementById('saveProfileBtn').onclick = async ()=>{
+  const nick = document.getElementById('nickName').value.trim()
+  let newAvatarUrl = currentUserRow.avatar_url || ""
+  const avatarFile = document.getElementById('avatarFile').files[0]
+  if(avatarFile){
+    const ext = avatarFile.name.split('.').pop()
+    const fname = "avatar_"+Date.now()+"_"+Math.random().toString(36).slice(2)+"."+ext
+    const {data:upRes,error} = await supabase.storage.from('media').upload(fname,avatarFile)
+    if(error){showToast("头像上传失败:"+error.message);return}
+    const {data:pubUrl} = supabase.storage.from('media').getPublicUrl(fname)
+    newAvatarUrl = pubUrl.data.publicUrl
+  }
+  await supabase.from('users').update({nickname:nick,avatar_url:newAvatarUrl}).eq('account',currentAccount)
+  currentUserRow.nickname = nick
+  currentUserRow.avatar_url = newAvatarUrl
+  document.getElementById('curUser').innerText = nick
+  document.getElementById('homeAvatar').src = newAvatarUrl || defaultAvatar
+  document.getElementById('avatarPreview').src = newAvatarUrl || defaultAvatar
+  await loadUserMap()
+  showToast("昵称&头像保存成功 ✅")
+  loadMedia()
+}
+document.getElementById('avatarFile').onchange = (e)=>{
+  const file = e.target.files[0]
+  if(!file) return
+  const reader = new FileReader()
+  reader.onload = ev=>{document.getElementById('avatarPreview').src = ev.target.result}
+  reader.readAsDataURL(file)
+}
+
+document.getElementById('adminBtn').onclick=()=>{document.getElementById('adminModal').classList.add('open')}
+function closeAdmin(){document.getElementById('adminModal').classList.remove('open')}
+document.getElementById('uploadBtn').onclick=()=>{document.getElementById('uploadModal').classList.add('open')}
+function closeUpload(){document.getElementById('uploadModal').classList.remove('open')}
+
+// 上传作品
+document.getElementById('fileUpload').onchange = async (e)=>{
+  const file = e.target.files[0]
+  if(!file) return
+  const ext = file.name.split('.').pop()
+  const fname = Date.now()+"_"+Math.random().toString(36).slice(2)+"."+ext
+  const {data:upRes,error} = await supabase.storage.from('media').upload(fname,file)
+  if(error){showToast("上传失败:"+error.message);return}
+  const {data:pubUrl} = supabase.storage.from('media').getPublicUrl(fname)
+  const type = file.type.startsWith('video')?'video':'image'
+  await supabase.from('medias').insert([{account:currentAccount,url:pubUrl.data.publicUrl,media_type:type}])
+  showToast("上传成功 ✅")
+  closeUpload()
+  loadMedia()
+}
+
+// 渲染作品
+async function renderMediaList(mediaArr, wrapDom){
+  wrapDom.innerHTML = ''
+  for(const item of mediaArr){
+    const {count:cmtCount} = await supabase.from('comments').select('*',{count:'exact',head:true}).eq('media_id',item.id)
+    const {count:likeCount} = await supabase.from('likes').select('*',{count:'exact',head:true}).eq('media_id',item.id)
+    const {count:viewCount} = await supabase.from('views').select('*',{count:'exact',head:true}).eq('media_id',item.id)
+    const {data:myLike} = await supabase.from('likes').select('id').eq('media_id',item.id).eq('account',currentAccount).single()
+    const hasLiked = !!myLike
+    const authorInfo = userMap[item.account] || {nickname:item.account,avatar_url:defaultAvatar}
+    const canDelete = (item.account === currentAccount) || (currentAccount === SUPER_ADMIN)
+    const div = document.createElement('div')
+    div.className="douyin-item"
+    let html = `
+      <div class="media-info" data-author-acc="${item.account}">
+        <img class="avatar-img" src="${authorInfo.avatar_url}">
+        <span>${authorInfo.nickname}</span>
+      </div>
+      <div class="side-action">
+        <div>👁️</div>
+        <div class="count-text">${viewCount||0}</div>
+        <button class="likeBtn ${hasLiked?'liked':''}">❤️</button>
+        <div class="count-text">${likeCount||0}</div>
+        <button class="openCommentBtn">💬</button>
+        <div class="count-text">${cmtCount||0}</div>
+        <button class="dmAuthorBtn">✉️</button>
+        ${canDelete ? `<button class="delMediaBtn">🗑️</button>` : ``}
+      </div>`
+    if(item.media_type==='video'){
+      div.innerHTML = `<video src="${item.url}" loop muted playsinline></video>` + html
+    }else{
+      div.innerHTML = `<img src="${item.url}">` + html
+    }
+    div.querySelector('.media-info').onclick = ()=>{ openUserProfile(item.account) }
+    div.querySelector('.likeBtn').onclick = async ()=>{
+      if(hasLiked){
+        await supabase.from('likes').delete().eq('media_id',item.id).eq('account',currentAccount)
+      }else{
+        await supabase.from('likes').insert([{media_id:item.id,account:currentAccount}])
+      }
+      loadMedia()
+      if(profileViewAccount) loadProfileMedia()
+    }
+    div.querySelector('.openCommentBtn').onclick = ()=>{
+      currentCommentMediaId = item.id
+      openCommentPanel()
+    }
+    div.querySelector('.dmAuthorBtn').onclick = ()=>{ openDmModal(item.account) }
+    const delBtn = div.querySelector('.delMediaBtn')
+    if(delBtn){
+      delBtn.onclick = async ()=>{
+        if(!confirm("确认删除这个作品？该作品所有评论+点赞+浏览记录一并删除，不可恢复！")) return
+        await supabase.from('comments').delete().eq('media_id',item.id)
+        await supabase.from('likes').delete().eq('media_id',item.id)
+        await supabase.from('views').delete().eq('media_id',item.id)
+        await supabase.from('medias').delete().eq('id',item.id)
+        showToast("作品删除成功 ✅")
+        loadMedia()
+        if(profileViewAccount) loadProfileMedia()
+      }
+    }
+    wrapDom.appendChild(div)
+  }
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(async entry=>{
+      const v = entry.target.querySelector('video')
+      if(entry.isIntersecting){
+        if(v){v.play().catch(()=>{});currentPlayVideo = v}
+        const mediaId = mediaArr.find(m=>{
+          return entry.target.querySelector('video')?.src === m.url || entry.target.querySelector('img')?.src === m.url
+        })?.id
+        if(mediaId){
+          await supabase.from('views').upsert([{media_id:mediaId,account:currentAccount}],{onConflict:'media_id,account'})
+        }
+      }else{
+        if(v) v.pause()
+      }
+    })
+  },{threshold:0.6})
+  wrapDom.querySelectorAll('.douyin-item').forEach(el=>observer.observe(el))
+}
+
+async function loadMedia(){
+  const {data} = await supabase.from('medias').select('*').order('created_at',{ascending:false})
+  mediaList = data || []
+  await renderMediaList(mediaList, document.getElementById('douyinWrap'))
+}
+
+// 用户主页
+async function openUserProfile(authorAcc){
+  profileViewAccount = authorAcc
+  const uInfo = userMap[authorAcc] || {nickname:authorAcc,avatar_url:defaultAvatar}
+  document.getElementById('profileBigAvatar').src = uInfo.avatar_url
+  document.getElementById('profileUserName').innerText = uInfo.nickname
+  showPage('userProfilePage')
+  await loadProfileMedia()
+}
+document.getElementById('backToHomeBtn').onclick = ()=>{
+  profileViewAccount = null
+  showPage('homePage')
+}
+async function loadProfileMedia(){
+  if(!profileViewAccount) return
+  const {data} = await supabase.from('medias').select('*').eq('account',profileViewAccount).order('created_at',{ascending:false})
+  const arr = data || []
+  document.getElementById('profileStat').innerText = `作品：${arr.length}`
+  await renderMediaList(arr, document.getElementById('profileDouyinWrap'))
+}
+
+// 评论
+function openCommentPanel(){
+  document.getElementById('commentPanel').classList.add('open')
+  loadCommentList()
+}
+function closeCommentPanel(){
+  document.getElementById('commentPanel').classList.remove('open')
+}
+document.getElementById('closeComment').onclick = closeCommentPanel
+async function loadCommentList(){
+  if(!currentCommentMediaId) return
+  const {data} = await supabase.from('comments').select('*').eq('media_id',currentCommentMediaId).order('created_at')
+  const box = document.getElementById('commentList')
+  box.innerHTML = ''
+  if(!data || data.length===0){
+    box.innerHTML = `<div style="text-align:center;color:#888;padding:30px">暂无评论，快来抢沙发 ✨</div>`
+    return
+  }
+  data.forEach(c=>{
+    const uInfo = userMap[c.account] || {nickname:c.account,avatar_url:defaultAvatar}
+    const el = document.createElement('div')
+    el.className="comment-item"
+    el.innerHTML = `<img class="avatar-img" style="width:32px;height:32px" src="${uInfo.avatar_url}"><div><b>${uInfo.nickname}</b>：${c.content}</div>`
+    box.appendChild(el)
+  })
+  box.scrollTop = box.scrollHeight
+}
+document.getElementById('sendCommentBtn').onclick = async ()=>{
+  const txt = document.getElementById('commentInput').value.trim()
+  if(!txt){showToast("评论不能为空");return}
+  await supabase.from('comments').insert([{media_id:currentCommentMediaId,account:currentAccount,content:txt}])
+  document.getElementById('commentInput').value = ''
+  showToast("评论发送成功 ✅")
+  loadCommentList()
+  loadMedia()
+  if(profileViewAccount) loadProfileMedia()
+}
+document.getElementById('clearCommentBtn').onclick = async ()=>{
+  if(!confirm("确认清空全部作品评论？不可恢复！")) return
+  await supabase.from('comments').delete().neq('id',0)
+  showToast("全部评论已清空")
+  loadMedia()
+  if(profileViewAccount) loadProfileMedia()
+}
+
+// 公共聊天
+document.getElementById('openChatBtn').onclick=()=>{
+  document.getElementById('chatModal').classList.add('open')
+  loadChat()
+}
+function closeChat(){document.getElementById('chatModal').classList.remove('open')}
+document.getElementById('tabAllChat').onclick=()=>{chatMode='all';loadChat()}
+document.getElementById('tabAdminChat').onclick=()=>{chatMode='admin';loadChat()}
+document.getElementById('sendChatBtn').onclick = async ()=>{
+  const txt = document.getElementById('chatInput').value.trim()
+  if(!txt) return
+  await supabase.from('chats').insert([{account:currentAccount,content:txt,chat_type:chatMode,created_at:new Date().toISOString()}])
+  document.getElementById('chatInput').value=''
+  loadChat()
+}
+async function loadChat(){
+  const {data} = await supabase.from('chats').select('*').eq('chat_type',chatMode).order('created_at')
+  const box = document.getElementById('chatBox')
+  box.innerHTML=''
+  data?.forEach(m=>{
+    const uInfo = userMap[m.account] || {nickname:m.account,avatar_url:defaultAvatar}
+    const d = document.createElement('div')
+    d.className="chat-msg"
+    d.innerHTML = `<img class="avatar-img" style="width:30px;height:30px" src="${uInfo.avatar_url}"><div><b>${uInfo.nickname}</b>：${m.content}</div>`
+    box.appendChild(d)
+  })
+  box.scrollTop = box.scrollHeight
+}
+
+// ✅ 私信DM完整代码（本次补齐，无截断）
+document.getElementById('openDmBtn').onclick = ()=>{
+  document.getElementById('dmModal').classList.add('open')
+}
+function closeDm(){document.getElementById('dmModal').classList.remove('open')}
+function openDmModal(targetAcc){
+  document.getElementById('dmModal').classList.add('open')
+  document.getElementById('dmTargetAcc').value = targetAcc
+  dmTargetAccount = targetAcc
+  loadDmList()
+}
+document.getElementById('loadDmBtn').onclick = async ()=>{
+  const target = document.getElementById('dmTargetAcc').value.trim()
+  if(!target){showToast("请输入对方账号");return}
+  if(target === currentAccount){showToast("不能给自己发私信");return}
+  dmTargetAccount = target
+  loadDmList()
+}
+async function loadDmList(){
+  if(!dmTargetAccount) return
+  const {data} = await supabase.from('private_msgs')
+    .select('*')
+    .or(`and(from_account.eq.${currentAccount},to_account.eq.${dmTargetAccount}),and(from_account.eq.${dmTargetAccount},to_account.eq.${currentAccount})`)
+    .order('created_at')
+  const box = document.getElementById('dmBox')
+  box.innerHTML = ''
+  if(!data || data.length===0){
+    box.innerHTML = `<div style="text-align:center;color:#888;padding:30px">暂无私信，开始聊天吧 ✨</div>`
+    return
+  }
+  data.forEach(m=>{
+    const el = document.createElement('div')
+    if(m.from_account === currentAccount){
+      el.style.cssText = "margin-left:auto;background:#3060ff;padding:8px 12px;border-radius:12px;margin-top:6px;max-width:75%"
+    }else{
+      el.style.cssText = "margin-right:auto;background:#353b70;padding:8px 12px;border-radius:12px;margin-top:6px;max-width:75%"
+    }
+    el.innerText = m.content
+    box.appendChild(el)
+  })
+  box.scrollTop = box.scrollHeight
+  // ✅ 打开对话后，清零未读
+  await supabase.from('dm_unread').delete().eq('to_account',currentAccount).eq('from_account',dmTargetAccount)
+  refreshDmUnread()
+}
+document.getElementById('sendDmBtn').onclick = async ()=>{
+  const txt = document.getElementById('dmInput').value.trim()
+  if(!txt){showToast("私信内容不能为空");return}
+  if(!dmTargetAccount){showToast("请先选择私信对象");return}
+  await supabase.from('private_msgs').insert([{
+    from_account:currentAccount,
+    to_account:dmTargetAccount,
+    content:txt,
+    created_at:new Date().toISOString()
+  }])
+  // ✅ 写入未读计数（对方未读+1）
+  await supabase.from('dm_unread').upsert([{
+    to_account:dmTargetAccount,
+    from_account:currentAccount,
+    unread_count:1
+  }],{onConflict:'to_account,from_account'})
+  document.getElementById('dmInput').value = ''
+  showToast("私信发送成功 ✅")
+  loadDmList()
+}
+// ✅ 刷新私信未读红点总数
+async function refreshDmUnread(){
+  const {data} = await supabase.from('dm_unread').select('unread_count').eq('to_account',currentAccount)
+  let total = 0
+  data?.forEach(i=> total += i.unread_count)
+  const badge = document.getElementById('dmBadge')
+  badge.innerText = total
+  if(total>0){badge.classList.add('show')}else{badge.classList.remove('show')}
