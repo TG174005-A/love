@@ -3,312 +3,82 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b10">
-<title>短视频社区</title>
-<link id="favicon" rel="icon" href="">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neon Space</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🌌</text></svg>">
 <style>
-:root{--glass:.88;--bg:#07070a;--card:#15151c;--line:#2a2a35;--txt:#f7f7fb;--muted:#aaaab6;--accent:#ff2c55}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
-button,input,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
-.page-bg{position:fixed;inset:0;background:center/cover no-repeat;z-index:0}.shade{position:fixed;inset:0;background:#050509;opacity:.82;z-index:1}
-.marquee{position:fixed;z-index:30;left:0;right:0;top:0;height:36px;background:#111118dd;border-bottom:1px solid #252531;overflow:hidden;display:flex;align-items:center}
-.marquee-track{white-space:nowrap;display:inline-block;min-width:100%;padding-left:100%;animation:marq 22s linear infinite;color:#ffe9a6;font-size:13px}
-@keyframes marq{to{transform:translateX(-100%)}}
-.top{position:sticky;top:36px;z-index:20;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#0b0b10dd;backdrop-filter:blur(14px);border-bottom:1px solid #24242e}
-.brand{font-weight:900;font-size:20px}.actions{display:flex;gap:8px;align-items:center}.btn{border:0;border-radius:12px;padding:10px 14px;background:#262631;color:#fff}.btn.primary{background:var(--accent)}.btn.danger{background:#8e1730}.btn.ghost{background:#ffffff12;border:1px solid #ffffff1d}
-#loginView{min-height:100vh;display:grid;place-items:center;padding:72px 18px 28px}.auth{width:min(440px,100%);padding:26px;border:1px solid #ffffff20;border-radius:24px;background:#101017cc;backdrop-filter:blur(18px);box-shadow:0 24px 80px #0008}.auth h1{margin:0 0 6px}.notice{padding:10px 12px;background:#ffcf3315;border:1px solid #ffcf3340;border-radius:12px;color:#ffe49b;margin:12px 0}.field{display:grid;gap:7px;margin:13px 0}.field label{font-size:13px;color:var(--muted)}input,textarea{width:100%;border:1px solid #343440;background:#0b0b10;color:#fff;border-radius:12px;padding:12px;outline:none}textarea{min-height:90px;resize:vertical}.row{display:flex;gap:9px}.row>*{flex:1}
-main{padding-top:36px}.feed{width:min(720px,100%);margin:auto;padding:18px 12px 100px}.composer,.profile-card,.admin-card{background:#111118dd;border:1px solid #282832;border-radius:18px;padding:14px;margin-bottom:14px;backdrop-filter:blur(12px)}
-.post{position:relative;background:#0d0d12;border:1px solid #24242e;border-radius:20px;overflow:hidden;margin:0 0 18px}.post video,.post img{display:block;width:100%;max-height:72vh;object-fit:contain;background:#000}.post-info{padding:12px 14px}.who{display:flex;gap:9px;align-items:center}.avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;background:#292934}.small{font-size:12px;color:var(--muted)}.caption{margin-top:8px}
-.fab{position:fixed;right:18px;bottom:18px;z-index:25;width:58px;height:58px;border-radius:50%;border:0;background:var(--accent);color:white;font-size:22px;box-shadow:0 12px 35px #0008}
-.modal{position:fixed;z-index:60;inset:0;background:#000a;display:grid;place-items:center;padding:14px}.panel{width:min(900px,100%);max-height:92vh;overflow:auto;background:#101017;border:1px solid #343440;border-radius:22px;padding:16px}.panel-head{display:flex;justify-content:space-between;align-items:center;position:sticky;top:-16px;background:#101017;padding:10px 0;z-index:2}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tab{border:0;border-radius:999px;padding:8px 12px;background:#25252f;color:#fff}.tab.on{background:var(--accent)}
-.chatbox{height:55vh;overflow:auto;border:1px solid #292934;border-radius:14px;padding:10px;background:#09090d}.msg{padding:9px 10px;border-radius:12px;background:#1b1b24;margin:7px 0}.msg.me{background:#5e1730}.msg .meta{font-size:11px;color:#bdbdc8;margin-bottom:3px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.stat{padding:14px;border:1px solid #30303b;border-radius:14px;background:#17171f}.userline{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #292934}.admin-section{margin:16px 0;padding-top:12px;border-top:1px solid #2d2d37}.admin-section h3{margin:0 0 10px}.preview{height:100px;border-radius:12px;background:center/cover no-repeat;border:1px solid #33333d}.qr{background:white;padding:10px;width:max-content;border-radius:10px}.toast{position:fixed;z-index:100;left:50%;bottom:20px;transform:translateX(-50%);background:#22232d;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 10px 30px #0009}
-@media(max-width:600px){.grid{grid-template-columns:1fr}.top{padding:0 10px}.brand{font-size:17px}.actions .label{display:none}.auth{padding:20px}.feed{padding-left:8px;padding-right:8px}.panel{border-radius:16px;padding:12px}.row.mobile-stack{flex-direction:column}}
-
-#loginView,#appView{position:relative;z-index:2}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#02030b;color:#fff;font-family:Arial,sans-serif;overflow-x:hidden}
+#stars{position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 50% 20%,#202060,#02030b 55%)}
+.star{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;animation:tw 3s infinite}
+@keyframes tw{50%{opacity:.2;transform:scale(2)}}
+.glass{background:rgba(255,255,255,.08);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.18);box-shadow:0 0 40px #4b00ff55;border-radius:28px}
+.panel{width:min(95%,900px);margin:70px auto;padding:28px;animation:float 5s infinite ease-in-out}
+@keyframes float{50%{transform:translateY(-10px)}}
+h1{font-size:clamp(35px,8vw,70px);background:linear-gradient(90deg,#00eaff,#b000ff);-webkit-background-clip:text;color:transparent}
+button{border:0;border-radius:20px;padding:12px 20px;background:linear-gradient(90deg,#00eaff,#9b00ff);color:white;cursor:pointer}
+input,textarea{width:100%;margin:8px 0;padding:12px;border-radius:15px;background:#0008;color:white;border:1px solid #ffffff44}
+nav{position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:5}
+#marquee{position:fixed;top:0;width:100%;white-space:nowrap;overflow:hidden;background:#0008;padding:8px;color:#0ff}
+video,img{max-width:100%;border-radius:20px}.hidden{display:none}.chat{position:fixed;right:20px;bottom:20px}
 </style>
 </head>
 <body>
-<div id="bg" class="page-bg"></div><div id="shade" class="shade"></div>
-<div id="marquee" class="marquee hidden"><div id="marqueeTrack" class="marquee-track"></div></div>
+<div id="stars"></div><div id="marquee">✨ 欢迎进入未来空间 ✨</div>
+<nav class="glass"><button onclick="show('home')">主页</button><button onclick="show('login')">登录</button><button id="adminBtn" class="hidden" onclick="show('admin')">后台</button></nav>
 
-<section id="loginView">
-  <div class="auth">
-    <h1 id="loginTitle">短视频社区</h1>
-    <div class="small">纯数字账号 · 视频照片 · 实时聊天</div>
-    <div id="loginNotice" class="notice hidden"></div>
-    <div class="field"><label>数字账号</label><input id="account" inputmode="numeric" maxlength="20" placeholder="请输入数字账号"></div>
-    <div class="field"><label>密码</label><input id="password" type="password" maxlength="72" placeholder="至少 6 位"></div>
-    <div class="row"><button class="btn primary" onclick="login()">登录</button><button class="btn" onclick="register()">注册</button></div>
-    <div id="authMsg" class="small" style="margin-top:12px"></div>
-  </div>
+<section id="login" class="panel glass">
+<h1>NEON SPACE</h1>
+<h2>数字账户登录 / 注册</h2>
+<input id="uid" placeholder="数字账户">
+<input id="pwd" type="password" placeholder="密码">
+<button onclick="login()">进入</button>
+<button onclick="register()">注册</button>
 </section>
 
-<section id="appView" class="hidden">
-  <header class="top">
-    <div class="brand" id="brand">短视频社区</div>
-    <div class="actions">
-      <button class="btn ghost" onclick="openProfile()">👤 <span class="label">我的</span></button>
-      <button id="adminBtn" class="btn ghost hidden" onclick="openAdmin()">⚙️ <span class="label">后台</span></button>
-      <button class="btn ghost" onclick="logout()">退出</button>
-    </div>
-  </header>
-  <main>
-    <div class="feed">
-      <div class="composer">
-        <div class="row mobile-stack">
-          <input id="mediaFile" type="file" accept="video/*,image/*">
-          <input id="caption" placeholder="写一句描述…">
-          <button class="btn primary" onclick="uploadPost()">发布</button>
-        </div>
-        <div id="uploadMsg" class="small" style="margin-top:8px"></div>
-      </div>
-      <div id="feed"></div>
-    </div>
-  </main>
-  <button class="fab" onclick="openChat()" title="聊天">💬</button>
+<section id="home" class="panel glass hidden">
+<h1>未来短视频</h1>
+<div id="profile"></div>
+<input type="file" id="file" accept="video/*,image/*">
+<button onclick="upload()">上传</button>
+<div id="feed"></div>
+<button class="chat" onclick="openChat()">💬</button>
 </section>
 
-<div id="profileModal" class="modal hidden"><div class="panel" style="max-width:520px">
-  <div class="panel-head"><h2>个人信息</h2><button class="btn" onclick="closeModal('profileModal')">关闭</button></div>
-  <div class="field"><label>头像</label><input id="avatarFile" type="file" accept="image/*"></div>
-  <div class="field"><label>昵称</label><input id="displayName"></div>
-  <div class="field"><label>简介</label><textarea id="bio"></textarea></div>
-  <button class="btn primary" onclick="saveProfile()">保存并实时同步</button>
-</div></div>
+<section id="admin" class="panel glass hidden">
+<h1>控制中心</h1>
+<button onclick="announce()">发送跑马灯</button>
+<button onclick="clearChat()">删除聊天</button>
+<button onclick="document.title=prompt('标题')||document.title">修改标题</button>
+<div id="db"></div>
+</section>
 
-<div id="chatModal" class="modal hidden"><div class="panel" style="max-width:680px">
-  <div class="panel-head"><h2>实时聊天</h2><button class="btn" onclick="closeModal('chatModal')">关闭</button></div>
-  <div class="tabs"><button id="allTab" class="tab on" onclick="setChatScope('all')">全部聊天</button><button id="adminTab" class="tab" onclick="setChatScope('admin')">联系管理员</button></div>
-  <div id="chatbox" class="chatbox"></div>
-  <div class="row" style="margin-top:10px"><input id="chatInput" maxlength="1000" placeholder="输入消息，消息保存 24 小时"><button class="btn primary" onclick="sendChat()">发送</button></div>
-</div></div>
+<div id="chat" class="glass panel hidden" style="position:fixed;right:10px;bottom:80px;width:330px">
+<h3>实时聊天</h3><div id="msgs"></div>
+<input id="msg"><button onclick="send()">发送</button>
+</div>
 
-<div id="adminModal" class="modal hidden"><div class="panel">
-  <div class="panel-head"><h2>超级后台</h2><button class="btn" onclick="closeModal('adminModal')">关闭</button></div>
-  <div class="grid">
-    <div class="stat"><div class="small">实时在线</div><b id="onlineCount" style="font-size:28px">0</b></div>
-    <div class="stat"><div class="small">数据库占用</div><b id="dbSize">读取中…</b></div>
-  </div>
+<script type="module">
+import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+const supabase=createClient(
+'https://pzcwzaoebvlghoahpcdr.supabase.co',
+'sb_publishable_mzLfUNyJzIXTX04ORjOuYg_dt-23zIV'
+)
+let user=null;
+const ADMIN='306680070';
 
-  <div class="admin-section"><h3>用户管理</h3>
-    <div class="row mobile-stack"><input id="newAccount" inputmode="numeric" placeholder="新增数字账号"><input id="newPassword" type="password" placeholder="初始密码"><button class="btn" onclick="adminCreateUser()">增加</button></div>
-    <div id="userList"></div>
-  </div>
+for(let i=0;i<180;i++){let s=document.createElement('i');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';document.getElementById('stars').append(s)}
+function show(x){for(let e of document.querySelectorAll('section'))e.classList.add('hidden');document.getElementById(x).classList.remove('hidden')}
+window.show=show;
 
-  <div class="admin-section"><h3>页面与品牌</h3>
-    <div class="field"><label>网页标题</label><input id="siteTitle"></div>
-    <div class="field"><label>分享图标 URL</label><input id="shareIcon"></div>
-    <div class="row mobile-stack">
-      <div><label class="small">登录页背景</label><input id="loginBgFile" type="file" accept="image/*"><div id="loginPreview" class="preview"></div><input id="loginOpacity" type="range" min="0" max="1" step=".05"></div>
-      <div><label class="small">主页背景</label><input id="homeBgFile" type="file" accept="image/*"><div id="homePreview" class="preview"></div><input id="homeOpacity" type="range" min="0" max="1" step=".05"></div>
-      <div><label class="small">后台背景</label><input id="adminBgFile" type="file" accept="image/*"><div id="adminPreview" class="preview"></div><input id="adminOpacity" type="range" min="0" max="1" step=".05"></div>
-    </div>
-    <div class="field"><label>登录页公告</label><textarea id="announcement"></textarea></div>
-    <button class="btn primary" onclick="saveSettings()">保存设置并实时同步</button>
-  </div>
-
-  <div class="admin-section"><h3>实时跑马灯</h3>
-    <div class="row"><input id="marqueeInput" maxlength="500" placeholder="输入实时信息"><button class="btn primary" onclick="sendMarquee()">发送</button></div>
-  </div>
-
-  <div class="admin-section"><h3>内容控制</h3>
-    <div class="row mobile-stack"><button class="btn" onclick="playAllVideos()">一键播放所有视频</button><button class="btn danger" onclick="deleteAllPosts()">删除所有视频/照片</button><button class="btn danger" onclick="deleteAllChats()">删除全部聊天</button></div>
-  </div>
-
-  <div class="admin-section"><h3>分享与二维码</h3>
-    <div class="row"><input id="shareUrl"><button class="btn" onclick="makeQR()">生成二维码</button><button class="btn" onclick="installApp()">添加到桌面</button></div>
-    <div id="qrcode" class="qr" style="margin-top:10px"></div>
-  </div>
-  <div class="admin-section"><h3>数据库表占用</h3><div id="dbTables" class="small"></div></div>
-</div></div>
-
-<div id="toast" class="toast hidden"></div>
-
-<script>
-const SUPABASE_URL='https://pzcwzaoebvlghoahpcdr.supabase.co';
-const SUPABASE_KEY='sb_publishable_mzLfUNyJzIXTX04ORjOuYg_dt-23zIV';
-const ADMIN_ACCOUNT='306680070';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-let session=null, me=null, settings=null, chatScope='all', installPrompt=null, presence=null;
-
-const $=id=>document.getElementById(id);
-function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2400)}
-function errMsg(e){return e?.message||String(e)}
-function accountEmail(a){return String(a).trim()+'@numeric.local'}
-function isAdmin(){return session?.user?.app_metadata?.role==='superadmin' && me?.account===ADMIN_ACCOUNT}
-function closeModal(id){$(id).classList.add('hidden')}
-function fmtBytes(n){if(!n&&n!==0)return'-';const u=['B','KB','MB','GB'];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++}return n.toFixed(i?2:0)+' '+u[i]}
-
-async function loadPublicSettings(){
- const {data}=await sb.from('site_settings').select('*').eq('id',true).maybeSingle(); if(data){settings=data;applySettings()}
- await loadMarquee();
-}
-function applySettings(page='login'){
- if(!settings)return;
- document.title=settings.site_title||'短视频社区';
- $('brand').textContent=document.title;
- $('loginTitle').textContent=document.title;
- $('favicon').href=settings.share_icon_url||'';
-
- let bg='';
- let opacity=0.8;
-
- if(page==='login'){
-   bg=settings.login_bg_url||'';
-   opacity=Number(settings.login_opacity ?? 0.8);
- }
-
- if(page==='home'){
-   bg=settings.home_bg_url||'';
-   opacity=Number(settings.home_opacity ?? 0.8);
- }
-
- if(page==='admin'){
-   bg=settings.admin_bg_url||'';
-   opacity=Number(settings.admin_opacity ?? 0.8);
- }
-
- if(bg){
-   $('bg').style.backgroundImage=`url("${bg}")`;
- }
-
- $('shade').style.opacity=String(1-opacity);
- $('loginNotice').textContent=settings.login_announcement||'';
- $('loginNotice').classList.toggle('hidden',!settings.login_announcement);
-}
-async function loadMarquee(){
- const {data}=await sb.from('marquee_messages').select('content,created_at').eq('active',true).order('created_at',{ascending:false}).limit(8);
- const txt=(data||[]).map(x=>x.content).join('　◆　');$('marqueeTrack').textContent=txt;$('marquee').classList.toggle('hidden',!txt);
-}
-
-async function register(){
- const a=$('account').value.trim(),p=$('password').value;
- if(!/^\d{4,20}$/.test(a))return $('authMsg').textContent='账号需为 4-20 位数字';
- if(a===ADMIN_ACCOUNT)return $('authMsg').textContent='超级管理员账号不可公开注册';
- if(p.length<6)return $('authMsg').textContent='密码至少 6 位';
- $('authMsg').textContent='注册中…';
- try{
-   const {data,error}=await sb.functions.invoke('register',{body:{account:a,password:p}});
-   if(error)throw error;
-   if(data?.error)throw new Error(data.error);
-   $('authMsg').textContent='注册成功，请登录';
- }catch(e){
-   $('authMsg').textContent='注册失败：'+errMsg(e);
- }
-}
-async function login(){
- const a=$('account').value.trim(),p=$('password').value;$('authMsg').textContent='登录中…';
- const {error}=await sb.auth.signInWithPassword({email:accountEmail(a),password:p});
- if(error)$('authMsg').textContent='登录失败：'+errMsg(error);
-}
-async function logout(){await sb.auth.signOut();location.reload()}
-
-async function onSession(s){
- session=s;
- if(!s){$('loginView').classList.remove('hidden');$('appView').classList.add('hidden');applySettings();return}
- const {data,error}=await sb.from('profiles').select('*').eq('id',s.user.id).single();
- if(error){toast('读取资料失败：'+errMsg(error));return}
- me=data;$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('adminBtn').classList.toggle('hidden',!isAdmin());
- applySettings('home');await loadFeed();subscribeRealtime();setupPresence();
-}
-async function loadFeed(){
- const {data,error}=await sb.from('posts').select('*,profiles(account,display_name,avatar_url)').order('created_at',{ascending:false}).limit(100);
- if(error)return toast(errMsg(error));renderFeed(data||[]);
-}
-function renderFeed(items){
- $('feed').innerHTML=items.map(p=>`<article class="post" data-id="${p.id}">
- ${p.media_type==='video'?`<video controls playsinline preload="metadata" src="${esc(p.media_url)}"></video>`:`<img loading="lazy" src="${esc(p.media_url)}">`}
- <div class="post-info"><div class="who"><img class="avatar" src="${esc(p.profiles?.avatar_url||'')}"><div><b>${esc(p.profiles?.display_name||p.profiles?.account||'用户')}</b><div class="small">账号 ${esc(p.profiles?.account||'')}</div></div></div>
- <div class="caption">${esc(p.caption||'')}</div><div class="small">${new Date(p.created_at).toLocaleString()}</div></div></article>`).join('');
-}
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-async function uploadPost(){
- const f=$('mediaFile').files[0];if(!f)return toast('请选择视频或照片');
- const type=f.type.startsWith('video/')?'video':f.type.startsWith('image/')?'image':null;if(!type)return toast('仅支持视频或图片');
- $('uploadMsg').textContent='上传中…';const ext=(f.name.split('.').pop()||'bin').replace(/[^\w]/g,'');
- const path=`${session.user.id}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
- const {error:uerr}=await sb.storage.from('media').upload(path,f,{contentType:f.type});if(uerr)return $('uploadMsg').textContent=errMsg(uerr);
- const {data:{publicUrl}}=sb.storage.from('media').getPublicUrl(path);
- const {error}=await sb.from('posts').insert({user_id:session.user.id,media_type:type,storage_path:path,media_url:publicUrl,caption:$('caption').value.trim()});
- $('uploadMsg').textContent=error?errMsg(error):'发布成功';if(!error){$('mediaFile').value='';$('caption').value='';loadFeed()}
-}
-
-function openProfile(){$('displayName').value=me.display_name||'';$('bio').value=me.bio||'';$('profileModal').classList.remove('hidden')}
-async function saveProfile(){
- let avatar=me.avatar_url;const f=$('avatarFile').files[0];
- if(f){const ext=(f.name.split('.').pop()||'jpg').replace(/[^\w]/g,'');const path=`${session.user.id}/avatar-${Date.now()}.${ext}`;const {error}=await sb.storage.from('avatars').upload(path,f,{contentType:f.type});if(error)return toast(errMsg(error));avatar=sb.storage.from('avatars').getPublicUrl(path).data.publicUrl}
- const {data,error}=await sb.from('profiles').update({display_name:$('displayName').value.trim()||me.account,bio:$('bio').value.trim(),avatar_url:avatar}).eq('id',session.user.id).select().single();
- if(error)return toast(errMsg(error));me=data;toast('资料已保存');closeModal('profileModal');loadFeed();
-}
-
-function openChat(){setChatScope('all');$('chatModal').classList.remove('hidden');loadChats()}
-function setChatScope(s){chatScope=s;$('allTab').classList.toggle('on',s==='all');$('adminTab').classList.toggle('on',s==='admin');loadChats()}
-async function loadChats(){
- let q=sb.from('chats').select('*,profiles!chats_sender_id_fkey(account,display_name)').eq('scope',chatScope).gt('created_at',new Date(Date.now()-86400000).toISOString()).order('created_at',{ascending:true}).limit(300);
- const {data,error}=await q;if(error)return;$('chatbox').innerHTML=(data||[]).map(m=>`<div class="msg ${m.sender_id===session.user.id?'me':''}"><div class="meta">${esc(m.profiles?.display_name||m.profiles?.account||'用户')} · ${new Date(m.created_at).toLocaleTimeString()}</div>${esc(m.content)}</div>`).join('');$('chatbox').scrollTop=$('chatbox').scrollHeight;
-}
-async function sendChat(){const v=$('chatInput').value.trim();if(!v)return;const {error}=await sb.from('chats').insert({sender_id:session.user.id,scope:chatScope,content:v});if(error)return toast(errMsg(error));$('chatInput').value='';loadChats()}
-
-function subscribeRealtime(){
- sb.channel('db-live')
- .on('postgres_changes',{event:'*',schema:'public',table:'posts'},()=>loadFeed())
- .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},()=>loadFeed())
- .on('postgres_changes',{event:'*',schema:'public',table:'chats'},()=>{if(!$('chatModal').classList.contains('hidden'))loadChats()})
- .on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>loadPublicSettings())
- .on('postgres_changes',{event:'*',schema:'public',table:'marquee_messages'},()=>loadMarquee()).subscribe();
-}
-function setupPresence(){
- presence=sb.channel('online',{config:{presence:{key:session.user.id}}});
- presence.on('presence',{event:'sync'},()=>{$('onlineCount').textContent=Object.keys(presence.presenceState()).length});
- presence.subscribe(async status=>{if(status==='SUBSCRIBED')await presence.track({account:me.account,at:new Date().toISOString()})});
-}
-
-async function adminCall(action,extra={}){
- const {data,error}=await sb.functions.invoke('admin-api',{body:{action,...extra}});if(error)throw error;if(data?.error)throw new Error(data.error);return data;
-}
-async function openAdmin(){
- if(!isAdmin())return;applySettings('admin');$('adminModal').classList.remove('hidden');
- $('siteTitle').value=settings?.site_title||'';$('shareIcon').value=settings?.share_icon_url||'';$('announcement').value=settings?.login_announcement||'';
- ['login','home','admin'].forEach(k=>{$(k+'Opacity').value=settings?.[k+'_opacity']??.8;$(k+'Preview').style.backgroundImage=`url("${settings?.[k+'_bg_url']||''}")`});
- $('shareUrl').value=location.href;makeQR();await Promise.all([loadUsers(),loadDbStats()]);
-}
-async function loadUsers(){
- try{const d=await adminCall('listUsers');$('userList').innerHTML=(d.users||[]).map(u=>`<div class="userline"><div><b>${esc(u.account||u.id)}</b><div class="small">${esc(u.role)} · ${u.last_sign_in_at?'最近 '+new Date(u.last_sign_in_at).toLocaleString():'未登录'}</div></div><div><button class="btn" onclick="setUserPassword('${u.id}')">改密码</button> ${u.account!==ADMIN_ACCOUNT?`<button class="btn danger" onclick="deleteUser('${u.id}')">删除</button>`:''}</div></div>`).join('')}catch(e){toast(errMsg(e))}
-}
-async function adminCreateUser(){try{await adminCall('createUser',{account:$('newAccount').value.trim(),password:$('newPassword').value});toast('用户已增加');loadUsers()}catch(e){toast(errMsg(e))}}
-async function deleteUser(id){if(!confirm('确定删除此账户？'))return;try{await adminCall('deleteUser',{userId:id});toast('已删除');loadUsers()}catch(e){toast(errMsg(e))}}
-async function setUserPassword(id){const p=prompt('输入新密码（至少6位）');if(!p)return;try{await adminCall('setPassword',{userId:id,password:p});toast('密码已修改')}catch(e){toast(errMsg(e))}}
-async function loadDbStats(){const {data,error}=await sb.rpc('admin_db_stats');if(error)return $('dbSize').textContent='无权限';$('dbSize').textContent=fmtBytes(data.database_bytes);$('dbTables').innerHTML=(data.tables||[]).map(x=>`${esc(x.table)}：${fmtBytes(x.bytes)}`).join('<br>')}
-
-async function uploadBg(inputId,prefix){
- const f=$(inputId).files[0];if(!f)return null;const ext=(f.name.split('.').pop()||'jpg').replace(/[^\w]/g,'');const path=`${prefix}-${Date.now()}.${ext}`;const {error}=await sb.storage.from('backgrounds').upload(path,f,{contentType:f.type});if(error)throw error;return sb.storage.from('backgrounds').getPublicUrl(path).data.publicUrl;
-}
-async function saveSettings(){
- try{
-  const login=await uploadBg('loginBgFile','login'),home=await uploadBg('homeBgFile','home'),admin=await uploadBg('adminBgFile','admin');
-  const patch={site_title:$('siteTitle').value.trim()||'短视频社区',share_icon_url:$('shareIcon').value.trim()||null,login_opacity:+$('loginOpacity').value,home_opacity:+$('homeOpacity').value,admin_opacity:+$('adminOpacity').value,login_announcement:$('announcement').value.trim()};
-  if(login)patch.login_bg_url=login;if(home)patch.home_bg_url=home;if(admin)patch.admin_bg_url=admin;
-  const {error}=await sb.from('site_settings').update(patch).eq('id',true);if(error)throw error;toast('设置已同步');loadPublicSettings()
- }catch(e){toast(errMsg(e))}
-}
-async function sendMarquee(){const v=$('marqueeInput').value.trim();if(!v)return;const {error}=await sb.from('marquee_messages').insert({content:v,created_by:session.user.id});if(error)return toast(errMsg(error));$('marqueeInput').value='';toast('实时信息已发送')}
-function playAllVideos(){document.querySelectorAll('video').forEach(v=>v.play().catch(()=>{}));toast('已请求播放所有视频；浏览器可能限制带声音自动播放')}
-async function deleteAllPosts(){if(!confirm('确定删除所有视频和照片？不可恢复。'))return;try{await adminCall('deleteAllPosts');toast('已删除')}catch(e){toast(errMsg(e))}}
-async function deleteAllChats(){if(!confirm('确定删除全部聊天？'))return;try{await adminCall('deleteAllChats');toast('已删除')}catch(e){toast(errMsg(e))}}
-function makeQR(){$('qrcode').innerHTML='';new QRCode($('qrcode'),{text:$('shareUrl').value||location.href,width:160,height:160})}
-async function installApp(){if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null}else toast('当前浏览器未提供安装提示，可使用浏览器菜单“添加到主屏幕/桌面”')}
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
-window.addEventListener('DOMContentLoaded',async()=>{
- await loadPublicSettings();
- applySettings('login');
- const {data:{session:s}}=await sb.auth.getSession();await onSession(s);
- sb.auth.onAuthStateChange((_e,s2)=>{if(s2?.access_token!==session?.access_token)onSession(s2)});
-});
+window.register=async()=>{let id=uid.value,p=pwd.value;await supabase.from('users').insert({id,password:p,info:''});alert('注册完成')}
+window.login=async()=>{let {data}=await supabase.from('users').select('*').eq('id',uid.value).eq('password',pwd.value);if(data?.[0]){user=data[0];show('home');if(user.id==ADMIN)adminBtn.classList.remove('hidden');profile.innerHTML='账户:'+user.id}else alert('登录失败')}
+window.upload=async()=>{if(!user)return;let f=file.files[0];if(!f)return;let path=user.id+'/'+Date.now()+f.name;await supabase.storage.from('media').upload(path,f);await supabase.from('posts').insert({uid:user.id,path});load()}
+async function load(){let {data}=await supabase.from('posts').select('*').order('id',{ascending:false});feed.innerHTML='';data?.forEach(p=>feed.innerHTML+=`<div class=glass><p>${p.uid}</p><a href="${p.path}">${p.path}</a></div>`)}
+window.openChat=()=>chat.classList.toggle('hidden');
+window.send=async()=>{await supabase.from('chat').insert({uid:user.id,msg:msg.value,time:new Date().toISOString()});msg.value='';}
+window.announce=()=>marquee.textContent=prompt('实时信息')||'';
+window.clearChat=async()=>{await supabase.from('chat').delete().neq('id',0)}
+load();
 </script>
 </body>
 </html>
