@@ -372,7 +372,20 @@ document.head.appendChild(manifestLink);
 // ========== Manifest修复完毕 ==========
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-import bcrypt from 'https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js'
+
+// ✅浏览器原生WebCrypto SHA256加盐哈希，完全移除bcryptjs
+const SALT_KEY = "DeepSpace_Platform_Salt_2026";
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + SALT_KEY);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const uint8 = new Uint8Array(hashBuffer);
+  return Array.from(uint8).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function verifyPassword(password, storedHash) {
+  const inputHash = await hashPassword(password);
+  return inputHash === storedHash;
+}
 
 // ========== 修改这里填入你自己Supabase信息 ==========
 const SUPABASE_URL = "https://pzcwzaoebvlghoahpcdr.supabase.co"
@@ -389,7 +402,6 @@ let currentCommentMediaId = null
 let dmTargetAccount = null
 let profileViewAccount = null
 let userMap = {}
-const saltRounds = 10
 const defaultAvatar = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='38' r='22' fill='%236688ff'/><path d='M20,90 Q50,60 80,90 Z' fill='%236688ff'/></svg>"
 
 // ========== PWA Service Worker ==========
@@ -461,7 +473,7 @@ async function loadUserMap(){
   })
 }
 
-// ========== 登录 / 注册 bcrypt加密 ==========
+// ========== 登录 / 注册（已替换WebCrypto哈希） ==========
 document.getElementById('tabLogin').onclick=()=>{
   document.getElementById('tabLogin').className="btn-neon"
   document.getElementById('tabReg').className="btn-ghost"
@@ -479,13 +491,13 @@ document.getElementById('loginBtn').onclick = async ()=>{
   const isRegTab = document.getElementById('tabReg').className.includes('btn-neon')
   if(isRegTab){
     if(userRow){showToast("该账号已存在");return}
-    const hashPwd = bcrypt.hashSync(pwd, saltRounds)
+    const hashPwd = await hashPassword(pwd)
     await supabase.from('users').insert([{account:acc,password_hash:hashPwd,nickname:"用户"+acc,is_admin:false,avatar_url:""}])
     showToast("注册成功，请登录")
     return
   }else{
     if(!userRow){showToast("账号不存在，请先注册");return}
-    const ok = bcrypt.compareSync(pwd, userRow.password_hash)
+    const ok = await verifyPassword(pwd, userRow.password_hash)
     if(!ok){showToast("密码错误");return}
     currentAccount = acc
     currentUserRow = userRow
@@ -856,9 +868,9 @@ document.getElementById('resetUserPwdBtn').onclick = async ()=>{
   const np = document.getElementById('resetPwdNew').value.trim()
   if(!acc||!np){showToast("不能为空");return}
   if(acc===SUPER_ADMIN && currentAccount!==SUPER_ADMIN){showToast("普通管理员不能修改超级管理员密码");return}
-  const hashPwd = bcrypt.hashSync(np, saltRounds)
+  const hashPwd = await hashPassword(np)
   await supabase.from('users').update({password_hash:hashPwd}).eq('account',acc)
-  showToast("密码修改成功（已加密）")
+  showToast("密码修改成功（已哈希加密）")
 }
 
 document.getElementById('saveBgBtn').onclick = async ()=>{
