@@ -13,7 +13,7 @@
 :root{--glass:.88;--bg:#07070a;--card:#15151c;--line:#2a2a35;--txt:#f7f7fb;--muted:#aaaab6;--accent:#ff2c55}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
 button,input,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
-.page-bg{position:fixed;inset:0;background:center/cover no-repeat;z-index:-2}.shade{position:fixed;inset:0;background:#050509;opacity:.82;z-index:-1}
+.page-bg{position:fixed;inset:0;background:center/cover no-repeat;z-index:0}.shade{position:fixed;inset:0;background:#050509;opacity:.82;z-index:1}
 .marquee{position:fixed;z-index:30;left:0;right:0;top:0;height:36px;background:#111118dd;border-bottom:1px solid #252531;overflow:hidden;display:flex;align-items:center}
 .marquee-track{white-space:nowrap;display:inline-block;min-width:100%;padding-left:100%;animation:marq 22s linear infinite;color:#ffe9a6;font-size:13px}
 @keyframes marq{to{transform:translateX(-100%)}}
@@ -28,6 +28,8 @@ main{padding-top:36px}.feed{width:min(720px,100%);margin:auto;padding:18px 12px 
 .chatbox{height:55vh;overflow:auto;border:1px solid #292934;border-radius:14px;padding:10px;background:#09090d}.msg{padding:9px 10px;border-radius:12px;background:#1b1b24;margin:7px 0}.msg.me{background:#5e1730}.msg .meta{font-size:11px;color:#bdbdc8;margin-bottom:3px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.stat{padding:14px;border:1px solid #30303b;border-radius:14px;background:#17171f}.userline{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #292934}.admin-section{margin:16px 0;padding-top:12px;border-top:1px solid #2d2d37}.admin-section h3{margin:0 0 10px}.preview{height:100px;border-radius:12px;background:center/cover no-repeat;border:1px solid #33333d}.qr{background:white;padding:10px;width:max-content;border-radius:10px}.toast{position:fixed;z-index:100;left:50%;bottom:20px;transform:translateX(-50%);background:#22232d;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 10px 30px #0009}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.top{padding:0 10px}.brand{font-size:17px}.actions .label{display:none}.auth{padding:20px}.feed{padding-left:8px;padding-right:8px}.panel{border-radius:16px;padding:12px}.row.mobile-stack{flex-direction:column}}
+
+#loginView,#appView{position:relative;z-index:2}
 </style>
 </head>
 <body>
@@ -303,6 +305,7 @@ async function installApp(){if(installPrompt){installPrompt.prompt();await insta
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
 window.addEventListener('DOMContentLoaded',async()=>{
  await loadPublicSettings();
+ applySettings('login');
  const {data:{session:s}}=await sb.auth.getSession();await onSession(s);
  sb.auth.onAuthStateChange((_e,s2)=>{if(s2?.access_token!==session?.access_token)onSession(s2)});
 });
