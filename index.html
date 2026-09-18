@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>仿抖音网页</title>
+    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 二维码库 -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <style>
         * {margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
@@ -168,369 +170,370 @@
     <!-- 文件上传隐藏input -->
     <input type="file" id="fileInput" accept="image/*,video/*" style="display:none" onchange="handleFileSelect()">
 
-    <script>
-        // Supabase初始化
-        const SUPABASE_URL = "https://pzcwzaoebvlghoahpcdr.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_mzLfUNyJzIXTX04ORjOuYg_dt-23zIV";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script>
+// ========== 只声明一次 supabase！！无重复 ==========
+const SUPABASE_URL = "https://pzcwzaoebvlghoahpcdr.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_mzLfUNyJzIXTX04ORjOuYg_dt-23zIV";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUser = null;
-        let chatMode = "all";
-        let siteConfig = {};
+let currentUser = null;
+let chatMode = "all";
+let siteConfig = {};
 
-        // 工具函数
-        function showToast(msg){
-            const el = document.getElementById("toast");
-            el.innerText = msg;
-            el.classList.add("show");
-            setTimeout(()=>el.classList.remove("show"),2000);
-        }
-        function openModal(id){document.getElementById(id).classList.add("show");}
-        function closeModal(id){document.getElementById(id).classList.remove("show");}
-        function switchPage(id){
-            document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-            document.getElementById(id).classList.add("active");
-        }
+// 工具函数
+function showToast(msg){
+    const el = document.getElementById("toast");
+    el.innerText = msg;
+    el.classList.add("show");
+    setTimeout(()=>el.classList.remove("show"),2000);
+}
+function openModal(id){document.getElementById(id).classList.add("show");}
+function closeModal(id){document.getElementById(id).classList.remove("show");}
+function switchPage(id){
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
 
-        // 登录注册
-        async function doLogin(){
-            const acc = document.getElementById("inpAccount").value.trim();
-            const pwd = document.getElementById("inpPwd").value.trim();
-            if(!acc || !pwd) return showToast("账号密码不能为空");
-            const {data,error} = await supabase.from("users").select("*").eq("account",acc).single();
-            if(error || !data){
-                return showToast("账号不存在，请先注册");
-            }
-            if(data.password !== pwd){
-                return showToast("密码错误");
-            }
-            currentUser = data;
-            await updateOnlineStatus(true);
-            renderUserUI();
-            switchPage("pageHome");
-            loadSiteConfig();
-            loadMedia();
-            showToast("登录成功");
-        }
+// 登录注册
+async function doLogin(){
+    const acc = document.getElementById("inpAccount").value.trim();
+    const pwd = document.getElementById("inpPwd").value.trim();
+    if(!acc || !pwd) return showToast("账号密码不能为空");
+    const {data,error} = await supabase.from("users").select("*").eq("account",acc).single();
+    if(error || !data){
+        return showToast("账号不存在，请先注册");
+    }
+    if(data.password !== pwd){
+        return showToast("密码错误");
+    }
+    currentUser = data;
+    await updateOnlineStatus(true);
+    renderUserUI();
+    switchPage("pageHome");
+    loadSiteConfig();
+    loadMedia();
+    showToast("登录成功");
+}
 
-        async function doRegister(){
-            const acc = document.getElementById("inpAccount").value.trim();
-            const pwd = document.getElementById("inpPwd").value.trim();
-            if(!acc || !pwd) return showToast("账号密码不能为空");
-            if(!/^\d+$/.test(acc)) return showToast("账号只能为数字");
-            const {data,error} = await supabase.from("users").insert([{account:acc,password:pwd,nickname:"用户"+acc}]);
-            if(error){
-                return showToast("注册失败，账号已存在");
-            }
-            showToast("注册成功，请登录");
-        }
+async function doRegister(){
+    const acc = document.getElementById("inpAccount").value.trim();
+    const pwd = document.getElementById("inpPwd").value.trim();
+    if(!acc || !pwd) return showToast("账号密码不能为空");
+    if(!/^\d+$/.test(acc)) return showToast("账号只能为数字");
+    const {error} = await supabase.from("users").insert([{account:acc,password:pwd,nickname:"用户"+acc}]);
+    if(error){
+        return showToast("注册失败，账号已存在");
+    }
+    showToast("注册成功，请登录");
+}
 
-        async function doLogout(){
-            await updateOnlineStatus(false);
-            currentUser = null;
-            switchPage("pageLogin");
-            showToast("已退出登录");
-        }
+async function doLogout(){
+    await updateOnlineStatus(false);
+    currentUser = null;
+    switchPage("pageLogin");
+    showToast("已退出登录");
+}
 
-        function renderUserUI(){
-            // 管理员显示后台按钮
-            const btnAdmin = document.getElementById("btnAdmin");
-            if(currentUser.account === "306680070"){
-                btnAdmin.style.display="block";
-            }else{
-                btnAdmin.style.display="none";
-            }
-        }
+function renderUserUI(){
+    // 管理员显示后台按钮
+    const btnAdmin = document.getElementById("btnAdmin");
+    if(currentUser?.account === "306680070"){
+        btnAdmin.style.display="block";
+    }else{
+        btnAdmin.style.display="none";
+    }
+}
 
-        // 在线状态
-        async function updateOnlineStatus(isOnline){
-            if(!currentUser) return;
-            if(isOnline){
-                await supabase.from("online_users").upsert([{user_id:currentUser.id,last_active:new Date()}],{onConflict:"user_id"});
-            }else{
-                await supabase.from("online_users").delete().eq("user_id",currentUser.id);
-            }
-        }
+// 在线状态
+async function updateOnlineStatus(isOnline){
+    if(!currentUser) return;
+    if(isOnline){
+        await supabase.from("online_users").upsert([{user_id:currentUser.id,last_active:new Date()}],{onConflict:"user_id"});
+    }else{
+        await supabase.from("online_users").delete().eq("user_id",currentUser.id);
+    }
+}
 
-        // 个人资料
-        async function showProfileModal(){
-            if(!currentUser)return;
-            document.getElementById("editNick").value = currentUser.nickname || "";
-            document.getElementById("editAvatar").value = currentUser.avatar || "";
-            document.getElementById("editBio").value = currentUser.bio || "";
-            openModal("modalProfile");
-        }
-        async function saveProfile(){
-            const nick = document.getElementById("editNick").value.trim();
-            const ava = document.getElementById("editAvatar").value.trim();
-            const bio = document.getElementById("editBio").value.trim();
-            const {error} = await supabase.from("users").update({nickname:nick,avatar:ava,bio:bio}).eq("id",currentUser.id);
-            if(!error){
-                currentUser.nickname = nick;
-                currentUser.avatar = ava;
-                currentUser.bio = bio;
-                showToast("资料保存成功");
-                closeModal("modalProfile");
-            }else{
-                showToast("保存失败");
-            }
-        }
+// 个人资料
+async function showProfileModal(){
+    if(!currentUser)return;
+    document.getElementById("editNick").value = currentUser.nickname || "";
+    document.getElementById("editAvatar").value = currentUser.avatar || "";
+    document.getElementById("editBio").value = currentUser.bio || "";
+    openModal("modalProfile");
+}
+async function saveProfile(){
+    const nick = document.getElementById("editNick").value.trim();
+    const ava = document.getElementById("editAvatar").value.trim();
+    const bio = document.getElementById("editBio").value.trim();
+    const {error} = await supabase.from("users").update({nickname:nick,avatar:ava,bio:bio}).eq("id",currentUser.id);
+    if(!error){
+        currentUser.nickname = nick;
+        currentUser.avatar = ava;
+        currentUser.bio = bio;
+        showToast("资料保存成功");
+        closeModal("modalProfile");
+    }else{
+        showToast("保存失败");
+    }
+}
 
-        // 文件上传（这里使用supabase storage，需要在supabase创建bucket名为media）
-        function uploadMedia(){
-            if(!currentUser) return showToast("请登录");
-            document.getElementById("fileInput").click();
-        }
-        async function handleFileSelect(e){
-            const file = e.target.files[0];
-            if(!file)return;
-            const fileName = `${Date.now()}_${file.name}`;
-            const {data,error} = await supabase.storage.from("media").upload(fileName,file);
-            if(error){
-                return showToast("上传失败，请确认storage bucket media已创建");
-            }
-            const url = supabase.storage.from("media").getPublicUrl(fileName).data.publicUrl;
-            const type = file.type.startsWith("video")?"video":"image";
-            await supabase.from("media").insert([{user_id:currentUser.id,file_url:url,file_type:type}]);
-            showToast("上传成功");
-            loadMedia();
-        }
+// 文件上传（需要supabase storage bucket media）
+function uploadMedia(){
+    if(!currentUser) return showToast("请登录");
+    document.getElementById("fileInput").click();
+}
+async function handleFileSelect(e){
+    const file = e.target.files[0];
+    if(!file)return;
+    const fileName = `${Date.now()}_${file.name}`;
+    const {data,error} = await supabase.storage.from("media").upload(fileName,file);
+    if(error){
+        return showToast("上传失败，请确认storage bucket media已创建");
+    }
+    const url = supabase.storage.from("media").getPublicUrl(fileName).data.publicUrl;
+    const type = file.type.startsWith("video")?"video":"image";
+    await supabase.from("media").insert([{user_id:currentUser.id,file_url:url,file_type:type}]);
+    showToast("上传成功");
+    loadMedia();
+}
 
-        async function loadMedia(){
-            const {data:myList} = await supabase.from("media").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
-            const {data:allList} = await supabase.from("media").select("*").order("created_at",{ascending:false});
-            const myDom = document.getElementById("myMediaList");
-            const allDom = document.getElementById("allMediaList");
-            myDom.innerHTML="";
-            allDom.innerHTML="";
-            myList.forEach(item=>{
-                myDom.innerHTML+=renderMediaItem(item);
-            });
-            allList.forEach(item=>{
-                allDom.innerHTML+=renderMediaItem(item);
-            });
-        }
-        function renderMediaItem(item){
-            if(item.file_type === "video"){
-                return `<div class="media-item card"><video controls src="${item.file_url}" width="100%"></video></div>`;
-            }else{
-                return `<div class="media-item card"><img src="${item.file_url}" alt="图片"></div>`;
-            }
-        }
+async function loadMedia(){
+    if(!currentUser) return;
+    const {data:myList} = await supabase.from("media").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false});
+    const {data:allList} = await supabase.from("media").select("*").order("created_at",{ascending:false});
+    const myDom = document.getElementById("myMediaList");
+    const allDom = document.getElementById("allMediaList");
+    myDom.innerHTML="";
+    allDom.innerHTML="";
+    myList.forEach(item=>{
+        myDom.innerHTML+=renderMediaItem(item);
+    });
+    allList.forEach(item=>{
+        allDom.innerHTML+=renderMediaItem(item);
+    });
+}
+function renderMediaItem(item){
+    if(item.file_type === "video"){
+        return `<div class="media-item card"><video controls src="${item.file_url}" width="100%"></video></div>`;
+    }else{
+        return `<div class="media-item card"><img src="${item.file_url}" alt="图片"></div>`;
+    }
+}
 
-        // 聊天模块
-        async function showChatModal(){
-            if(!currentUser)return showToast("请登录");
-            openModal("modalChat");
-            loadChatMsg();
-        }
-        function switchChatType(t){
-            chatMode = t;
-            loadChatMsg();
-        }
-        async function loadChatMsg(){
-            let q = supabase.from("chat_messages").select("*").order("created_at",{ascending:true});
-            if(chatMode === "admin"){
-                q = q.or(`is_admin_reply.eq(true),user_id.eq(${currentUser.id})`);
-            }
-            const {data} = await q;
-            const box = document.getElementById("chatBox");
-            box.innerHTML="";
-            data.forEach(m=>{
-                const cls = m.user_id === currentUser.id ? "chat-right":"chat-left";
-                let tag = "";
-                if(m.is_admin_reply) tag = `<span class="admin-tag">[管理员]</span>`;
-                box.innerHTML+=`<div class="chat-msg ${cls}">${tag}${m.username}:${m.content}</div>`;
-            });
-            box.scrollTop = box.scrollHeight;
-        }
-        async function sendChatMsg(){
-            const txt = document.getElementById("chatInput").value.trim();
-            if(!txt)return;
-            const uname = currentUser.nickname || currentUser.account;
-            await supabase.from("chat_messages").insert([{
-                user_id:currentUser.id,
-                username:uname,
-                content:txt,
-                is_admin_reply:false
-            }]);
-            document.getElementById("chatInput").value="";
-            loadChatMsg();
-        }
+// 聊天模块
+async function showChatModal(){
+    if(!currentUser)return showToast("请登录");
+    openModal("modalChat");
+    loadChatMsg();
+}
+function switchChatType(t){
+    chatMode = t;
+    loadChatMsg();
+}
+async function loadChatMsg(){
+    let q = supabase.from("chat_messages").select("*").order("created_at",{ascending:true});
+    if(chatMode === "admin"){
+        q = q.or(`is_admin_reply.eq(true),user_id.eq(${currentUser.id})`);
+    }
+    const {data} = await q;
+    const box = document.getElementById("chatBox");
+    box.innerHTML="";
+    data.forEach(m=>{
+        const cls = m.user_id === currentUser.id ? "chat-right":"chat-left";
+        let tag = "";
+        if(m.is_admin_reply) tag = `<span class="admin-tag">[管理员]</span>`;
+        box.innerHTML+=`<div class="chat-msg ${cls}">${tag}${m.username}:${m.content}</div>`;
+    });
+    box.scrollTop = box.scrollHeight;
+}
+async function sendChatMsg(){
+    const txt = document.getElementById("chatInput").value.trim();
+    if(!txt)return;
+    const uname = currentUser.nickname || currentUser.account;
+    await supabase.from("chat_messages").insert([{
+        user_id:currentUser.id,
+        username:uname,
+        content:txt,
+        is_admin_reply:false
+    }]);
+    document.getElementById("chatInput").value="";
+    loadChatMsg();
+}
 
-        // 后台管理
-        async function showAdminModal(){
-            if(currentUser.account !== "306680070")return;
-            openModal("modalAdmin");
-            document.getElementById("adminPanel").classList.add("show");
-            await loadAdminData();
-            generateQrcode();
-        }
+// 后台管理
+async function showAdminModal(){
+    if(currentUser.account !== "306680070")return;
+    openModal("modalAdmin");
+    document.getElementById("adminPanel").classList.add("show");
+    await loadAdminData();
+    generateQrcode();
+}
 
-        async function loadAdminData(){
-            //在线人数
-            const {data:onlineData} = await supabase.from("online_users").select("*");
-            document.getElementById("onlineCount").innerText = onlineData.length;
+async function loadAdminData(){
+    //在线人数
+    const {data:onlineData} = await supabase.from("online_users").select("*");
+    document.getElementById("onlineCount").innerText = onlineData.length;
 
-            // 用户列表
-            const {data:userList} = await supabase.from("users").select("*");
-            const userDom = document.getElementById("userList");
-            userDom.innerHTML="";
-            userList.forEach(u=>{
-                userDom.innerHTML+=`
-                <div class="user-row">
-                    <div>账号:${u.account} | 昵称:${u.nickname}</div>
-                    <div>
-                        <button onclick="editUserPwd(${u.id})" class="blue">改密码</button>
-                        <button onclick="deleteUser(${u.id})" class="red">删除账号</button>
-                    </div>
-                </div>
-                `;
-            });
+    // 用户列表
+    const {data:userList} = await supabase.from("users").select("*");
+    const userDom = document.getElementById("userList");
+    userDom.innerHTML="";
+    userList.forEach(u=>{
+        userDom.innerHTML+=`
+        <div class="user-row">
+            <div>账号:${u.account} | 昵称:${u.nickname}</div>
+            <div>
+                <button onclick="editUserPwd(${u.id})" class="blue">改密码</button>
+                <button onclick="deleteUser(${u.id})" class="red">删除账号</button>
+            </div>
+        </div>
+        `;
+    });
 
-            // 加载配置
-            const {data:cfg} = await supabase.from("site_config").select("*").limit(1).single();
-            siteConfig = cfg;
-            document.getElementById("bgLogin").value = cfg.login_bg||"";
-            document.getElementById("bgHome").value = cfg.home_bg||"";
-            document.getElementById("bgAdmin").value = cfg.admin_bg||"";
-            document.getElementById("opLogin").value = cfg.login_opacity||1;
-            document.getElementById("opHome").value = cfg.home_opacity||1;
-            document.getElementById("opAdmin").value = cfg.admin_opacity||1;
-            document.getElementById("siteTitle").value = cfg.site_title||"";
-            document.getElementById("shareIconUrl").value = cfg.share_icon||"";
-            document.getElementById("loginNoticeText").value = cfg.notice||"";
-            document.getElementById("marqueeInput").value = cfg.marquee_text||"";
+    // 加载配置
+    const {data:cfg} = await supabase.from("site_config").select("*").limit(1).single();
+    siteConfig = cfg;
+    document.getElementById("bgLogin").value = cfg.login_bg||"";
+    document.getElementById("bgHome").value = cfg.home_bg||"";
+    document.getElementById("bgAdmin").value = cfg.admin_bg||"";
+    document.getElementById("opLogin").value = cfg.login_opacity||1;
+    document.getElementById("opHome").value = cfg.home_opacity||1;
+    document.getElementById("opAdmin").value = cfg.admin_opacity||1;
+    document.getElementById("siteTitle").value = cfg.site_title||"";
+    document.getElementById("shareIconUrl").value = cfg.share_icon||"";
+    document.getElementById("loginNoticeText").value = cfg.notice||"";
+    document.getElementById("marqueeInput").value = cfg.marquee_text||"";
 
-            document.getElementById("previewBgLogin").style.backgroundImage = `url(${cfg.login_bg})`;
-            document.getElementById("previewBgHome").style.backgroundImage = `url(${cfg.home_bg})`;
-            document.getElementById("previewBgAdmin").style.backgroundImage = `url(${cfg.admin_bg})`;
+    document.getElementById("previewBgLogin").style.backgroundImage = `url(${cfg.login_bg})`;
+    document.getElementById("previewBgHome").style.backgroundImage = `url(${cfg.home_bg})`;
+    document.getElementById("previewBgAdmin").style.backgroundImage = `url(${cfg.admin_bg})`;
 
-            document.getElementById("dbInfo").innerText = "已获取配置，存储大小需要数据库扩展支持";
-        }
+    document.getElementById("dbInfo").innerText = "已获取配置";
+}
 
-        async function editUserPwd(uid){
-            const newPwd = prompt("输入新密码");
-            if(!newPwd)return;
-            await supabase.from("users").update({password:newPwd}).eq("id",uid);
-            showToast("密码修改完成");
-            loadAdminData();
-        }
-        async function deleteUser(uid){
-            if(!confirm("确认删除该账号？"))return;
-            await supabase.from("users").delete().eq("id",uid);
-            showToast("账号已删除");
-            loadAdminData();
-        }
+async function editUserPwd(uid){
+    const newPwd = prompt("输入新密码");
+    if(!newPwd)return;
+    await supabase.from("users").update({password:newPwd}).eq("id",uid);
+    showToast("密码修改完成");
+    loadAdminData();
+}
+async function deleteUser(uid){
+    if(!confirm("确认删除该账号？"))return;
+    await supabase.from("users").delete().eq("id",uid);
+    showToast("账号已删除");
+    loadAdminData();
+}
 
-        async function saveBgConfig(){
-            const loginBg = document.getElementById("bgLogin").value.trim();
-            const homeBg = document.getElementById("bgHome").value.trim();
-            const adminBg = document.getElementById("bgAdmin").value.trim();
-            const opLogin = Number(document.getElementById("opLogin").value);
-            const opHome = Number(document.getElementById("opHome").value);
-            const opAdmin = Number(document.getElementById("opAdmin").value);
-            await supabase.from("site_config").update({
-                login_bg:loginBg,
-                home_bg:homeBg,
-                admin_bg:adminBg,
-                login_opacity:opLogin,
-                home_opacity:opHome,
-                admin_opacity:opAdmin,
-                updated_at:new Date()
-            }).eq("id",1);
-            showToast("背景配置保存成功");
-            loadSiteConfig();
-            loadAdminData();
-        }
+async function saveBgConfig(){
+    const loginBg = document.getElementById("bgLogin").value.trim();
+    const homeBg = document.getElementById("bgHome").value.trim();
+    const adminBg = document.getElementById("bgAdmin").value.trim();
+    const opLogin = Number(document.getElementById("opLogin").value);
+    const opHome = Number(document.getElementById("opHome").value);
+    const opAdmin = Number(document.getElementById("opAdmin").value);
+    await supabase.from("site_config").update({
+        login_bg:loginBg,
+        home_bg:homeBg,
+        admin_bg:adminBg,
+        login_opacity:opLogin,
+        home_opacity:opHome,
+        admin_opacity:opAdmin,
+        updated_at:new Date()
+    }).eq("id",1);
+    showToast("背景配置保存成功");
+    loadSiteConfig();
+    loadAdminData();
+}
 
-        async function playAllVideo(){
-            const {data} = await supabase.from("media").select("file_url").eq("file_type","video");
-            data.forEach(item=>{
-                const v = document.createElement("video");
-                v.src = item.file_url;
-                v.play();
-            });
-            showToast("已触发全部视频播放");
-        }
-        async function deleteAllVideo(){
-            if(!confirm("确定删除全部视频？"))return;
-            await supabase.from("media").delete().eq("file_type","video");
-            showToast("全部视频已删除");
-            loadMedia();
-        }
+async function playAllVideo(){
+    const {data} = await supabase.from("media").select("file_url").eq("file_type","video");
+    data.forEach(item=>{
+        const v = document.createElement("video");
+        v.src = item.file_url;
+        v.play();
+    });
+    showToast("已触发全部视频播放");
+}
+async function deleteAllVideo(){
+    if(!confirm("确定删除全部视频？"))return;
+    await supabase.from("media").delete().eq("file_type","video");
+    showToast("全部视频已删除");
+    loadMedia();
+}
 
-        async function pushMarqueeMsg(){
-            const txt = document.getElementById("marqueeInput").value.trim();
-            if(!txt)return;
-            await supabase.from("site_config").update({marquee_text:txt,updated_at:new Date()}).eq("id",1);
-            showToast("跑马灯消息已推送");
-            loadSiteConfig();
-        }
+async function pushMarqueeMsg(){
+    const txt = document.getElementById("marqueeInput").value.trim();
+    if(!txt)return;
+    await supabase.from("site_config").update({marquee_text:txt,updated_at:new Date()}).eq("id",1);
+    showToast("跑马灯消息已推送");
+    loadSiteConfig();
+}
 
-        async function saveSiteSetting(){
-            const title = document.getElementById("siteTitle").value.trim();
-            const icon = document.getElementById("shareIconUrl").value.trim();
-            const notice = document.getElementById("loginNoticeText").value.trim();
-            await supabase.from("site_config").update({
-                site_title:title,
-                share_icon:icon,
-                notice:notice,
-                updated_at:new Date()
-            }).eq("id",1);
-            document.title = title;
-            showToast("网页设置保存成功");
-            loadSiteConfig();
-            generateQrcode();
-        }
+async function saveSiteSetting(){
+    const title = document.getElementById("siteTitle").value.trim();
+    const icon = document.getElementById("shareIconUrl").value.trim();
+    const notice = document.getElementById("loginNoticeText").value.trim();
+    await supabase.from("site_config").update({
+        site_title:title,
+        share_icon:icon,
+        notice:notice,
+        updated_at:new Date()
+    }).eq("id",1);
+    document.title = title;
+    showToast("网页设置保存成功");
+    loadSiteConfig();
+    generateQrcode();
+}
 
-        async function clearAllChat(){
-            if(!confirm("确认清空全部聊天记录？"))return;
-            await supabase.from("chat_messages").delete();
-            showToast("聊天记录已清空");
-            loadChatMsg();
-        }
+async function clearAllChat(){
+    if(!confirm("确认清空全部聊天记录？"))return;
+    await supabase.from("chat_messages").delete();
+    showToast("聊天记录已清空");
+    loadChatMsg();
+}
 
-        function generateQrcode(){
-            const div = document.getElementById("qrcodeDiv");
-            div.innerHTML="";
-            new QRCode(div,{
-                text:window.location.href,
-                width:180,
-                height:180
-            });
-        }
+function generateQrcode(){
+    const div = document.getElementById("qrcodeDiv");
+    div.innerHTML="";
+    new QRCode(div,{
+        text:window.location.href,
+        width:180,
+        height:180
+    });
+}
 
-        function createShortcut(){
-            if(window.hasOwnProperty('InstallTrigger')){
-                InstallTrigger.install({
-                    name:"仿抖音网页",
-                    URL:window.location.href,
-                    iconURL:siteConfig.share_icon
-                });
-            }else{
-                showToast("浏览器不支持一键添加桌面快捷方式，请手动添加");
-            }
-        }
+function createShortcut(){
+    if(window.hasOwnProperty('InstallTrigger')){
+        InstallTrigger.install({
+            name:"仿抖音网页",
+            URL:window.location.href,
+            iconURL:siteConfig.share_icon
+        });
+    }else{
+        showToast("浏览器不支持一键添加桌面快捷方式，请手动添加");
+    }
+}
 
-        // 加载全局配置
-        async function loadSiteConfig(){
-            const {data} = await supabase.from("site_config").select("*").limit(1).single();
-            siteConfig = data;
-            document.getElementById("marqueeText").innerText = data.marquee_text;
-            document.title = data.site_title;
-            document.getElementById("loginNotice").innerText = data.notice;
-        }
+// 加载全局配置
+async function loadSiteConfig(){
+    const {data} = await supabase.from("site_config").select("*").limit(1).single();
+    siteConfig = data;
+    document.getElementById("marqueeText").innerText = data.marquee_text;
+    document.title = data.site_title;
+    document.getElementById("loginNotice").innerText = data.notice;
+}
 
-        // 实时订阅
-        supabase.channel("all").on('postgres_changes',{event:'*',schema:'public',table:'site_config'},()=>{
-            loadSiteConfig();
-        }).subscribe();
+// 实时订阅
+supabase.channel("all").on('postgres_changes',{event:'*',schema:'public',table:'site_config'},()=>{
+    loadSiteConfig();
+}).subscribe();
 
-        // 页面初始化
-        window.onload = async ()=>{
-            await loadSiteConfig();
-        }
-    </script>
+// 页面初始化
+window.onload = async ()=>{
+    await loadSiteConfig();
+}
+</script>
 </body>
 </html>
