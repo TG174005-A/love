@@ -714,5 +714,228 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 
 <div id="mediaViewer" class="modal-wrap hidden"><div class="modal glass" style="text-align:center"><div class="modal-head"><h2>播放影像</h2><button class="btn small" onclick="closeModal('mediaViewer')">✕</button></div><div id="viewerBox"></div></div></div>
+
+<style>
+#mediaViewer{padding:0!important;background:rgba(0,0,0,.95)!important;align-items:center;justify-content:center}
+#mediaViewer .modal{width:100vw!important;height:100dvh!important;max-height:none!important;padding:0!important;border-radius:0!important;background:#000!important;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#mediaViewer .modal-head{position:absolute;top:15px;left:15px;right:15px;z-index:20}
+#mediaViewer .modal-head h2{display:none}
+#viewerBox{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.viewer-media{width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;object-fit:contain!important;background:#000}
+</style>
+<script>
+window.openMediaViewer=async function(id){
+ const p=(window.media||[]).find(x=>x.id===id);
+ if(!p)return;
+ const box=document.getElementById('viewerBox');
+ const wrap=document.getElementById('mediaViewer');
+ if(!box||!wrap)return;
+ box.innerHTML=p.media_type==='video'
+ ? `<video class="viewer-media" src="${p.url}" controls autoplay playsinline></video>`
+ : `<img class="viewer-media" src="${p.url}">`;
+ wrap.classList.remove('hidden');
+ document.body.style.overflow='hidden';
+ const media=box.firstElementChild;
+ if(media.requestFullscreen){try{await media.requestFullscreen()}catch(e){}}
+};
+window.closeMediaViewer=function(){
+ const wrap=document.getElementById('mediaViewer');
+ if(wrap)wrap.classList.add('hidden');
+ if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});}
+ const box=document.getElementById('viewerBox');
+ if(box)box.innerHTML='';
+ document.body.style.overflow='';
+};
+</script>
+
+<style>
+/* 全屏 Viewer 页面 */
+#fullViewerPage{
+ position:fixed;
+ inset:0;
+ background:#000;
+ z-index:9999;
+ display:none;
+ overflow:hidden;
+ touch-action:none;
+}
+#fullViewerPage.active{display:flex}
+.viewer-stage{
+ width:100%;
+ height:100%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ position:relative;
+}
+.viewer-stage img,
+.viewer-stage video{
+ max-width:100%;
+ max-height:100%;
+ width:100%;
+ height:100%;
+ object-fit:contain;
+ background:#000;
+}
+.viewer-top{
+ position:absolute;
+ top:env(safe-area-inset-top,15px);
+ left:0;
+ right:0;
+ display:flex;
+ justify-content:space-between;
+ padding:15px;
+ z-index:3;
+}
+.viewer-btn{
+ border:0;
+ color:#fff;
+ background:rgba(0,0,0,.45);
+ backdrop-filter:blur(10px);
+ border-radius:50%;
+ width:44px;
+ height:44px;
+ font-size:22px;
+}
+.viewer-info{
+ position:absolute;
+ bottom:20px;
+ left:20px;
+ right:20px;
+ color:#fff;
+ z-index:3;
+ text-shadow:0 2px 10px #000;
+}
+@media(min-width:768px){
+ .viewer-stage img,.viewer-stage video{
+  width:auto;
+  height:auto;
+  max-width:92vw;
+  max-height:92vh;
+ }
+}
+</style>
+
+<div id="fullViewerPage">
+ <div class="viewer-top">
+  <button class="viewer-btn" id="viewerClose">×</button>
+  <button class="viewer-btn" id="viewerFs">⛶</button>
+ </div>
+ <div class="viewer-stage" id="viewerStage"></div>
+ <div class="viewer-info" id="viewerInfo"></div>
+</div>
+
+<script>
+(function(){
+ let currentViewerId=null;
+
+ window.openMediaViewer=function(id){
+   const p=(window.media||[]).find(x=>x.id===id);
+   if(!p)return;
+   currentViewerId=id;
+   const page=document.getElementById("fullViewerPage");
+   const stage=document.getElementById("viewerStage");
+   const info=document.getElementById("viewerInfo");
+
+   if(p.media_type==="video"){
+     stage.innerHTML='<video controls autoplay playsinline src="'+p.url+'"></video>';
+   }else{
+     stage.innerHTML='<img src="'+p.url+'">';
+   }
+
+   info.innerHTML="@"+(p.account||"")+"<br>"+(p.caption||"");
+   page.classList.add("active");
+   document.body.style.overflow="hidden";
+
+   const media=stage.firstElementChild;
+   if(media && media.requestFullscreen){
+      setTimeout(()=>{
+       media.requestFullscreen().catch(()=>{});
+      },100);
+   }
+ };
+
+ document.getElementById("viewerClose").onclick=function(){
+   if(document.fullscreenElement){
+    document.exitFullscreen().catch(()=>{});
+   }
+   document.getElementById("fullViewerPage").classList.remove("active");
+   document.getElementById("viewerStage").innerHTML="";
+   document.body.style.overflow="";
+ };
+
+ document.getElementById("viewerFs").onclick=function(){
+   const el=document.getElementById("viewerStage").firstElementChild;
+   if(el && el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+ };
+
+})();
+</script>
+
+
+<style>
+/* 通用电脑+手机沉浸式 Viewer */
+#fullViewerPage{
+ position:fixed!important;
+ inset:0!important;
+ width:100vw!important;
+ height:100dvh!important;
+ min-height:100vh;
+ background:#000;
+ z-index:99999!important;
+}
+.viewer-stage{
+ width:100vw!important;
+ height:100dvh!important;
+}
+.viewer-stage img,
+.viewer-stage video{
+ object-fit:contain!important;
+ width:100%!important;
+ height:100%!important;
+ max-width:none!important;
+ max-height:none!important;
+}
+.viewer-info{
+ padding-bottom:env(safe-area-inset-bottom,20px);
+}
+</style>
+
+<script>
+(function(){
+ const oldOpen=window.openMediaViewer;
+ window.openMediaViewer=function(id){
+   if(typeof oldOpen==="function") oldOpen(id);
+
+   const page=document.getElementById("fullViewerPage");
+   const media=document.querySelector("#viewerStage img,#viewerStage video");
+
+   if(page){
+     page.classList.add("active");
+     document.documentElement.style.overflow="hidden";
+     document.body.style.overflow="hidden";
+   }
+
+   // 手机和电脑都尝试进入浏览器全屏
+   if(media && media.requestFullscreen){
+      media.requestFullscreen().catch(()=>{});
+   }else if(page && page.requestFullscreen){
+      page.requestFullscreen().catch(()=>{});
+   }
+ };
+
+ const close=document.getElementById("viewerClose");
+ if(close){
+  close.addEventListener("click",()=>{
+    if(document.fullscreenElement){
+      document.exitFullscreen().catch(()=>{});
+    }
+    document.documentElement.style.overflow="";
+    document.body.style.overflow="";
+  });
+ }
+})();
+</script>
+
 </body>
 </html>
