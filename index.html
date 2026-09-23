@@ -897,5 +897,35 @@ window.openMediaViewer=function(id){
  if(item.media_type==='video' && typeof countPlay==='function') countPlay(id);
 };
 </script>
+
+<script>
+/* Viewer close fix */
+(function(){
+ const close=document.getElementById("viewerClose");
+ const fs=document.getElementById("viewerFs");
+ const page=document.getElementById("fullViewerPage");
+ function closeViewer(){
+   if(document.fullscreenElement){
+     document.exitFullscreen().catch(()=>{});
+   }
+   if(page) page.classList.remove("active");
+   const stage=document.getElementById("viewerStage");
+   if(stage) stage.innerHTML="";
+   document.documentElement.style.overflow="";
+   document.body.style.overflow="";
+ }
+ if(close) close.onclick=closeViewer;
+ if(fs) fs.onclick=function(){
+   if(page && page.requestFullscreen){
+     page.requestFullscreen().catch(()=>{});
+   }
+ };
+ document.addEventListener("fullscreenchange",function(){
+   if(!document.fullscreenElement && page && page.classList.contains("active")){
+     /* 浏览器退出全屏后保持查看器，不强制关闭 */
+   }
+ });
+})();
+</script>
 </body>
 </html>
