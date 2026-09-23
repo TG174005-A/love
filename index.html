@@ -431,7 +431,13 @@ async function compressVideo(file){
   canvas.height=Math.max(180,Math.round(v.videoHeight*scale));
   const ctx=canvas.getContext('2d');
   const stream=canvas.captureStream(24);
-  const rec=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp9'});
+  const mimeCandidates=[
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm'
+   ];
+   const mimeType=mimeCandidates.find(t=>MediaRecorder.isTypeSupported(t));
+   const rec=mimeType?new MediaRecorder(stream,{mimeType}):new MediaRecorder(stream);
   const chunks=[];
   rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
   const done=new Promise(resolve=>rec.onstop=()=>resolve(new Blob(chunks,{type:'video/webm'})));
@@ -825,52 +831,7 @@ window.closeMediaViewer=function(){
  <div class="viewer-info" id="viewerInfo"></div>
 </div>
 
-<script>
-(function(){
- let currentViewerId=null;
 
- window.openMediaViewer=function(id){
-   const p=(window.media||[]).find(x=>x.id===id);
-   if(!p)return;
-   currentViewerId=id;
-   const page=document.getElementById("fullViewerPage");
-   const stage=document.getElementById("viewerStage");
-   const info=document.getElementById("viewerInfo");
-
-   if(p.media_type==="video"){
-     stage.innerHTML='<video controls autoplay playsinline src="'+p.url+'"></video>';
-   }else{
-     stage.innerHTML='<img src="'+p.url+'">';
-   }
-
-   info.innerHTML="@"+(p.account||"")+"<br>"+(p.caption||"");
-   page.classList.add("active");
-   document.body.style.overflow="hidden";
-
-   const media=stage.firstElementChild;
-   if(media && media.requestFullscreen){
-      setTimeout(()=>{
-       media.requestFullscreen().catch(()=>{});
-      },100);
-   }
- };
-
- document.getElementById("viewerClose").onclick=function(){
-   if(document.fullscreenElement){
-    document.exitFullscreen().catch(()=>{});
-   }
-   document.getElementById("fullViewerPage").classList.remove("active");
-   document.getElementById("viewerStage").innerHTML="";
-   document.body.style.overflow="";
- };
-
- document.getElementById("viewerFs").onclick=function(){
-   const el=document.getElementById("viewerStage").firstElementChild;
-   if(el && el.requestFullscreen) el.requestFullscreen().catch(()=>{});
- };
-
-})();
-</script>
 
 
 <style>
@@ -901,41 +862,40 @@ window.closeMediaViewer=function(){
 }
 </style>
 
+
+
+
 <script>
-(function(){
- const oldOpen=window.openMediaViewer;
- window.openMediaViewer=function(id){
-   if(typeof oldOpen==="function") oldOpen(id);
-
-   const page=document.getElementById("fullViewerPage");
-   const media=document.querySelector("#viewerStage img,#viewerStage video");
-
-   if(page){
-     page.classList.add("active");
-     document.documentElement.style.overflow="hidden";
-     document.body.style.overflow="hidden";
-   }
-
-   // 手机和电脑都尝试进入浏览器全屏
-   if(media && media.requestFullscreen){
-      media.requestFullscreen().catch(()=>{});
-   }else if(page && page.requestFullscreen){
-      page.requestFullscreen().catch(()=>{});
-   }
- };
-
- const close=document.getElementById("viewerClose");
- if(close){
-  close.addEventListener("click",()=>{
-    if(document.fullscreenElement){
-      document.exitFullscreen().catch(()=>{});
-    }
-    document.documentElement.style.overflow="";
-    document.body.style.overflow="";
-  });
+/* 修复 Viewer 黑屏：统一使用实际媒体数组 */
+window.openMediaViewer=function(id){
+ const list=typeof media!=='undefined'?media:(window.media||[]);
+ const item=list.find(x=>String(x.id)===String(id));
+ if(!item){console.warn('media not found',id);return;}
+ const page=document.getElementById('fullViewerPage');
+ const stage=document.getElementById('viewerStage');
+ const info=document.getElementById('viewerInfo');
+ if(!page||!stage)return;
+ stage.innerHTML='';
+ let el;
+ if(item.media_type==='video'){
+   el=document.createElement('video');
+   el.src=item.url;
+   el.controls=true;
+   el.autoplay=true;
+   el.playsInline=true;
+   el.setAttribute('playsinline','');
+   el.setAttribute('webkit-playsinline','');
+ }else{
+   el=document.createElement('img');
+   el.src=item.url;
+   el.alt='media';
  }
-})();
+ stage.appendChild(el);
+ info.textContent='@'+(item.account||'')+'  '+(item.caption||'');
+ page.classList.add('active');
+ document.body.style.overflow='hidden';
+ if(item.media_type==='video' && typeof countPlay==='function') countPlay(id);
+};
 </script>
-
 </body>
 </html>
