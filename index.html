@@ -1,5 +1,6 @@
 
 
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -502,22 +503,6 @@ function applyMediaCategory(){
 }
 function renderFeed(){const f=$('feed');f.classList.add('media-grid');if(!media.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;return}f.innerHTML=media.map(p=>`<article class="media-card" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}">`:`<video src="${esc(p.url)}" muted></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy">`}<div class="media-cover"></div><div class="media-info"><b>@${esc(p.account)}</b><br>${esc(p.caption||'影像')}</div></article>`).join('')}window.countPlay=async id=>{const p=media.find(x=>x.id===id);if(!p||p._played)return;p._played=true;await sb.from('media_posts').update({play_count:(p.play_count||0)+1}).eq('id',id);p.play_count=(p.play_count||0)+1};
 
-window.openMediaViewer=async function(id){
-  const p=media.find(x=>x.id===id);
-  if(!p)return;
-  openModal('mediaViewer');
-  const box=document.getElementById('viewerBox');
-  if(p.media_type==='video'){
-    box.innerHTML=`<video class="viewer-media" src="${esc(p.url)}" controls autoplay playsinline></video>`;
-    if(typeof countPlay==='function') countPlay(id);
-  }else{
-    box.innerHTML=`<img class="viewer-media" src="${esc(p.url)}" alt="media">`;
-  }
-  const el=box.firstElementChild;
-  if(el && el.requestFullscreen){
-    // 用户点击后允许全屏；部分浏览器会阻止自动调用
-  }
-};
 window.sharePost=async id=>{const p=media.find(x=>x.id===id);if(!p)return;try{if(navigator.share)await navigator.share({title:document.title,text:p.caption||'清音 影像',url:location.href});else{await navigator.clipboard.writeText(location.href);toast('链接已复制')}}catch{}};
 window.deletePost=async id=>{if(!confirm('确定删除这个作品？'))return;const p=media.find(x=>x.id===id);if(!p)return;const {error:e1}=await sb.storage.from('media').remove([p.object_path]);const {error:e2}=await sb.from('media_posts').delete().eq('id',id);if(e1||e2)return toast((e1||e2).message);await loadMedia()};
 function setupRealtime(){sb.channel('nebula-db').on('postgres_changes',{event:'*',schema:'public',table:'media_posts'},()=>loadMedia()).on('postgres_changes',{event:'*',schema:'public',table:'profiles'},p=>{if(p.new?.id===me.id){profile=p.new;renderProfile()}}).on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>loadSettings()).on('postgres_changes',{event:'*',schema:'public',table:'chat_messages'},()=>{if(!$('chatModal').classList.contains('hidden'))loadChat()}).subscribe()}
@@ -525,23 +510,35 @@ function setupPresence(){presence=sb.channel('nebula-online',{config:{presence:{
 $$('[data-chat]').forEach(b=>b.onclick=()=>{$$('[data-chat]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');currentChat=b.dataset.chat;loadChat()});
 async function loadChat(){let q=sb.from('chat_messages').select('*').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:true}).limit(300);if(currentChat==='global')q=q.eq('channel','global');else q=q.eq('channel','admin');const {data,error}=await q;if(error)return console.warn(error);const list=(data||[]).filter(m=>currentChat==='global'||isSuper()||m.user_id===me.id||m.recipient_id===me.id);$('messages').innerHTML=list.map(m=>`<div class="msg ${m.user_id===me.id?'me':''}"><small>@${esc(m.account)} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small>${esc(m.content)}</div>`).join('');$('messages').scrollTop=$('messages').scrollHeight}
 $('sendChatBtn').onclick=sendChat;$('chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}};async function sendChat(){const content=$('chatInput').value.trim();if(!content)return;let recipient_id=null;if(currentChat==='admin'&&!isSuper()){const {data}=await sb.from('profiles').select('id').eq('account',SUPER).maybeSingle();recipient_id=data?.id||null}const {error}=await sb.from('chat_messages').insert({user_id:me.id,recipient_id,account:profile.account,channel:currentChat,content});if(error)return toast(error.message);$('chatInput').value='';loadChat()}
-function showShare(){
+async function showShare(){
  openModal('shareModal');
- const url=location.protocol==='file:'?'':location.href;
- $('shareUrl').value=url||'请部署网页后生成有效二维码';
  const c=$('qrCanvas'),ctx=c.getContext('2d');
+ const url=(location.protocol==='http:'||location.protocol==='https:')?location.href:'';
+ $('shareUrl').value=url||'请使用在线网址生成二维码';
+ ctx.clearRect(0,0,c.width,c.height);
  if(!url){
-  ctx.clearRect(0,0,c.width,c.height);
   ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
   ctx.fillStyle='#111';ctx.font='16px sans-serif';
-  ctx.fillText('请使用网页地址',45,105);
-  toast('本地文件无法生成可访问二维码，请使用在线网址');
+  ctx.fillText('请部署后生成二维码',30,105);
+  toast('当前是本地文件，无法分享访问');
   return;
  }
- if(typeof QRCode!=='undefined'){
-  QRCode.toCanvas(c,url,{width:220,margin:1},e=>e&&console.warn(e));
- }else{
-  ctx.clearRect(0,0,c.width,c.height);
+ try{
+  if(typeof QRCode==='undefined'){
+   await new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js';
+    s.onload=resolve;
+    s.onerror=reject;
+    document.head.appendChild(s);
+   });
+  }
+  if(typeof QRCode!=='undefined'){
+   QRCode.toCanvas(c,url,{width:220,margin:1},e=>{if(e){console.warn(e);toast('二维码生成失败')}});
+  }else{
+   throw new Error('QRCode unavailable');
+  }
+ }catch(e){
   ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
   ctx.fillStyle='#111';ctx.font='16px sans-serif';
   ctx.fillText('二维码加载失败',35,105);
@@ -719,40 +716,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 </script>
 
-<div id="mediaViewer" class="modal-wrap hidden"><div class="modal glass" style="text-align:center"><div class="modal-head"><h2>播放影像</h2><button class="btn small" onclick="closeModal('mediaViewer')">✕</button></div><div id="viewerBox"></div></div></div>
 
-<style>
-#mediaViewer{padding:0!important;background:rgba(0,0,0,.95)!important;align-items:center;justify-content:center}
-#mediaViewer .modal{width:100vw!important;height:100dvh!important;max-height:none!important;padding:0!important;border-radius:0!important;background:#000!important;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#mediaViewer .modal-head{position:absolute;top:15px;left:15px;right:15px;z-index:20}
-#mediaViewer .modal-head h2{display:none}
-#viewerBox{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-.viewer-media{width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;object-fit:contain!important;background:#000}
-</style>
-<script>
-window.openMediaViewer=async function(id){
- const p=(window.media||[]).find(x=>x.id===id);
- if(!p)return;
- const box=document.getElementById('viewerBox');
- const wrap=document.getElementById('mediaViewer');
- if(!box||!wrap)return;
- box.innerHTML=p.media_type==='video'
- ? `<video class="viewer-media" src="${p.url}" controls autoplay playsinline></video>`
- : `<img class="viewer-media" src="${p.url}">`;
- wrap.classList.remove('hidden');
- document.body.style.overflow='hidden';
- const media=box.firstElementChild;
- if(media.requestFullscreen){try{await media.requestFullscreen()}catch(e){}}
-};
-window.closeMediaViewer=function(){
- const wrap=document.getElementById('mediaViewer');
- if(wrap)wrap.classList.add('hidden');
- if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});}
- const box=document.getElementById('viewerBox');
- if(box)box.innerHTML='';
- document.body.style.overflow='';
-};
-</script>
 
 <style>
 /* 全屏 Viewer 页面 */
@@ -868,7 +832,7 @@ window.closeMediaViewer=function(){
 <script>
 /* 修复 Viewer 黑屏：统一使用实际媒体数组 */
 window.openMediaViewer=function(id){
- const list=typeof media!=='undefined'?media:(window.media||[]);
+ const list=Array.isArray(media)?media:(window.media||[]);
  const item=list.find(x=>String(x.id)===String(id));
  if(!item){console.warn('media not found',id);return;}
  const page=document.getElementById('fullViewerPage');
