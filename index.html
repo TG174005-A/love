@@ -1,8 +1,13 @@
+
+
+
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <meta name="theme-color" content="#05060b" />
 <link rel="manifest" id="importManifest" href="data:application/manifest+json,%7B%22name%22%3A%22清音%22%2C%22share_target%22%3A%7B%22action%22%3A%22.%2F%22%2C%22method%22%3A%22POST%22%2C%22enctype%22%3A%22multipart%2Fform-data%22%2C%22params%22%3A%7B%22files%22%3A%5B%7B%22name%22%3A%22media%22%2C%22accept%22%3A%5B%22image%2F*%22%2C%22video%2F*%22%5D%7D%5D%7D%7D%7D">
 <title>清音</title>
@@ -419,6 +424,14 @@ html,body{
 }
 
 </style>
+
+<style>
+/* safe performance and compatibility layer */
+img,video{content-visibility:auto;}
+img{font-display:swap;}
+@supports (height:100dvh){#appView{min-height:100dvh;}}
+@supports not (height:100dvh){#appView{min-height:100vh;}}
+</style>
 </head>
 <body>
 <div id="pageBg" class="bg"></div><canvas id="stars"></canvas><div class="orb"></div><div id="toast" class="toast"></div>
@@ -783,6 +796,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   },true);
 })();
 </script>
+
+
 <script>
 /* 上传稳定性增强 */
 (function(){
@@ -872,5 +887,35 @@ window.openMediaViewer=function(id){
  });
 })();
 </script>
+
+<!-- Browser compatibility patch -->
+<script>
+(function(){
+  try{
+    // CSS dvh 回退
+    if(!CSS.supports || !CSS.supports('height: 100dvh')){
+      document.documentElement.style.setProperty('--safe-vh', '100vh');
+    }else{
+      document.documentElement.style.setProperty('--safe-vh', '100dvh');
+    }
+
+    // Safari backdrop-filter 兼容检测
+    if(!CSS.supports || !CSS.supports('backdrop-filter: blur(1px)')){
+      document.documentElement.classList.add('no-backdrop-filter');
+    }
+
+    // iOS viewport 高度修正
+    function fixViewport(){
+      document.documentElement.style.setProperty(
+        '--viewport-height',
+        window.innerHeight + 'px'
+      );
+    }
+    window.addEventListener('resize', fixViewport);
+    fixViewport();
+  }catch(e){}
+})();
+</script>
+
 </body>
 </html>
