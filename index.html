@@ -152,6 +152,10 @@ html,body{
 .media-card .media-cover{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.8));}
 .media-card .media-info{position:absolute;left:12px;right:12px;bottom:12px;font-size:13px;z-index:2}
 .media-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:42px;z-index:2;text-shadow:0 0 25px #00e5ff}
+.media-meta{margin-top:5px;font-size:11px;color:#c7d2e1;display:flex;gap:8px;flex-wrap:wrap}
+.top-stats{display:flex;gap:6px;align-items:center;white-space:nowrap}.top-stat{font-size:11px;padding:5px 8px;border:1px solid rgba(255,255,255,.10);border-radius:999px;background:rgba(255,255,255,.045);color:#cfe8f3}
+.viewer-actions{display:flex;gap:8px;align-items:center}.viewer-btn.danger{color:#fecdd3;border:1px solid rgba(251,113,133,.35)}
+@media(max-width:760px){.top-stats{display:none}}
 #fullViewerPage{
  position:fixed;
  inset:0;
@@ -231,7 +235,7 @@ img,video{content-visibility:auto;}
 </section>
 <section id="appView" class="hidden">
   <div class="ticker"><div id="tickerTrack" class="ticker-track"><span>清音 · CONNECTING...</span><span>清音 · CONNECTING...</span></div></div>
-  <header class="topbar"><div id="topTitle" class="top-brand neon">清音</div><div class="top-category-slot"><div class="media-category-bar"><button id="showVideosBtn" class="active">视频区</button><button id="showImagesBtn">照片区</button></div></div><div class="top-actions"><button id="installBtn" class="btn small hidden">添加桌面</button><button id="chatBtn" class="btn small">💬 <span class="label">聊天</span></button><button id="adminBtn" class="btn small hidden">⚡ <span class="label">后台</span></button><img id="topAvatar" class="avatar" alt="avatar"><button id="logoutBtn" class="btn small">退出</button></div></header>
+  <header class="topbar"><div id="topTitle" class="top-brand neon">清音</div><div class="top-category-slot"><div class="media-category-bar"><button id="showVideosBtn" class="active">视频区</button><button id="showImagesBtn">照片区</button></div></div><div class="top-stats"><span class="top-stat">在线 <b id="onlineCount">0</b></span><span class="top-stat">作品 <b id="mediaCount">0</b></span></div><div class="top-actions"><button id="installBtn" class="btn small hidden">添加桌面</button><button id="chatBtn" class="btn small">💬 <span class="label">聊天</span></button><button id="adminBtn" class="btn small hidden">⚡ <span class="label">后台</span></button><img id="topAvatar" class="avatar" alt="avatar"><button id="logoutBtn" class="btn small">退出</button></div></header>
 <div class="bottom-nav glass">
 <button id="bottomProfileBtn" class="btn">◎资料</button>
 <button id="bottomUploadBtn" class="btn primary">＋上传</button>
@@ -294,13 +298,16 @@ function authMode(mode){$('loginForm').classList.toggle('hidden',mode!=='login')
 $('loginTab').onclick=()=>authMode('login');$('registerTab').onclick=()=>authMode('register');
 $('loginForm').onsubmit=async e=>{e.preventDefault();const account=$('loginAccount').value.trim();if(!/^\d+$/.test(account))return toast('账号只能是数字');const {data,error}=await sb.auth.signInWithPassword({email:account+'@numeric.local',password:$('loginPassword').value});if(error)return toast('登录失败：'+error.message);session=data.session;await enterApp()};
 $('registerForm').onsubmit=async e=>{e.preventDefault();const account=$('regAccount').value.trim();if(!/^\d{4,18}$/.test(account))return toast('账号必须是4-18位纯数字');const r=await fetch(SUPABASE_URL+'/functions/v1/numeric-register',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({account,password:$('regPassword').value,nickname:$('regNickname').value.trim()})});const j=await r.json();if(!r.ok)return toast(j.error||'注册失败');toast('注册成功，正在登录');const {data,error}=await sb.auth.signInWithPassword({email:account+'@numeric.local',password:$('regPassword').value});if(error)return toast(error.message);session=data.session;await enterApp()};
-async function enterApp(){const {data:{user}}=await sb.auth.getUser();me=user;if(!me)return;await loadProfile();$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('adminBtn').classList.toggle('hidden',!isAdmin());activeBackgroundPage='home';applyBackground('home');await Promise.all([loadMedia(),loadSettings()]);setupRealtime();setupPresence();}
+async function enterApp(){const {data:{user}}=await sb.auth.getUser();me=user;if(!me)return;await loadProfile();$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('adminBtn').classList.toggle('hidden',!isAdmin());activeBackgroundPage='home';applyBackground('home');await Promise.all([loadMedia(),loadSettings()]);setupRealtime();setupPresence();const mid=new URL(location.href).searchParams.get('media');if(mid&&media.some(x=>String(x.id)===String(mid)))openMediaViewer(mid)}
 async function loadProfile(){const {data,error}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();if(error)console.warn(error);profile=data||{id:me.id,account:accountOf(me),nickname:'用户'+accountOf(me).slice(-4),bio:'',avatar_url:''};renderProfile()}
 function renderProfile(){const av=profile.avatar_url||'';$('profileNickname').value=profile.nickname||'';$('profileBio').value=profile.bio||'';[$('topAvatar'),$('profileAvatarPreview')].forEach(i=>{i.src=av||`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><linearGradient id="g"><stop stop-color="#00e5ff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient></defs><rect width="120" height="120" rx="60" fill="#101527"/><text x="60" y="72" text-anchor="middle" font-size="42" fill="url(#g)">${esc((profile.nickname||profile.account||'N').slice(0,1))}</text></svg>`)}`})}
-$('logoutBtn').onclick=async()=>{if(presence)await sb.removeChannel(presence);await sb.auth.signOut();location.reload()};$('chatBtn').onclick=()=>{openModal('chatModal');loadChat()};
+$('logoutBtn').onclick=async()=>{if(presence)await sb.removeChannel(presence);await sb.auth.signOut();location.reload()};$('chatBtn').onclick=()=>{openModal('chatModal');loadChat()};$('topAvatar').onclick=()=>openModal('profileModal');$('topAvatar').style.cursor='pointer';
 $('saveProfileBtn').onclick=async()=>{const patch={nickname:$('profileNickname').value.trim()||('用户'+profile.account.slice(-4)),bio:$('profileBio').value.trim(),updated_at:new Date().toISOString()};const {error}=await sb.from('profiles').update(patch).eq('id',me.id);if(error)return toast(error.message);Object.assign(profile,patch);renderProfile();toast('资料已实时更新')};
 async function uploadTo(bucket,file,path){const {error}=await sb.storage.from(bucket).upload(path,file,{upsert:true,contentType:file.type});if(error)throw error;return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl}
 $('uploadAvatarBtn').onclick=async()=>{const f=$('avatarFile').files[0];if(!f)return toast('请选择头像');try{const ext=(f.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'');const path=`${me.id}/avatar.${ext}`;const url=await uploadTo('avatars',f,path);const {error}=await sb.from('profiles').update({avatar_url:url,updated_at:new Date().toISOString()}).eq('id',me.id);if(error)throw error;profile.avatar_url=url;renderProfile();toast('头像已更新')}catch(e){toast(e.message)}};
+function formatDuration(sec){sec=Math.max(0,Number(sec||0));const m=Math.floor(sec/60),ss=Math.floor(sec%60);return m+':'+String(ss).padStart(2,'0')}
+function storagePathFromPublicUrl(url,bucket='media'){if(!url)return '';const marker=`/storage/v1/object/public/${bucket}/`;const i=String(url).indexOf(marker);return i>=0?decodeURIComponent(String(url).slice(i+marker.length)):''}
+function canDeleteMedia(item){return !!item && (isAdmin()||item.user_id===me?.id||item.account===profile?.account)}
 async function fileSHA256(f){const buf=await f.arrayBuffer(),hash=await crypto.subtle.digest('SHA-256',buf);return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('')}
 async function getVideoInfo(file){return await new Promise((resolve)=>{const v=document.createElement('video');v.preload='metadata';v.onloadedmetadata=()=>{resolve({duration:Math.round(v.duration||0),width:v.videoWidth,height:v.videoHeight});URL.revokeObjectURL(v.src)};v.onerror=()=>resolve({duration:0,width:0,height:0});v.src=URL.createObjectURL(file)})}
 async function createVideoCover(file){return await new Promise((resolve)=>{const v=document.createElement('video');v.muted=true;v.preload='metadata';v.onloadeddata=()=>{v.currentTime=Math.min(1,v.duration/3||0)};v.onseeked=()=>{const c=document.createElement('canvas');c.width=v.videoWidth||640;c.height=v.videoHeight||360;c.getContext('2d').drawImage(v,0,0,c.width,c.height);c.toBlob(b=>resolve(b),'image/jpeg',.82)};v.src=URL.createObjectURL(file)})}
@@ -446,7 +453,7 @@ $('importMediaFile').onchange=async()=>{
  $('mediaCaption').value='';
  closeModal('uploadModal');
 };
-async function loadMedia(){const {data,error}=await sb.from('media_posts').select('*').order('created_at',{ascending:false});if(error){console.warn(error);return}media=data||[];renderFeed()}
+async function loadMedia(){const {data,error}=await sb.from('media_posts').select('*').order('created_at',{ascending:false});if(error){console.warn(error);return}media=data||[];const mc=$('mediaCount');if(mc)mc.textContent=media.length;renderFeed()}
 let currentMediaCategory='video';
 function applyMediaCategory(){
  document.querySelectorAll('[data-media-type]').forEach(el=>{
@@ -456,9 +463,12 @@ function applyMediaCategory(){
  if(v)v.classList.toggle('active',currentMediaCategory==='video');
  if(i)i.classList.toggle('active',currentMediaCategory==='image');
 }
-function renderFeed(){const f=$('feed');f.classList.add('media-grid');if(!media.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;applyMediaCategory();return}f.innerHTML=media.map(p=>`<article class="media-card" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}">`:`<video src="${esc(p.url)}" muted></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy">`}<div class="media-cover"></div><div class="media-info"><b>@${esc(p.account)}</b><br>${esc(p.caption||'影像')}</div></article>`).join('');applyMediaCategory()}window.countPlay=async id=>{const p=media.find(x=>x.id===id);if(!p||p._played)return;p._played=true;await sb.from('media_posts').update({play_count:(p.play_count||0)+1}).eq('id',id);p.play_count=(p.play_count||0)+1};
+function renderFeed(){const f=$('feed');f.classList.add('media-grid');if(!media.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;applyMediaCategory();return}f.innerHTML=media.map(p=>`<article class="media-card" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}">`:`<video src="${esc(p.url)}" muted></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy">`}<div class="media-cover"></div><div class="media-info"><b>@${esc(p.account)}</b><br>${esc(p.caption||'影像')}<div class="media-meta">${p.media_type==='video'?`<span>⏱ ${formatDuration(p.duration)}</span><span>▶ ${Number(p.play_count||0)}</span>`:'<span>照片</span>'}</div></div></article>`).join('');applyMediaCategory()}
+window.countPlay=async id=>{const p=media.find(x=>String(x.id)===String(id));if(!p||p._played)return;p._played=true;const next=(p.play_count||0)+1;const {error}=await sb.from('media_posts').update({play_count:next}).eq('id',id);if(!error)p.play_count=next};
+window.sharePost=async id=>{const p=media.find(x=>String(x.id)===String(id));if(!p)return;const url=new URL(location.href);url.searchParams.set('media',id);try{if(navigator.share)await navigator.share({title:document.title,text:p.caption||'清音 影像',url:url.toString()});else{await navigator.clipboard.writeText(url.toString());toast('作品链接已复制')}}catch(e){if(e?.name!=='AbortError')toast('分享失败')}};
+window.deletePost=async id=>{const p=media.find(x=>String(x.id)===String(id));if(!p||!canDeleteMedia(p))return toast('没有删除权限');if(!confirm('确定删除这个作品？'))return;try{if(p.object_path)await sb.storage.from('media').remove([p.object_path]);const cp=storagePathFromPublicUrl(p.cover_url);if(cp)await sb.storage.from('media').remove([cp]).catch(()=>{});const {error}=await sb.from('media_posts').delete().eq('id',id);if(error)throw error;toast('作品已删除');await loadMedia();if(document.getElementById('fullViewerPage')?.classList.contains('active'))document.getElementById('viewerClose')?.click()}catch(e){toast(e.message||'删除失败')}};
 function setupRealtime(){sb.channel('nebula-db').on('postgres_changes',{event:'*',schema:'public',table:'media_posts'},()=>loadMedia()).on('postgres_changes',{event:'*',schema:'public',table:'profiles'},p=>{if(p.new?.id===me.id){profile=p.new;renderProfile()}}).on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>loadSettings()).on('postgres_changes',{event:'*',schema:'public',table:'chat_messages'},()=>{if(!$('chatModal').classList.contains('hidden'))loadChat()}).subscribe()}
-function setupPresence(){presence=sb.channel('nebula-online',{config:{presence:{key:me.id}}});presence.on('presence',{event:'sync'},()=>{const n=Object.keys(presence.presenceState()).length;$('adminOnline').textContent=n}).subscribe(async status=>{if(status==='SUBSCRIBED')await presence.track({account:profile.account,at:new Date().toISOString()})})}
+function setupPresence(){presence=sb.channel('nebula-online',{config:{presence:{key:me.id}}});presence.on('presence',{event:'sync'},()=>{const n=Object.keys(presence.presenceState()).length;const oc=$('onlineCount'),ao=$('adminOnline');if(oc)oc.textContent=n;if(ao)ao.textContent=n}).subscribe(async status=>{if(status==='SUBSCRIBED')await presence.track({account:profile.account,at:new Date().toISOString()})})}
 $$('[data-chat]').forEach(b=>b.onclick=()=>{$$('[data-chat]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');currentChat=b.dataset.chat;loadChat()});
 async function loadChat(){let q=sb.from('chat_messages').select('*').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:true}).limit(300);if(currentChat==='global')q=q.eq('channel','global');else q=q.eq('channel','admin');const {data,error}=await q;if(error)return console.warn(error);const list=(data||[]).filter(m=>currentChat==='global'||isSuper()||m.user_id===me.id||m.recipient_id===me.id);$('messages').innerHTML=list.map(m=>`<div class="msg ${m.user_id===me.id?'me':''}"><small>@${esc(m.account)} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small>${esc(m.content)}</div>`).join('');$('messages').scrollTop=$('messages').scrollHeight}
 $('sendChatBtn').onclick=sendChat;$('chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}};async function sendChat(){const content=$('chatInput').value.trim();if(!content)return;let recipient_id=null;if(currentChat==='admin'&&!isSuper()){const {data}=await sb.from('profiles').select('id').eq('account',SUPER).maybeSingle();recipient_id=data?.id||null}const {error}=await sb.from('chat_messages').insert({user_id:me.id,recipient_id,account:profile.account,channel:currentChat,content});if(error)return toast(error.message);$('chatInput').value='';loadChat()}
@@ -619,64 +629,37 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 <div id="fullViewerPage">
  <div class="viewer-top">
-  <button class="viewer-btn" id="viewerClose">×</button>
-  <button class="viewer-btn" id="viewerFs">⛶</button>
+  <button class="viewer-btn" id="viewerClose" title="关闭">×</button>
+  <div class="viewer-actions"><button class="viewer-btn" id="viewerShare" title="分享">⌁</button><button class="viewer-btn danger hidden" id="viewerDelete" title="删除">⌫</button><button class="viewer-btn" id="viewerFs" title="全屏">⛶</button></div>
  </div>
  <div class="viewer-stage" id="viewerStage"></div>
  <div class="viewer-info" id="viewerInfo"></div>
 </div>
 <script>
 window.openMediaViewer=function(id){
- const list=Array.isArray(media)?media:(window.media||[]);
- const item=list.find(x=>String(x.id)===String(id));
- if(!item){console.warn('media not found',id);return;}
- const page=document.getElementById('fullViewerPage');
- const stage=document.getElementById('viewerStage');
- const info=document.getElementById('viewerInfo');
+ const item=media.find(x=>String(x.id)===String(id));
+ if(!item){console.warn('media not found',id);return}
+ const page=$('fullViewerPage'),stage=$('viewerStage'),info=$('viewerInfo'),del=$('viewerDelete');
  if(!page||!stage)return;
- stage.innerHTML='';
- let el;
- if(item.media_type==='video'){
-   el=document.createElement('video');
-   el.src=item.url;
-   el.controls=true;
-   el.autoplay=true;
-   el.playsInline=true;
-   el.setAttribute('playsinline','');
-   el.setAttribute('webkit-playsinline','');
- }else{
-   el=document.createElement('img');
-   el.src=item.url;
-   el.alt='media';
- }
+ page.dataset.mediaId=String(item.id);stage.innerHTML='';
+ let el;if(item.media_type==='video'){el=document.createElement('video');el.src=item.url;el.controls=true;el.autoplay=true;el.playsInline=true;el.setAttribute('playsinline','');el.setAttribute('webkit-playsinline','')}else{el=document.createElement('img');el.src=item.url;el.alt='media'}
  stage.appendChild(el);
- info.textContent='@'+(item.account||'')+'  '+(item.caption||'');
- page.classList.add('active');
- document.body.style.overflow='hidden';
- if(item.media_type==='video' && typeof countPlay==='function') countPlay(id);
+ const meta=item.media_type==='video'?` · ${formatDuration(item.duration)} · 播放 ${Number(item.play_count||0)}`:' · 照片';
+ info.textContent='@'+(item.account||'')+'  '+(item.caption||'')+meta;
+ if(del)del.classList.toggle('hidden',!canDeleteMedia(item));
+ page.classList.add('active');document.body.style.overflow='hidden';
+ if(item.media_type==='video'&&typeof countPlay==='function')countPlay(id)
 };
 </script>
 <script>
 (function(){
- const close=document.getElementById("viewerClose");
- const fs=document.getElementById("viewerFs");
- const page=document.getElementById("fullViewerPage");
- function closeViewer(){
-   if(document.fullscreenElement){
-     document.exitFullscreen().catch(()=>{});
-   }
-   if(page) page.classList.remove("active");
-   const stage=document.getElementById("viewerStage");
-   if(stage) stage.innerHTML="";
-   document.documentElement.style.overflow="";
-   document.body.style.overflow="";
- }
- if(close) close.onclick=closeViewer;
- if(fs) fs.onclick=function(){
-   if(page && page.requestFullscreen){
-     page.requestFullscreen().catch(()=>{});
-   }
- };
+ const close=$('viewerClose'),fs=$('viewerFs'),share=$('viewerShare'),del=$('viewerDelete'),page=$('fullViewerPage');
+ function closeViewer(){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});if(page){page.classList.remove('active');page.dataset.mediaId=''}const stage=$('viewerStage');if(stage)stage.innerHTML='';document.documentElement.style.overflow='';document.body.style.overflow=''}
+ if(close)close.onclick=closeViewer;
+ if(share)share.onclick=()=>{const id=page?.dataset.mediaId;if(id)sharePost(id)};
+ if(del)del.onclick=()=>{const id=page?.dataset.mediaId;if(id)deletePost(id)};
+ if(fs)fs.onclick=()=>{if(!page)return;if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else page.requestFullscreen?.().catch(()=>{})};
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&page?.classList.contains('active'))closeViewer()});
 })();
 </script>
 </body>
