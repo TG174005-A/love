@@ -1,5 +1,6 @@
 
 
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -271,8 +272,8 @@ img,video{content-visibility:auto;}
   <section id="adm-system" class="admin-section"><div class="grid2"><div class="panel"><h3>站点系统</h3><div class="form"><input id="siteTitleInput" class="field" placeholder="网页标题"><button id="saveTitleBtn" class="btn primary">修改网页标题</button><label>分享图标<input id="shareIconFile" type="file" accept="image/*" class="field"></label><button id="uploadShareIconBtn" class="btn">上传分享图标</button><button id="refreshStatsBtn" class="btn">刷新数据库内存信息</button></div></div><div class="panel"><h3>数据库内存</h3><div id="dbStats" class="muted">等待读取...</div></div><div class="panel"><h3>数据库内容缩略图</h3><div class="muted" style="font-size:12px;margin-bottom:10px">媒体、头像、登录/主页/后台背景和分享图标</div><button id="refreshDbThumbsBtn" class="btn">刷新缩略图</button><div id="dbThumbStats" class="muted" style="margin-top:10px"></div><div id="dbThumbGrid" class="db-thumb-grid"></div></div></div></section>
 </div></div>
 <script>
-const SUPABASE_URL='https://pzcwzaoebvlghoahpcdr.supabase.co';
-const SUPABASE_KEY='sb_publishable_mzLfUNyJzIXTX04ORjOuYg_dt-23zIV';
+const SUPABASE_URL='https://oyfuocywwujsyxjlpprv.supabase.co';
+const SUPABASE_KEY='sb_publishable_l2CI_nVFQjvnhiYS2UvnzA_vNX6DZgL';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const SUPER='306680070';
 let session=null,me=null,profile=null,settings={},media=[],presence=null,currentChat='global',installPrompt=null,activeBackgroundPage='login';
