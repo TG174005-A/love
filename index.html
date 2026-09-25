@@ -269,6 +269,12 @@ img,video{content-visibility:auto;}
 <div id="duplicateCenterModal" class="modal-wrap hidden">
 <div class="modal glass">
 <div class="modal-head"><h2>智能重复检测中心 · 自动数据库去重</h2><button class="btn small" data-close="duplicateCenterModal">✕</button></div>
+<div class="panel" style="margin-bottom:10px">
+<label>图片相似阈值（越高越宽松）</label>
+<input id="dedupThreshold" type="range" min="8" max="32" value="24" step="2">
+<span id="dedupThresholdValue">24</span>
+<p class="muted">推荐 20–24。数值过高可能误判。</p>
+</div>
 <div id="duplicateCenterResult" class="panel">等待扫描...</div>
 <div id="duplicatePreviewList" class="db-thumb-grid"></div><button id="cleanDuplicateBtn" class="btn danger" style="margin-top:12px">清理完全重复文件</button><button id="backfillDedupBtn" class="btn primary" style="margin-top:12px">扫描旧媒体并清理相似重复</button>
 </div></div>
@@ -755,60 +761,84 @@ async function scanDuplicateMedia(){
 
 
 
+
+async function deleteMediaRowAndStorage(x){
+  try{
+    if(x.object_path)await sb.storage.from('media').remove([x.object_path]).catch(()=>{});
+    const cp=storagePathFromPublicUrl(x.cover_url||'');
+    if(cp)await sb.storage.from('media').remove([cp]).catch(()=>{});
+    const {error}=await sb.from('media_posts').delete().eq('id',x.duplicate_id||x.id);
+    if(error)throw error;
+    return true;
+  }catch(e){console.warn('delete duplicate failed',x,e);return false}
+}
+
 async function backfillAndCleanSimilarDuplicates(){
  const box=$('duplicateCenterResult');
  if(!isAdmin())return toast('没有权限');
- if(!confirm('将扫描现有媒体并生成感知指纹，发现高度相似的旧作品时会保留最新一份并删除旧 Storage 文件和数据库记录。是否继续？'))return;
+ const threshold=Number($('dedupThreshold')?.value||24);
+ if(!confirm(`将按图片相似阈值 ${threshold} 扫描旧媒体，并删除较旧的重复项。建议先使用 20–24。是否继续？`))return;
  try{
-  box.textContent='准备扫描...';
-  const {data:rows,error}=await sb.from('media_posts')
-    .select('id,url,cover_url,object_path,media_type,content_hash,image_hash,video_fingerprint,duration,created_at')
-    .order('created_at',{ascending:false}).limit(1000);
-  if(error)throw error;
-  const items=rows||[];
-  let fingerprinted=0,removed=0,failed=0;
-  const keptImages=[],keptVideos=[];
-  for(let i=0;i<items.length;i++){
-    const x=items[i];
-    box.textContent=`扫描中 ${i+1}/${items.length} · 已清理 ${removed}`;
-    try{
-      if(x.media_type==='image'){
-        const h=x.image_hash||await imageHashFromUrl(x.url);
-        if(h&&!x.image_hash)await sb.from('media_posts').update({image_hash:h,duplicate_checked_at:new Date().toISOString()}).eq('id',x.id);
-        if(h){
-          fingerprinted++;
-          const same=keptImages.find(k=>isSimilarImageHash(h,k.hash));
-          if(same){
-            if(x.object_path)await sb.storage.from('media').remove([x.object_path]).catch(()=>{});
-            await sb.from('media_posts').delete().eq('id',x.id);
-            removed++;continue;
-          }
-          keptImages.push({id:x.id,hash:h});
-        }
-      }else if(x.media_type==='video'){
-        const fp=x.video_fingerprint||await videoFingerprintFromUrl(x.url);
-        if(fp&&!x.video_fingerprint)await sb.from('media_posts').update({video_fingerprint:fp,duplicate_checked_at:new Date().toISOString()}).eq('id',x.id);
-        if(fp){
-          fingerprinted++;
-          const same=keptVideos.find(k=>isSimilarVideoFingerprint(fp,k.fp));
-          if(same){
-            if(x.object_path)await sb.storage.from('media').remove([x.object_path]).catch(()=>{});
-            const cp=storagePathFromPublicUrl(x.cover_url);
-            if(cp)await sb.storage.from('media').remove([cp]).catch(()=>{});
-            await sb.from('media_posts').delete().eq('id',x.id);
-            removed++;continue;
-          }
-          keptVideos.push({id:x.id,fp});
-        }
-      }
-    }catch(e){failed++;console.warn('dedup scan failed',x.id,e)}
-    await new Promise(r=>setTimeout(r,0));
+  box.textContent='数据库正在扫描相似图片...';
+
+  const {data:imgDup,error:imgErr}=await sb.rpc('admin_find_similar_images',{p_threshold:threshold});
+  if(imgErr)throw imgErr;
+
+  let removedImages=0,removedBytes=0;
+  for(let i=0;i<(imgDup||[]).length;i++){
+    const x=imgDup[i];
+    box.textContent=`清理图片 ${i+1}/${imgDup.length} · 已删除 ${removedImages}`;
+    if(await deleteMediaRowAndStorage(x)){
+      removedImages++;
+      removedBytes+=Number(x.file_size||0);
+    }
   }
-  box.innerHTML=`<h3>扫描完成</h3><p>生成/读取指纹：${fingerprinted}</p><p>删除相似重复：${removed}</p><p>无法检测：${failed}</p>`;
-  await loadMedia();await loadStorageStats();await loadDbThumbnails();
-  toast(`扫描完成，清理 ${removed} 个相似重复`);
+
+  box.textContent='正在扫描视频指纹...';
+  const {data:videos,error:vErr}=await sb.from('media_posts')
+    .select('id,url,cover_url,object_path,video_fingerprint,duration,file_size,created_at')
+    .eq('media_type','video').order('created_at',{ascending:false}).limit(1000);
+  if(vErr)throw vErr;
+
+  let removedVideos=0,videoBytes=0;
+  const kept=[];
+  for(const x of (videos||[])){
+    let fp=x.video_fingerprint;
+    if(!fp){
+      fp=await videoFingerprintFromUrl(x.url);
+      if(fp)await sb.from('media_posts').update({
+        video_fingerprint:fp,
+        duplicate_checked_at:new Date().toISOString()
+      }).eq('id',x.id);
+    }
+    if(!fp)continue;
+    const same=kept.find(k=>isSimilarVideoFingerprint(fp,k.fp));
+    if(same){
+      if(await deleteMediaRowAndStorage(x)){
+        removedVideos++;
+        videoBytes+=Number(x.file_size||0);
+      }
+    }else{
+      kept.push({id:x.id,fp});
+    }
+  }
+
+  const total=removedImages+removedVideos;
+  const bytes=removedBytes+videoBytes;
+  box.innerHTML=`<h3>扫描完成</h3>
+    <p>图片重复已删除：${removedImages}</p>
+    <p>视频重复已删除：${removedVideos}</p>
+    <p>总计删除：${total}</p>
+    <p>预计释放：${fmtBytes(bytes)}</p>
+    <p class="muted">图片阈值：${threshold}</p>`;
+
+  await loadMedia();
+  await loadStorageStats();
+  await loadDbThumbnails();
+  toast(`完成：删除 ${total} 个重复作品，预计释放 ${fmtBytes(bytes)}`);
  }catch(e){
-  box.textContent=e.message||'扫描失败';toast(e.message||'扫描失败');
+  box.textContent=e.message||'扫描失败';
+  toast(e.message||'扫描失败');
  }
 }
 
@@ -916,6 +946,9 @@ async function loadStorageStats(){const el=$('storageStats');try{const {data,err
 $('duplicateCenterBtn')?.addEventListener('click',openDuplicateCenter);
 $('cleanDuplicateBtn')?.addEventListener('click',cleanDuplicateMedia);
 $('backfillDedupBtn')?.addEventListener('click',backfillAndCleanSimilarDuplicates);
+$('dedupThreshold')?.addEventListener('input',e=>{
+  if($('dedupThresholdValue'))$('dedupThresholdValue').textContent=e.target.value;
+});
 $('refreshStatsBtn').onclick=()=>{loadDbStats();loadStorageStats()};$('refreshDbThumbsBtn').onclick=loadDbThumbnails;
 $('scanDuplicateBtn')?.addEventListener('click',scanDuplicateMedia);
 // stars
