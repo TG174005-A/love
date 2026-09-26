@@ -1,6 +1,7 @@
 
 
 
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -1481,7 +1482,18 @@ window.QRCode={
 </style>
 <style>
 img,video{content-visibility:auto;}
+.media-card,.similar-main-item,.db-thumb{contain:layout paint style;content-visibility:auto;contain-intrinsic-size:auto 240px}
 @supports (height:100dvh){#appView{min-height:100dvh;}}
+@media (max-width:980px),(pointer:coarse){
+  .glass,.topbar,.ticker,.bottom-nav,.viewer-btn{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .orb{display:none!important}
+  #stars{opacity:.42}
+  .btn:hover{transform:none!important;box-shadow:none!important}
+}
+@media (prefers-reduced-motion:reduce){
+  .orb,.ticker-track{animation:none!important}
+  *,*:before,*:after{scroll-behavior:auto!important}
+}
 @supports not (height:100dvh){#appView{min-height:100vh;}}
 </style>
 </head>
@@ -1574,6 +1586,8 @@ const $=id=>document.getElementById(id); const $$=q=>[...document.querySelectorA
 function toast(s){const e=$('toast');if(!e)return;e.textContent=String(s||'');e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),Number(cfg('ui','toast_duration_ms',2600)))}
 function debounceRun(key,fn,delay=180){const timers={media:()=>mediaReloadTimer,settings:()=>settingsReloadTimer,chat:()=>chatReloadTimer};const setters={media:v=>mediaReloadTimer=v,settings:v=>settingsReloadTimer=v,chat:v=>chatReloadTimer=v};if(!timers[key])return fn();const t=timers[key]();if(t)clearTimeout(t);setters[key](setTimeout(()=>{setters[key](null);Promise.resolve(fn()).catch(console.warn)},delay))}
 async function withButtonBusy(btn,fn,busyText='处理中...'){if(!btn||btn.disabled)return;const old=btn.textContent;btn.disabled=true;btn.setAttribute('aria-busy','true');if(busyText)btn.textContent=busyText;try{return await fn()}finally{btn.disabled=false;btn.removeAttribute('aria-busy');btn.textContent=old}}
+async function mapLimit(items,limit,worker){const arr=[...(items||[])],out=new Array(arr.length);let next=0;const n=Math.max(1,Math.min(Number(limit)||1,arr.length||1));await Promise.all(Array.from({length:n},async()=>{while(true){const i=next++;if(i>=arr.length)return;out[i]=await worker(arr[i],i)}}));return out}
+function idleRun(fn,timeout=1200){if('requestIdleCallback' in window)return requestIdleCallback(()=>Promise.resolve(fn()).catch(console.warn),{timeout});return setTimeout(()=>Promise.resolve(fn()).catch(console.warn),60)}
 function cleanBaseUrl(){const u=new URL(location.href);u.searchParams.delete('media');u.hash='';return u.toString()}
 function isOnline(){return navigator.onLine!==false}
 function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
@@ -1590,7 +1604,7 @@ $('installBtn').onclick=async()=>{if(installPrompt){installPrompt.prompt();await
 function manifest(){const a=settings.appearance||{};const m={name:a.title||'清音',short_name:(a.title||'清音').slice(0,12),start_url:cleanBaseUrl(),display:'standalone',background_color:'#05060b',theme_color:'#05060b'};if(a.share_icon)m.icons=[{src:a.share_icon,sizes:'512x512',type:'image/png',purpose:'any maskable'}];let l=document.querySelector('link[rel=manifest]');if(!l){l=document.createElement('link');l.rel='manifest';document.head.appendChild(l)}l.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(m))}
 async function loadSettings(){const {data,error}=await sb.from('site_settings').select('*');if(error){console.warn(error);return}settings={};(data||[]).forEach(x=>settings[x.key]=x.value||{});applySettings();applyRuntimeConfig()}
 function applyRuntimeConfig(){const r=runtime(),reg=r.registration||{},m=r.media||{},chat=r.chat||{},sim=r.similarity||{},ui=r.ui||{},features=r.features||{};const setAttr=(id,k,v)=>{const el=$(id);if(el&&v!=null)el.setAttribute(k,String(v))};setAttr('regNickname','maxlength',reg.nickname_max_length);setAttr('regPassword','minlength',reg.password_min_length);setAttr('regPassword','maxlength',reg.password_max_length);setAttr('mediaCaption','maxlength',m.caption_max_length);setAttr('chatInput','maxlength',chat.max_length);setAttr('profileBio','maxlength',ui.profile_bio_max_length);if($('dedupThreshold')){$('dedupThreshold').min=sim.display_min??8;$('dedupThreshold').max=sim.display_max??64;if(!$('dedupThreshold').dataset.dbInit){$('dedupThreshold').value=sim.display_threshold??48;$('dedupThreshold').dataset.dbInit='1';if($('dedupThresholdValue'))$('dedupThresholdValue').textContent=$('dedupThreshold').value}}$('registerTab')?.classList.toggle('hidden',features.registration_enabled===false);$('bottomUploadBtn')?.classList.toggle('hidden',features.uploads_enabled===false);$('chatBtn')?.classList.toggle('hidden',features.chat_enabled===false);$('bottomChatBtn')?.classList.toggle('hidden',features.chat_enabled===false);$('showSimilarBtn')?.classList.toggle('hidden',!isAdmin()||features.similarity_enabled===false)}
-function setGlassAlpha(el,alpha){if(!el)return;alpha=Math.max(0,Math.min(1,Number(alpha)));el.style.background=`rgba(8,11,22,${alpha})`;const blur=alpha<=0.001?'none':`blur(${Math.round(24*alpha)}px) saturate(${Math.round(100+40*alpha)}%)`;el.style.backdropFilter=blur;el.style.webkitBackdropFilter=blur}
+function setGlassAlpha(el,alpha){if(!el)return;alpha=Math.max(0,Math.min(1,Number(alpha)));el.style.background=`rgba(8,11,22,${alpha})`;const lowPower=window.matchMedia&&matchMedia('(max-width:980px), (pointer:coarse)').matches;const blur=(lowPower||alpha<=0.001)?'none':`blur(${Math.round(12*alpha)}px) saturate(${Math.round(100+20*alpha)}%)`;el.style.backdropFilter=blur;el.style.webkitBackdropFilter=blur}
 function applyGlassOpacity(){const a=settings.appearance||{},login=a.login_opacity??.72,home=a.home_opacity??.70,admin=a.admin_opacity??.78;setGlassAlpha($('authCard'),login);$$('#appView .glass').forEach(el=>setGlassAlpha(el,home));$$('#profileModal .glass,#uploadModal .glass,#chatModal .glass,#shareModal .glass').forEach(el=>setGlassAlpha(el,home));setGlassAlpha($('adminPanel'),admin)}
 function applySettings(){const a=settings.appearance||{},t=settings.ticker?.text||'清音 · REALTIME',ann=settings.announcement?.text||'';document.title=a.title||'清音';$('loginTitle').textContent=a.title||'清音';$('topTitle').textContent=a.title||'清音';$('tickerTrack').innerHTML=`<span>${esc(t)}</span><span>${esc(t)}</span>`;$('announcement').textContent=ann;$('announcement').classList.toggle('hidden',!ann);if(a.share_icon){$('favicon').href=a.share_icon;let apple=document.querySelector('link[rel="apple-touch-icon"]');if(!apple){apple=document.createElement('link');apple.rel='apple-touch-icon';document.head.appendChild(apple)}apple.href=a.share_icon}manifest();applyBackground(activeBackgroundPage);applyGlassOpacity()}
 function applyBackground(page){const a=settings.appearance||{},url=a[page+'_bg']||'',base=url?`linear-gradient(rgba(2,4,10,.24),rgba(2,4,10,.56)),url("${url}")`:'';if(page==='admin'){const m=$('adminModal');m.style.backgroundImage=base;m.style.backgroundSize='cover';m.style.backgroundPosition='center';m.style.backgroundRepeat='no-repeat';m.style.backgroundColor=url?'rgba(0,0,0,.20)':'rgba(0,0,0,.58)';}else{$('pageBg').style.backgroundImage=base;const m=$('adminModal');if(m){m.style.backgroundImage='';m.style.backgroundColor='rgba(0,0,0,.58)';}}}
@@ -1599,7 +1613,7 @@ function authMode(mode){$('loginForm').classList.toggle('hidden',mode!=='login')
 $('loginTab').onclick=()=>authMode('login');$('registerTab').onclick=()=>authMode('register');
 $('loginForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter||$('loginForm').querySelector('button[type=submit]');await withButtonBusy(btn,async()=>{const account=$('loginAccount').value.trim();if(!/^\d+$/.test(account))return toast('账号只能是数字');if(!isOnline())return toast('当前网络不可用');const {data,error}=await sb.auth.signInWithPassword({email:account+'@numeric.local',password:$('loginPassword').value});if(error)return toast('登录失败：'+error.message);session=data.session;await enterApp()},'登录中...')};
 $('registerForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter||$('registerForm').querySelector('button[type=submit]');await withButtonBusy(btn,async()=>{if(cfg('features','registration_enabled',true)===false)return toast('当前已关闭注册');const account=$('regAccount').value.trim();const password=$('regPassword').value,amin=Number(cfg('registration','account_min_digits',4)),amax=Number(cfg('registration','account_max_digits',18)),pmin=Number(cfg('registration','password_min_length',6)),pmax=Number(cfg('registration','password_max_length',72));if(!(new RegExp('^\\d{'+amin+','+amax+'}$')).test(account))return toast(`账号必须是${amin}-${amax}位纯数字`);if(password.length<pmin||password.length>pmax)return toast(`密码必须为${pmin}-${pmax}位`);if(!isOnline())return toast('当前网络不可用');let r;try{r=await fetch(SUPABASE_URL+'/functions/v1/numeric-register',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({account,password,nickname:$('regNickname').value.trim()})})}catch(e){return toast('注册请求失败，请检查网络')}let j={};try{j=await r.json()}catch{}if(!r.ok)return toast(j.error||'注册失败');toast('注册成功，正在登录');const {data,error}=await sb.auth.signInWithPassword({email:account+'@numeric.local',password});if(error)return toast(error.message);session=data.session;await enterApp()},'注册中...')};
-async function enterApp(){if(appEntering)return;appEntering=true;try{const {data:{user},error}=await sb.auth.getUser();if(error)throw error;me=user;if(!me)return;await loadProfile();$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('adminBtn').classList.toggle('hidden',!isAdmin());$('showSimilarBtn')?.classList.toggle('hidden',!isAdmin());activeBackgroundPage='home';applyBackground('home');await Promise.all([loadMedia(),loadSettings()]);await setupRealtime();await setupPresence();const mid=new URL(location.href).searchParams.get('media');if(mid)await openMediaViewer(mid)}catch(e){console.error(e);toast(e.message||'进入应用失败')}finally{appEntering=false}}
+async function enterApp(){if(appEntering)return;appEntering=true;try{const {data:{user},error}=await sb.auth.getUser();if(error)throw error;me=user;if(!me)return;await loadProfile();$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('adminBtn').classList.toggle('hidden',!isAdmin());$('showSimilarBtn')?.classList.toggle('hidden',!isAdmin());activeBackgroundPage='home';applyBackground('home');await loadMedia(true);await Promise.all([setupRealtime(),setupPresence()]);const mid=new URL(location.href).searchParams.get('media');if(mid)await openMediaViewer(mid)}catch(e){console.error(e);toast(e.message||'进入应用失败')}finally{appEntering=false}}
 async function loadProfile(){const {data,error}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();if(error)console.warn(error);profile=data||{id:me.id,account:accountOf(me),nickname:'用户'+accountOf(me).slice(-4),bio:'',avatar_url:''};renderProfile()}
 function renderProfile(){const av=profile.avatar_url||'';$('profileNickname').value=profile.nickname||'';$('profileBio').value=profile.bio||'';[$('topAvatar'),$('profileAvatarPreview')].forEach(i=>{i.src=av||`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><linearGradient id="g"><stop stop-color="#00e5ff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient></defs><rect width="120" height="120" rx="60" fill="#101527"/><text x="60" y="72" text-anchor="middle" font-size="42" fill="url(#g)">${esc((profile.nickname||profile.account||'N').slice(0,1))}</text></svg>`)}`})}
 $('logoutBtn').onclick=async()=>{await withButtonBusy($('logoutBtn'),async()=>{if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}await sb.auth.signOut();location.reload()},'退出中...')};$('chatBtn').onclick=()=>{openModal('chatModal');loadChat()};$('topAvatar').onclick=()=>openModal('profileModal');$('topAvatar').style.cursor='pointer';
@@ -1650,7 +1664,7 @@ async function imagePerceptualHash(file){
       resolve(arr.map(v=>v>=avg?'1':'0').join(''));
       URL.revokeObjectURL(img.src);
     };
-    img.onerror=()=>resolve('');
+    img.onerror=()=>{try{URL.revokeObjectURL(img.src)}catch{}resolve('')};
     img.src=URL.createObjectURL(file);
   });
 }
@@ -1676,6 +1690,20 @@ function isSimilarVideoFingerprint(a,b){
   let matches=0;
   for(let i=0;i<n;i++)if(hammingBits(A.frames[i],B.frames[i])<=Number(cfg('similarity','hash_distance',12)))matches++;
   return matches===n;
+}
+function buildVideoSimilarityEdges(videos){
+  const tolerance=Math.max(0,Number(cfg('video','similar_duration_tolerance_seconds',1)));
+  const rows=(videos||[]).filter(v=>v.video_fingerprint).map(v=>({row:v,fp:parseVideoFingerprint(v.video_fingerprint)})).filter(x=>x.fp).sort((a,b)=>Number(a.fp.duration||a.row.duration||0)-Number(b.fp.duration||b.row.duration||0));
+  const edges=[];
+  for(let i=0;i<rows.length;i++){
+    const a=rows[i],ad=Number(a.fp.duration||a.row.duration||0);
+    for(let j=i+1;j<rows.length;j++){
+      const b=rows[j],bd=Number(b.fp.duration||b.row.duration||0);
+      if(bd-ad>tolerance)break;
+      if(isSimilarVideoFingerprint(a.fp,b.fp))edges.push({a:a.row.id,b:b.row.id,type:'video',distance:0});
+    }
+  }
+  return edges;
 }
 async function frameHashFromVideoElement(v,time){
   return await new Promise(resolve=>{
@@ -1785,10 +1813,12 @@ async function publishFile(sourceFile,caption='',bar,finalize=true){
   // 先做必要的精确去重；图片相似哈希/视频信息与 SHA-256 并行，减少等待。
   const prep=await Promise.all([
     fileSHA256(sourceFile),
-    originalType==='image'?imagePerceptualHash(sourceFile):getVideoInfo(sourceFile)
+    originalType==='image'?imagePerceptualHash(sourceFile):getVideoInfo(sourceFile),
+    originalType==='video'?videoFingerprint(sourceFile):Promise.resolve('')
   ]);
   const sourceHash=prep[0];
   const earlyMeta=prep[1];
+  const earlyVideoFingerprint=prep[2]||'';
   const {data:dup,error:dupErr}=await sb.from('media_posts').select('id').eq('content_hash',sourceHash).limit(1);
   if(dupErr)throw dupErr;
   if((dup||[]).length){if(bar)bar.style.width='100%';toast('检测到完全相同的文件，已跳过重复上传');if(finalize){closeModal('uploadModal');$('mediaFile').value='';$('mediaCaption').value=''}return 'skipped'}
@@ -1815,16 +1845,13 @@ async function publishFile(sourceFile,caption='',bar,finalize=true){
   const url=sb.storage.from('media').getPublicUrl(path).data.publicUrl;
   if(bar)bar.style.width='78%';
 
-  const payload={user_id:me.id,account:profile.account,url,object_path:path,media_type:type,caption,content_hash:sourceHash,image_hash,video_fingerprint:'',file_size:f.size,duplicate_checked_at:new Date().toISOString(),duration:videoInfo.duration,cover_url:coverUrl,play_count:0,updated_at:new Date().toISOString()};
-  const {data:inserted,error}=await sb.from('media_posts').insert(payload).select('id').single();
+  const payload={user_id:me.id,account:profile.account,url,object_path:path,media_type:type,caption,content_hash:sourceHash,image_hash,video_fingerprint:type==='video'?earlyVideoFingerprint:'',file_size:f.size,duplicate_checked_at:new Date().toISOString(),duration:videoInfo.duration,cover_url:coverUrl,play_count:0,updated_at:new Date().toISOString()};
+  const {error}=await sb.from('media_posts').insert(payload);
   if(error)throw error;
   if(bar)bar.style.width='100%';
   toast('发布成功');
 
-  // 视频相似指纹较耗时，不再阻塞用户上传完成；发布后异步补写。
-  if(type==='video'&&inserted?.id){
-    videoFingerprint(f).then(fp=>{if(fp)return sb.from('media_posts').update({video_fingerprint:fp,duplicate_checked_at:new Date().toISOString()}).eq('id',inserted.id)}).catch(e=>console.warn('视频指纹后台补写失败',e));
-  }
+  // 视频指纹已在发布前生成并随记录一次写入，避免相似检测窗口期。
   if(finalize){closeModal('uploadModal');$('mediaFile').value='';$('mediaCaption').value=''}
   await loadMedia(true);
   return true
@@ -1886,7 +1913,7 @@ async function fetchMediaPage(type,reset=false){
   const from=reset?0:mediaOffsets[type],to=from+pageSize-1;
   const {data,error,count}=await sb.from('media_posts').select(MEDIA_FEED_FIELDS,{count:'exact'}).eq('media_type',type).order('created_at',{ascending:false}).range(from,to);
   if(error)throw error;
-  const rows=data||[];mediaOffsets[type]=from+rows.length;mediaHasMore[type]=rows.length===pageSize;
+  const rows=data||[];mediaOffsets[type]=from+rows.length;mediaHasMore[type]=count==null?rows.length===pageSize:mediaOffsets[type]<Number(count);
   if(reset){media=media.filter(x=>x.media_type!==type).concat(rows)}else{const seen=new Set(media.map(x=>String(x.id)));media.push(...rows.filter(x=>!seen.has(String(x.id))))}
   return {rows,count:Number(count||0)};
  }catch(e){console.warn('媒体分页读取失败',e);return {rows:[],count:0}}
@@ -1899,7 +1926,7 @@ async function loadMedia(reset=true){
  const mc=$('mediaCount');if(mc)mc.textContent=mediaTotalCount||media.length;
  if(currentMediaCategory==='similar'&&isAdmin())await renderMainSimilarGroups();else renderFeed();return true
 }
-async function loadMoreCurrentMedia(){if(currentMediaCategory!=='video'&&currentMediaCategory!=='image')return;const before=mediaOffsets[currentMediaCategory];await fetchMediaPage(currentMediaCategory,false);if(mediaOffsets[currentMediaCategory]!==before){media.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));renderFeed()}}
+async function loadMoreCurrentMedia(){const type=currentMediaCategory;if(type!=='video'&&type!=='image')return;if(mediaLoading[type]||!mediaHasMore[type])return;const result=await fetchMediaPage(type,false);const rows=result?.rows||[];if(!rows.length)return;media.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));const f=$('feed');if(f&&currentMediaCategory===type){f.insertAdjacentHTML('beforeend',rows.map(mediaCardHTML).join(''));applyMediaCategory()}}
 async function ensureMediaItem(id){
  const cached=media.find(x=>String(x.id)===String(id));if(cached)return cached;
  const {data,error}=await sb.from('media_posts').select(MEDIA_FEED_FIELDS).eq('id',id).maybeSingle();
@@ -1932,7 +1959,10 @@ function applyMediaCategory(){
  document.querySelectorAll('[data-media-type]').forEach(el=>{el.classList.toggle('media-hidden-category',el.dataset.mediaType!==currentMediaCategory)});
  const v=document.getElementById('showVideosBtn'),i=document.getElementById('showImagesBtn');if(v)v.classList.toggle('active',currentMediaCategory==='video');if(i)i.classList.toggle('active',currentMediaCategory==='image');
 }
-function renderFeed(){const f=$('feed');f.classList.remove('similar-feed');f.classList.add('media-grid');const visible=media.filter(p=>p.media_type===currentMediaCategory);if(!visible.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;applyMediaCategory();return}f.innerHTML=visible.map(p=>`<article class="media-card" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}" loading="lazy" decoding="async">`:`<video src="${esc(p.url)}" muted preload="metadata"></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy" decoding="async">`}<div class="media-cover"></div><div class="media-info"><b>@${esc(p.account)}</b><br>${esc(p.caption||'影像')}<div class="media-meta">${p.media_type==='video'?`<span>⏱ ${formatDuration(p.duration)}</span><span>▶ ${Number(p.play_count||0)}</span>`:'<span>照片</span>'}</div></div></article>`).join('');applyMediaCategory()}
+function mediaCardHTML(p){return `<article class="media-card" data-media-id="${esc(p.id)}" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}" loading="lazy" decoding="async">`:`<video src="${esc(p.url)}" muted preload="metadata"></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy" decoding="async">`}<div class="media-cover"></div><div class="media-info"><b>@${esc(p.account)}</b><br>${esc(p.caption||'影像')}<div class="media-meta">${p.media_type==='video'?`<span>⏱ ${formatDuration(p.duration)}</span><span>▶ ${Number(p.play_count||0)}</span>`:'<span>照片</span>'}</div></div></article>`}
+function renderFeed(){const f=$('feed');f.classList.remove('similar-feed');f.classList.add('media-grid');const visible=media.filter(p=>p.media_type===currentMediaCategory);if(!visible.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;applyMediaCategory();return}f.innerHTML=visible.map(mediaCardHTML).join('');applyMediaCategory()}
+function patchMediaCard(id){const p=media.find(x=>String(x.id)===String(id));const old=document.querySelector(`.media-card[data-media-id="${CSS.escape(String(id))}"]`);if(!old||!p||p.media_type!==currentMediaCategory)return;old.outerHTML=mediaCardHTML(p)}
+function handleMediaRealtime(payload){const event=payload?.eventType||payload?.type||'';const next=payload?.new||{};const prev=payload?.old||{};const id=next.id??prev.id;if(id==null){debounceRun('media',()=>loadMedia(true),500);return}const key=String(id),idx=media.findIndex(x=>String(x.id)===key);if(event==='INSERT'){mediaTotalCount++;const mc=$('mediaCount');if(mc)mc.textContent=mediaTotalCount;if(idx<0&&next.media_type){media.unshift(next);if(next.media_type===currentMediaCategory){const f=$('feed');if(f){if(f.querySelector('.empty'))renderFeed();else f.insertAdjacentHTML('afterbegin',mediaCardHTML(next))}}}}else if(event==='UPDATE'){if(idx>=0){media[idx]={...media[idx],...next};patchMediaCard(id)}}else if(event==='DELETE'){if(idx>=0)media.splice(idx,1);mediaTotalCount=Math.max(0,mediaTotalCount-1);const mc=$('mediaCount');if(mc)mc.textContent=mediaTotalCount;document.querySelector(`.media-card[data-media-id="${CSS.escape(key)}"]`)?.remove();if(!$('feed')?.querySelector('.media-card')&&(currentMediaCategory==='video'||currentMediaCategory==='image'))renderFeed()}}
 window.countPlay=async id=>{try{const p=await ensureMediaItem(id);if(!p||p._played)return;p._played=true;const {data,error}=await sb.rpc('increment_media_play_count',{p_id:id});if(error){p._played=false;console.warn(error);return}p.play_count=Number(data??p.play_count??0)}catch(e){console.warn(e)}};
 window.sharePost=async id=>{try{const p=await ensureMediaItem(id);if(!p)return toast('作品不存在');const url=new URL(location.href);url.searchParams.set('media',id);if(navigator.share)await navigator.share({title:document.title,text:p.caption||'清音 影像',url:url.toString()});else{await navigator.clipboard.writeText(url.toString());toast('作品链接已复制')}}catch(e){if(e?.name!=='AbortError')toast(e.message||'分享失败')}};
 window.deletePost=async id=>{try{const p=await ensureMediaItem(id);if(!p||!canDeleteMedia(p))return toast('没有删除权限');if(!confirm('确定删除这个作品？'))return;if(!await deleteMediaRowAndStorage(p))throw new Error('Storage 或数据库删除失败');toast('作品已删除');media=media.filter(x=>String(x.id)!==String(id));mediaTotalCount=Math.max(0,mediaTotalCount-1);const mc=$('mediaCount');if(mc)mc.textContent=mediaTotalCount;renderFeed();if(document.getElementById('fullViewerPage')?.classList.contains('active'))document.getElementById('viewerClose')?.click()}catch(e){toast(e.message||'删除失败')}};
@@ -1994,16 +2024,7 @@ async function renderMainSimilarGroups(){
     }));
 
     const videos=await fetchAllRowsPaged('media_posts','id,url,cover_url,object_path,media_type,account,caption,duration,play_count,created_at,file_size,video_fingerprint',q=>q.eq('media_type','video').not('video_fingerprint','is',null).order('created_at',{ascending:false}));
-    const videoEdges=[];
-    for(let i=0;i<videos.length;i++){
-      for(let j=i+1;j<videos.length;j++){
-        const a=videos[i],b=videos[j];
-        if(Math.abs(Number(a.duration||0)-Number(b.duration||0))>Number(cfg('video','similar_duration_tolerance_seconds',1)))continue;
-        if(isSimilarVideoFingerprint(a.video_fingerprint,b.video_fingerprint)){
-          videoEdges.push({a:a.id,b:b.id,type:'video',distance:0});
-        }
-      }
-    }
+    const videoEdges=buildVideoSimilarityEdges(videos);
 
     const imageGroups=buildMainSimilarityGroups(imageEdges);
     const videoGroups=buildMainSimilarityGroups(videoEdges);
@@ -2071,10 +2092,10 @@ async function renderMainSimilarGroups(){
   }
 }
 
-async function setupRealtime(){if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}realtimeChannel=sb.channel('nebula-db-'+me.id).on('postgres_changes',{event:'*',schema:'public',table:'media_posts'},()=>debounceRun('media',()=>loadMedia(true),350)).on('postgres_changes',{event:'*',schema:'public',table:'profiles',filter:`id=eq.${me.id}`},p=>{if(p.new?.id===me.id){profile=p.new;renderProfile()}}).on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>debounceRun('settings',loadSettings,250)).on('postgres_changes',{event:'*',schema:'public',table:'chat_messages'},()=>{if(!$('chatModal').classList.contains('hidden'))debounceRun('chat',loadChat,160)});realtimeChannel.subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Realtime 状态',status)});return realtimeChannel}
+async function setupRealtime(){if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}realtimeChannel=sb.channel('nebula-db-'+me.id).on('postgres_changes',{event:'*',schema:'public',table:'media_posts'},handleMediaRealtime).on('postgres_changes',{event:'*',schema:'public',table:'profiles',filter:`id=eq.${me.id}`},p=>{if(p.new?.id===me.id){profile=p.new;renderProfile()}}).on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>debounceRun('settings',loadSettings,400)).on('postgres_changes',{event:'*',schema:'public',table:'chat_messages'},()=>{if(!$('chatModal').classList.contains('hidden'))debounceRun('chat',loadChat,280)});realtimeChannel.subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Realtime 状态',status)});return realtimeChannel}
 async function setupPresence(){if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}presence=sb.channel('nebula-online',{config:{presence:{key:me.id}}});presence.on('presence',{event:'sync'},()=>{const n=Object.keys(presence.presenceState()).length;const oc=$('onlineCount'),ao=$('adminOnline');if(oc)oc.textContent=n;if(ao)ao.textContent=n}).subscribe(async status=>{if(status==='SUBSCRIBED')await presence.track({account:profile.account,at:new Date().toISOString()});if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Presence 状态',status)});return presence}
 $$('[data-chat]').forEach(b=>b.onclick=()=>{$$('[data-chat]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');currentChat=b.dataset.chat;loadChat()});
-async function loadChat(){if(chatLoading)return;chatLoading=true;try{let q=sb.from('chat_messages').select('id,user_id,recipient_id,account,channel,content,created_at,expires_at').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:true}).limit(Number(cfg('chat','query_limit',300)));if(currentChat==='global')q=q.eq('channel','global');else{q=q.eq('channel','admin');if(!isSuper())q=q.or(`user_id.eq.${me.id},recipient_id.eq.${me.id}`)}const {data,error}=await q;if(error)throw error;const list=data||[];$('messages').innerHTML=list.length?list.map(m=>`<div class="msg ${m.user_id===me.id?'me':''}"><small>@${esc(m.account)} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small>${esc(m.content)}</div>`).join(''):'<div class="muted" style="padding:14px;text-align:center">暂无消息</div>';$('messages').scrollTop=$('messages').scrollHeight}catch(e){console.warn(e);toast('聊天加载失败')}finally{chatLoading=false}}
+async function loadChat(){if(chatLoading)return;chatLoading=true;try{let q=sb.from('chat_messages').select('id,user_id,recipient_id,account,channel,content,created_at,expires_at').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(Number(cfg('chat','query_limit',300)));if(currentChat==='global')q=q.eq('channel','global');else{q=q.eq('channel','admin');if(!isSuper())q=q.or(`user_id.eq.${me.id},recipient_id.eq.${me.id}`)}const {data,error}=await q;if(error)throw error;const list=(data||[]).reverse();$('messages').innerHTML=list.length?list.map(m=>`<div class="msg ${m.user_id===me.id?'me':''}"><small>@${esc(m.account)} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small>${esc(m.content)}</div>`).join(''):'<div class="muted" style="padding:14px;text-align:center">暂无消息</div>';$('messages').scrollTop=$('messages').scrollHeight}catch(e){console.warn(e);toast('聊天加载失败')}finally{chatLoading=false}}
 $('sendChatBtn').onclick=sendChat;$('chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}};async function sendChat(){if(chatSending)return;const content=$('chatInput').value.trim();if(!content)return;if(!isOnline())return toast('当前网络不可用');if(cfg('features','chat_enabled',true)===false)return toast('当前已关闭聊天');if(content.length>Number(cfg('chat','max_length',1000)))return toast('消息过长');chatSending=true;const btn=$('sendChatBtn');btn.disabled=true;try{let recipient_id=null;if(currentChat==='admin'&&!isSuper()){const {data,error}=await sb.from('profiles').select('id').eq('account',String(cfg('admin','primary_account',''))).maybeSingle();if(error)throw error;recipient_id=data?.id||null;if(!recipient_id)throw new Error('管理员账号不可用')}const {error}=await sb.from('chat_messages').insert({user_id:me.id,recipient_id,account:profile.account,channel:currentChat,content});if(error)throw error;$('chatInput').value='';await loadChat()}catch(e){toast(e.message||'发送失败')}finally{chatSending=false;btn.disabled=false}}
 async function showShare(){
   openModal('shareModal');
@@ -2268,16 +2289,19 @@ async function scanDuplicateMedia(){
 
 
 async function deleteMediaRowAndStorage(x){
+  const id=x?.duplicate_id||x?.id;
+  if(!id)return false;
   try{
+    const {data:deleted,error}=await sb.from('media_posts').delete().eq('id',id).select('id').maybeSingle();
+    if(error)throw error;
+    if(!deleted?.id)throw new Error('数据库未删除任何记录，请检查 RLS/权限');
     const paths=[x.object_path,storagePathFromPublicUrl(x.cover_url||'')].filter(Boolean);
     if(paths.length){
       const {error:storageError}=await sb.storage.from('media').remove([...new Set(paths)]);
-      if(storageError)throw storageError;
+      if(storageError){console.warn('媒体记录已删除，但 Storage 清理失败',id,storageError);return 'orphaned'}
     }
-    const {error}=await sb.from('media_posts').delete().eq('id',x.duplicate_id||x.id);
-    if(error)throw error;
     return true;
-  }catch(e){console.warn('delete duplicate failed',x,e);return false}
+  }catch(e){console.warn('delete media failed',x,e);return false}
 }
 
 async function backfillAndCleanSimilarDuplicates(){
@@ -2308,16 +2332,17 @@ async function backfillAndCleanSimilarDuplicates(){
   const videos=await fetchAllRowsPaged('media_posts','id,url,cover_url,object_path,video_fingerprint,duration,file_size,created_at',q=>q.eq('media_type','video').order('created_at',{ascending:false}));
 
   let removedVideos=0,videoBytes=0;
+  const missing=(videos||[]).filter(x=>!x.video_fingerprint&&x.url);
+  await mapLimit(missing,Math.max(1,Math.min(4,Number(cfg('video','fingerprint_concurrency',3)))),async x=>{
+    const fp=await videoFingerprintFromUrl(x.url).catch(()=> '');
+    if(!fp)return;
+    x.video_fingerprint=fp;
+    const {error}=await sb.from('media_posts').update({video_fingerprint:fp,duplicate_checked_at:new Date().toISOString()}).eq('id',x.id);
+    if(error)console.warn('视频指纹补写失败',x.id,error);
+  });
   const kept=[];
   for(const x of (videos||[])){
-    let fp=x.video_fingerprint;
-    if(!fp){
-      fp=await videoFingerprintFromUrl(x.url);
-      if(fp)await sb.from('media_posts').update({
-        video_fingerprint:fp,
-        duplicate_checked_at:new Date().toISOString()
-      }).eq('id',x.id);
-    }
+    const fp=x.video_fingerprint;
     if(!fp)continue;
     const same=kept.find(k=>isSimilarVideoFingerprint(fp,k.fp));
     if(same){
@@ -2325,9 +2350,7 @@ async function backfillAndCleanSimilarDuplicates(){
         removedVideos++;
         videoBytes+=Number(x.file_size||0);
       }
-    }else{
-      kept.push({id:x.id,fp});
-    }
+    }else kept.push({id:x.id,fp});
   }
 
   const total=removedImages+removedVideos;
@@ -2513,33 +2536,19 @@ async function reviewSimilarCandidates(){
 
     const videos=await fetchAllRowsPaged('media_posts','id,url,cover_url,object_path,file_size,created_at,account,video_fingerprint,duration',q=>q.eq('media_type','video').order('created_at',{ascending:false}));
 
-    // 给旧视频补指纹，后续即可参加分组
-    for(const v of (videos||[])){
-      if(!v.video_fingerprint && v.url){
-        try{
-          const fp=await videoFingerprintFromUrl(v.url);
-          if(fp){
-            v.video_fingerprint=fp;
-            await sb.from('media_posts').update({
-              video_fingerprint:fp,
-              duplicate_checked_at:new Date().toISOString()
-            }).eq('id',v.id);
-          }
-        }catch(_){}
-      }
-    }
+    // 给旧视频补指纹；限制并发，减少等待并防止同时解码过多视频。
+    const missingFp=(videos||[]).filter(v=>!v.video_fingerprint&&v.url);
+    await mapLimit(missingFp,Math.max(1,Math.min(4,Number(cfg('video','fingerprint_concurrency',3)))),async v=>{
+      try{
+        const fp=await videoFingerprintFromUrl(v.url);
+        if(!fp)return;
+        v.video_fingerprint=fp;
+        const {error}=await sb.from('media_posts').update({video_fingerprint:fp,duplicate_checked_at:new Date().toISOString()}).eq('id',v.id);
+        if(error)console.warn('视频指纹补写失败',v.id,error);
+      }catch(e){console.warn('视频指纹生成失败',v.id,e)}
+    });
 
-    const videoEdges=[];
-    const vv=(videos||[]).filter(v=>v.video_fingerprint);
-    for(let i=0;i<vv.length;i++){
-      for(let j=i+1;j<vv.length;j++){
-        const a=vv[i],b=vv[j];
-        if(Math.abs(Number(a.duration||0)-Number(b.duration||0))>Number(cfg('video','similar_duration_tolerance_seconds',1)))continue;
-        if(isSimilarVideoFingerprint(a.video_fingerprint,b.video_fingerprint)){
-          videoEdges.push({a:a.id,b:b.id,type:'video',distance:0});
-        }
-      }
-    }
+    const videoEdges=buildVideoSimilarityEdges(videos);
 
     const imageGroups=buildSimilarityGroups(imgEdges);
     const videoGroups=buildSimilarityGroups(videoEdges);
@@ -2741,7 +2750,7 @@ $('dedupThreshold')?.addEventListener('input',e=>{
 $('refreshStatsBtn').onclick=()=>{loadDbStats();loadStorageStats()};$('refreshDbThumbsBtn').onclick=loadDbThumbnails;
 $('scanDuplicateBtn')?.addEventListener('click',scanDuplicateMedia);
 // stars
-(function(){const c=$('stars'),x=c.getContext('2d');let w,h,dpr,pts=[];function resize(){dpr=Math.min(devicePixelRatio||1,2);w=innerWidth;h=innerHeight;c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';x.setTransform(dpr,0,0,dpr,0,0);pts=Array.from({length:Math.min(150,Math.floor(w*h/9000))},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.5+.3,v:Math.random()*.22+.05,a:Math.random()*.7+.2}))}function draw(){x.clearRect(0,0,w,h);for(const p of pts){p.y-=p.v;if(p.y<0){p.y=h;p.x=Math.random()*w}x.beginPath();x.fillStyle=`rgba(170,220,255,${p.a})`;x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fill()}requestAnimationFrame(draw)}addEventListener('resize',resize);resize();draw()})();
+(function(){const c=$('stars'),x=c.getContext('2d');let w,h,dpr,pts=[],raf=0,last=0;const reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches,coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;function resize(){dpr=Math.min(devicePixelRatio||1,1.5);w=innerWidth;h=innerHeight;c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';x.setTransform(dpr,0,0,dpr,0,0);pts=Array.from({length:coarse?Math.min(24,Math.floor(w*h/30000)):reduced?Math.min(36,Math.floor(w*h/26000)):Math.min(75,Math.floor(w*h/16000))},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.2+.3,v:Math.random()*.18+.04,a:Math.random()*.6+.2}))}function paint(move){x.clearRect(0,0,w,h);for(const p of pts){if(move){p.y-=p.v;if(p.y<0){p.y=h;p.x=Math.random()*w}}x.beginPath();x.fillStyle=`rgba(170,220,255,${p.a})`;x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fill()}}function draw(ts=0){if(document.hidden){raf=0;return}if(coarse||reduced){paint(false);raf=0;return}if(ts-last>33){paint(true);last=ts}raf=requestAnimationFrame(draw)}function start(){if(!raf)raf=requestAnimationFrame(draw)}addEventListener('resize',()=>{resize();start()},{passive:true});document.addEventListener('visibilitychange',start);resize();start()})();
 (async()=>{await loadSettings();const {data:{session:s}}=await sb.auth.getSession();session=s;if(session)await enterApp();sb.auth.onAuthStateChange((event,s)=>{
   session=s||null;
   if(!s && event==='SIGNED_OUT'){
@@ -2774,7 +2783,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(shareBtn)shareBtn.onclick=showShare;
   if(chatBtn)chatBtn.onclick=()=>{openModal('chatModal');loadChat()};
   const feedEl=document.getElementById('feed');
-  if(feedEl)feedEl.addEventListener('scroll',()=>{if(feedEl.scrollHeight-feedEl.scrollTop-feedEl.clientHeight<700)loadMoreCurrentMedia()},{passive:true});
+  if(feedEl){let scrollQueued=false;feedEl.addEventListener('scroll',()=>{if(scrollQueued)return;scrollQueued=true;requestAnimationFrame(()=>{scrollQueued=false;if(feedEl.scrollHeight-feedEl.scrollTop-feedEl.clientHeight<700)loadMoreCurrentMedia()})},{passive:true});}
   applyMediaCategory();
 });
 </script>
