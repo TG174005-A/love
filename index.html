@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#05060b" />
 <link rel="manifest" id="importManifest" href="data:application/manifest+json,%7B%22name%22%3A%22%E6%B8%85%E9%9F%B3%22%2C%22short_name%22%3A%22%E6%B8%85%E9%9F%B3%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2305060b%22%2C%22theme_color%22%3A%22%2305060b%22%7D">
 <title>清音</title>
+<meta name="qingyin-build" content="stable-v7-full-features-split-delete">
 <link id="favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%2300e5ff'/%3E%3Cstop offset='1' stop-color='%239b5cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='%2305060b'/%3E%3Cpath d='M15 42V20h8l18 22V20h8v24h-8L23 22v20z' fill='url(%23g)'/%3E%3C/svg%3E" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js" onerror="document.write('<script src=&quot;https://unpkg.com/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js&quot;><\/script>')"></script>
 <script>
@@ -2072,7 +2073,7 @@ button,input,textarea,select{max-width:100%}
 <div id="adminModal" class="modal-wrap hidden"><div id="adminPanel" class="modal wide glass"><div class="modal-head"><h2>清音 CONTROL <span class="tag">SUPERADMIN</span></h2><button class="btn small" data-close="adminModal">✕</button></div><div class="admin-tabs"><button class="btn small primary" data-admin="users">用户</button><button class="btn small" data-admin="appearance">视觉</button><button class="btn small" data-admin="content">内容</button><button class="btn small" data-admin="system">系统</button><button class="btn small" data-admin="tools">工具</button><button class="btn small" data-admin="calls">音视频</button></div>
   <section id="adm-users" class="admin-section active"><div class="grid2"><div class="panel"><h3>增加管理员</h3><div class="form"><input id="newAdminAccount" class="field" inputmode="numeric" placeholder="数字账号"><input id="newAdminPassword" class="field" type="password" placeholder="初始密码"><input id="newAdminNickname" class="field" placeholder="昵称"><button id="createAdminBtn" class="btn primary">创建管理员</button></div></div><div class="panel"><h3>实时状态</h3><div class="stat-grid"><div class="stat"><span class="muted">在线人数</span><b id="adminOnline">0</b></div><div class="stat"><span class="muted">用户数</span><b id="adminUsersCount">0</b></div></div></div></div><div class="panel" style="margin-top:12px"><h3>用户管理（可私信用户）</h3><div class="admin-toolbar"><input id="adminUserSearch" class="field" placeholder="搜索账号 / 昵称 / 角色"><select id="adminUserRoleFilter" class="field"><option value="all">全部角色</option><option value="superadmin">超级管理员</option><option value="admin">管理员</option><option value="user">普通用户</option></select><button id="clearAdminUserFilterBtn" class="btn small">清除筛选</button><span id="adminUserFilterCount" class="admin-filter-count">显示全部</span></div><div class="table-wrap"><table class="table"><thead><tr><th>账号</th><th>昵称</th><th>角色</th><th>最近登录</th><th>定位</th><th>操作</th></tr></thead><tbody id="usersTable"></tbody></table></div></div></section>
   <section id="adm-appearance" class="admin-section"><div class="grid2"><div class="panel"><h3>页面背景</h3><div class="form"><label>页面<select id="bgPage" class="field"><option value="login">登录页</option><option value="home">主页</option><option value="admin">后台页</option></select></label><input id="bgFile" type="file" accept="image/*" class="field"><button id="uploadBgBtn" class="btn primary">上传并实时应用</button><div id="bgPreview" class="bg-preview"></div></div></div><div class="panel"><h3>玻璃透明度</h3><p class="muted" style="font-size:12px;margin-top:-4px">0% = 完全显示背景 · 100% = 完全不显示背景</p><div class="form"><label>登录页 <span id="loginOpVal"></span><input id="loginOpacity" class="range" type="range" min="0" max="1" step="0.01"></label><label>主页 <span id="homeOpVal"></span><input id="homeOpacity" class="range" type="range" min="0" max="1" step="0.01"></label><label>后台 <span id="adminOpVal"></span><input id="adminOpacity" class="range" type="range" min="0" max="1" step="0.01"></label><button id="saveOpacityBtn" class="btn primary">保存透明度</button></div></div></div></section>
-  <section id="adm-content" class="admin-section"><div class="grid2"><div class="panel"><h3>实时信息</h3><div class="form"><textarea id="tickerInput" class="field" rows="3" placeholder="跑马灯内容"></textarea><button id="saveTickerBtn" class="btn primary">发送到跑马灯</button><textarea id="announcementInput" class="field" rows="3" placeholder="登录页公告"></textarea><button id="saveAnnouncementBtn" class="btn">发布公告</button></div></div><div class="panel"><h3>媒体 / 聊天</h3><div class="form"><button id="playAllBtn" class="btn">一键播放所有视频</button><button id="deleteAllMediaBtn" class="btn danger">删除所有视频 / 图片</button><button id="deleteAllChatBtn" class="btn danger">删除全部聊天</button><button id="duplicateCenterBtn" class="btn">重复检测中心</button><button id="scanDuplicateBtn" class="btn">扫描重复作品</button></div></div></div></section>
+  <section id="adm-content" class="admin-section"><div class="grid2"><div class="panel"><h3>实时信息</h3><div class="form"><textarea id="tickerInput" class="field" rows="3" placeholder="跑马灯内容"></textarea><button id="saveTickerBtn" class="btn primary">发送到跑马灯</button><textarea id="announcementInput" class="field" rows="3" placeholder="登录页公告"></textarea><button id="saveAnnouncementBtn" class="btn">发布公告</button></div></div><div class="panel"><h3>媒体 / 聊天</h3><div class="form"><button id="playAllBtn" class="btn">一键播放所有视频</button><button id="deleteAllVideosBtn" class="btn danger">删除所有视频</button><button id="deleteAllImagesBtn" class="btn danger">删除所有照片</button><button id="deleteAllChatBtn" class="btn danger">删除全部聊天</button><button id="duplicateCenterBtn" class="btn">重复检测中心</button><button id="scanDuplicateBtn" class="btn">扫描重复作品</button></div></div></div></section>
   <section id="adm-system" class="admin-section"><div class="grid2"><div class="panel"><h3>站点系统</h3><div class="form"><input id="siteTitleInput" class="field" placeholder="网页标题"><button id="saveTitleBtn" class="btn primary">修改网页标题</button><label>分享图标<input id="shareIconFile" type="file" accept="image/*" class="field"></label><button id="uploadShareIconBtn" class="btn">上传分享图标</button><button id="refreshStatsBtn" class="btn">刷新容量信息</button></div></div><div class="panel"><h3>数据库内存</h3><div id="dbStats" class="muted">等待读取...</div></div><div class="panel"><h3>Storage 存储空间</h3><div id="storageStats" class="muted">等待读取...</div></div><div class="panel"><h3>数据库内容缩略图</h3><div class="muted" style="font-size:12px;margin-bottom:10px">媒体、头像、登录/主页/后台背景和分享图标</div><button id="refreshDbThumbsBtn" class="btn">刷新缩略图</button><div id="dbThumbStats" class="muted" style="margin-top:10px"></div><div id="dbThumbGrid" class="db-thumb-grid"></div></div></div></section>
   <section id="adm-tools" class="admin-section">
     <div class="panel"><h3>运营概览</h3><div class="admin-kpi-grid">
@@ -2104,30 +2105,25 @@ button,input,textarea,select{max-width:100%}
 const SUPABASE_URL='https://oyfuocywwujsyxjlpprv.supabase.co';
 const SUPABASE_KEY='sb_publishable_l2CI_nVFQjvnhiYS2UvnzA_vNX6DZgL';
 const nativeFetch=window.fetch.bind(window);
-let supabaseRefreshPromise=null;
 function headersWithAccessToken(headers,token){
   const h=new Headers(headers||{});
   if(token)h.set('Authorization','Bearer '+token);
   return h;
 }
-async function refreshSupabaseSessionOnce(){
-  if(supabaseRefreshPromise)return supabaseRefreshPromise;
-  supabaseRefreshPromise=(async()=>{
-    try{
-      const r=await sb.auth.refreshSession();
-      if(r?.error)throw r.error;
-      const s=r?.data?.session||null;
-      if(s?.access_token){
-        session=s;
-        me=s.user||me;
-        try{await sb.realtime.setAuth(s.access_token)}catch(_){}
-      }
+async function recoverSupabaseSession(){
+  // Do not rotate refresh tokens here. supabase-js autoRefreshToken is the only refresher.
+  await new Promise(r=>setTimeout(r,250));
+  try{
+    const {data:{session:s},error}=await sb.auth.getSession();
+    if(error)throw error;
+    if(s?.access_token){
+      session=s;
+      me=s.user||me;
+      try{await sb.realtime.setAuth(s.access_token)}catch(_){}
       return s;
-    }finally{
-      setTimeout(()=>{supabaseRefreshPromise=null},0);
     }
-  })();
-  return supabaseRefreshPromise;
+  }catch(e){console.warn('Session recovery failed',e)}
+  return null;
 }
 async function stableSupabaseFetch(input,init={}){
   const url=String(typeof input==='string'?input:(input?.url||''));
@@ -2158,22 +2154,16 @@ async function stableSupabaseFetch(input,init={}){
     try{
       let res=await doRead(init);
 
-      // Safari can issue a REST read with an access token that expires while Auth is
-      // refreshing in another async path. Refresh once, then replay the safe read.
+      // A 401 never triggers refreshSession here. Let supabase-js auto-refresh, then
+      // recover the latest session and replay this safe read only when a token exists.
       if(res.status===401 && attempt===0){
-        try{
-          const fresh=await refreshSupabaseSessionOnce();
-          if(fresh?.access_token){
-            const retryInit={...init,headers:headersWithAccessToken(init?.headers,fresh.access_token)};
-            res=await doRead(retryInit);
-            if(res.status!==401)return res;
-          }
-        }catch(e){
-          lastError=e;
-          if(typeof invalidRefreshError==='function'&&invalidRefreshError(e)){
-            try{await sb.auth.signOut({scope:'local'})}catch(_){}
-            if(typeof handleSessionEnded==='function')await handleSessionEnded(true);
-          }
+        const recovered=await recoverSupabaseSession();
+        if(recovered?.access_token){
+          const retryInit={...init,headers:headersWithAccessToken(init?.headers,recovered.access_token)};
+          res=await doRead(retryInit);
+          if(res.status!==401)return res;
+        }else if(typeof handleSessionEnded==='function'){
+          await handleSessionEnded(true);
         }
         return res;
       }
@@ -2195,7 +2185,7 @@ async function stableSupabaseFetch(input,init={}){
   throw lastError||new Error('网络请求失败，请稍后重试');
 }
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:stableSupabaseFetch}});
-let session=null,me=null,profile=null,settings={},media=[],presence=null,realtimeChannel=null,currentChat='global',installPrompt=null,activeBackgroundPage='login';
+let session=null,me=null,profile=null,settings={},media=[],presence=null,realtimeChannel=null,currentChat='global',installPrompt=null,activeBackgroundPage='login',locationShareCache=null;
 let mediaReloadTimer=null,settingsReloadTimer=null,chatReloadTimer=null,chatLoading=false,chatSending=false,appEntering=false;
 let realtimeRetryTimer=null,presenceRetryTimer=null,realtimeConnecting=false,presenceConnecting=false;
 let appReady=false,lastAppRecoveryAt=0;
@@ -2247,21 +2237,14 @@ async function ensureAppIdentity(showNotice=true){
 }
 async function ensureRealtimeAuth(){
   try{
-    let {data:{session:s},error}=await sb.auth.getSession();
+    const {data:{session:s},error}=await sb.auth.getSession();
     if(error)throw error;
-    if(!s)return null;
-    if(s.expires_at&&Number(s.expires_at)*1000<Date.now()+60000){
-      const refreshed=await sb.auth.refreshSession();
-      if(refreshed.error)throw refreshed.error;
-      s=refreshed.data?.session||null;
-    }
-    if(s?.access_token){session=s;await sb.realtime.setAuth(s.access_token);return s}
-    return null;
+    if(!s?.access_token)return null;
+    session=s;me=s.user||me;
+    await sb.realtime.setAuth(s.access_token);
+    return s;
   }catch(e){
     console.warn('Realtime auth',e);
-    if(invalidRefreshError(e)){
-      try{await sb.auth.signOut({scope:'local'})}catch(_){}
-    }
     return null;
   }
 }
@@ -2280,7 +2263,7 @@ async function handleSessionEnded(showNotice=true){
   try{applyBackground('login')}catch(_){}
   if(showNotice)toast('登录状态已失效，请重新登录');
 }
-async function ensurePrimarySuperadmin(){if(!isPrimarySuperadmin())return false;try{await adminApi({action:'sync_primary_role'});const {data,error}=await sb.auth.refreshSession();if(error)throw error;if(data?.session){session=data.session;me=data.user||data.session.user||me;await sb.realtime.setAuth(data.session.access_token)}return true}catch(e){console.warn('主超级管理员角色同步失败',e);return false}}
+async function ensurePrimarySuperadmin(){if(!isPrimarySuperadmin())return false;try{await adminApi({action:'sync_primary_role'});const {data:{session:s}}=await sb.auth.getSession();if(s?.access_token){session=s;me=s.user||me;await sb.realtime.setAuth(s.access_token)}return true}catch(e){console.warn('主超级管理员角色同步失败',e);return false}}
 function openModal(id){$(id).classList.remove('hidden');if(id==='adminModal'){activeBackgroundPage='admin';applyBackground('admin')}}
 function closeModal(id){$(id).classList.add('hidden');if(id==='adminModal'){activeBackgroundPage=session?'home':'login';applyBackground(activeBackgroundPage)}}
 $$('[data-close]').forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
@@ -2308,7 +2291,7 @@ async function enterApp(){
     if(!me)return;
     if(isPrimarySuperadmin())await ensurePrimarySuperadmin();
     await ensureRealtimeAuth();
-    try{await loadProfile()}catch(e){console.warn('profile init failed',e)}
+    try{await loadProfile();await loadLocationShare()}catch(e){console.warn('profile/location init failed',e)}
     $('authView').classList.add('hidden');
     $('appView').classList.remove('hidden');
     $('adminBtn').classList.toggle('hidden',!isAdmin());
@@ -2317,6 +2300,7 @@ async function enterApp(){
     applyBackground('home');
     const initResults=await Promise.allSettled([loadMedia(),loadSettings()]);
     initResults.forEach((r,i)=>{if(r.status==='rejected')console.warn(i===0?'media init failed':'settings init failed',r.reason)});
+    if(isSuper()){try{const cleaned=await reconcileOrphanStorage();if(cleaned.media||cleaned.backgrounds)console.info('Storage orphan cleanup',cleaned)}catch(e){console.warn('Storage orphan cleanup failed',e)}}
     await Promise.allSettled([setupRealtime(),setupPresence()]);
     appReady=true;
     const mid=new URL(location.href).searchParams.get('media');
@@ -2330,10 +2314,18 @@ async function loadProfile(){if(!me?.id){if(!await ensureAppIdentity(false))retu
 function renderProfile(){const av=profile.avatar_url||'';$('profileNickname').value=profile.nickname||'';$('profileBio').value=profile.bio||'';[$('topAvatar'),$('profileAvatarPreview')].forEach(i=>{i.src=av||`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><linearGradient id="g"><stop stop-color="#00e5ff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient></defs><rect width="120" height="120" rx="60" fill="#101527"/><text x="60" y="72" text-anchor="middle" font-size="42" fill="url(#g)">${esc((profile.nickname||profile.account||'N').slice(0,1))}</text></svg>`)}`})}
 $('logoutBtn').onclick=async()=>{await withButtonBusy($('logoutBtn'),async()=>{if(callJoined)await leaveGroupCall(true);if(callMonitorChannel){await sb.removeChannel(callMonitorChannel).catch(()=>{});callMonitorChannel=null}if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}await sb.auth.signOut();location.reload()},'退出中...')};$('chatBtn').onclick=()=>{openModal('chatModal');loadChat()};$('topAvatar').onclick=()=>{openModal('profileModal');renderLocationShareStatus()};$('topAvatar').style.cursor='pointer';
 $('saveProfileBtn').onclick=async()=>withButtonBusy($('saveProfileBtn'),async()=>{if(!await ensureAppIdentity())return;const user=me,prof=profile;const patch={nickname:$('profileNickname').value.trim()||('用户'+(prof?.account||accountOf(user)).slice(-4)),bio:$('profileBio').value.trim(),updated_at:new Date().toISOString()};const {error}=await sb.from('profiles').update(patch).eq('id',user.id);if(error)return toast(error.message);Object.assign(profile,patch);renderProfile();toast('资料已实时更新')},'保存中...');
-function locationShare(){return me?.user_metadata?.location_share||null}
+function locationShare(){return locationShareCache}
+async function loadLocationShare(){
+ if(!me?.id){locationShareCache=null;return null}
+ const {data,error}=await sb.from('user_locations').select('user_id,latitude,longitude,accuracy_m,updated_at').eq('user_id',me.id).maybeSingle();
+ if(error)throw error;
+ locationShareCache=data||null;
+ renderLocationShareStatus();
+ return locationShareCache;
+}
 function renderLocationShareStatus(){const el=$('locationShareStatus');if(!el)return;const l=locationShare();if(!l||!Number.isFinite(Number(l.latitude))||!Number.isFinite(Number(l.longitude))){el.textContent='未共享位置';return}const t=l.updated_at?new Date(l.updated_at).toLocaleString():'时间未知';const acc=Number.isFinite(Number(l.accuracy_m))?` · 精度约 ${Math.round(Number(l.accuracy_m))} 米`:'';el.textContent=`已共享：${Number(l.latitude).toFixed(5)}, ${Number(l.longitude).toFixed(5)}${acc} · ${t}`}
-async function shareCurrentLocation(){if(!navigator.geolocation)return toast('当前浏览器不支持定位');const btn=$('shareLocationBtn');if(btn)btn.disabled=true;toast('请在浏览器提示中允许定位');navigator.geolocation.getCurrentPosition(async pos=>{try{const loc={latitude:Number(pos.coords.latitude),longitude:Number(pos.coords.longitude),accuracy_m:Number(pos.coords.accuracy||0),updated_at:new Date().toISOString()};const {data,error}=await sb.auth.updateUser({data:{location_share:loc}});if(error)throw error;if(data?.user)me=data.user;else me={...me,user_metadata:{...(me?.user_metadata||{}),location_share:loc}};renderLocationShareStatus();toast('位置已共享给管理员')}catch(e){toast(e.message||'位置共享失败')}finally{if(btn)btn.disabled=false}},err=>{if(btn)btn.disabled=false;const msg=err.code===1?'你拒绝了定位权限':err.code===2?'暂时无法获取位置':'定位请求超时';toast(msg)},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})}
-async function stopLocationSharing(){const btn=$('stopLocationBtn');if(btn)btn.disabled=true;try{const {data,error}=await sb.auth.updateUser({data:{location_share:null}});if(error)throw error;if(data?.user)me=data.user;else me={...me,user_metadata:{...(me?.user_metadata||{}),location_share:null}};renderLocationShareStatus();toast('已停止共享位置')}catch(e){toast(e.message||'操作失败')}finally{if(btn)btn.disabled=false}}
+async function shareCurrentLocation(){if(!navigator.geolocation)return toast('当前浏览器不支持定位');const btn=$('shareLocationBtn');if(btn)btn.disabled=true;toast('请在浏览器提示中允许定位');navigator.geolocation.getCurrentPosition(async pos=>{try{if(!await ensureAppIdentity())throw new Error('登录状态不可用');const loc={user_id:me.id,latitude:Number(pos.coords.latitude),longitude:Number(pos.coords.longitude),accuracy_m:Number(pos.coords.accuracy||0),updated_at:new Date().toISOString()};const {data,error}=await sb.from('user_locations').upsert(loc,{onConflict:'user_id'}).select('user_id,latitude,longitude,accuracy_m,updated_at').single();if(error)throw error;locationShareCache=data||loc;renderLocationShareStatus();toast('位置已共享给管理员')}catch(e){toast(e.message||'位置共享失败')}finally{if(btn)btn.disabled=false}},err=>{if(btn)btn.disabled=false;const msg=err.code===1?'你拒绝了定位权限':err.code===2?'暂时无法获取位置':'定位请求超时';toast(msg)},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})}
+async function stopLocationSharing(){const btn=$('stopLocationBtn');if(btn)btn.disabled=true;try{if(!await ensureAppIdentity())throw new Error('登录状态不可用');const {error}=await sb.from('user_locations').delete().eq('user_id',me.id);if(error)throw error;locationShareCache=null;renderLocationShareStatus();toast('已停止共享位置')}catch(e){toast(e.message||'操作失败')}finally{if(btn)btn.disabled=false}}
 $('shareLocationBtn').onclick=shareCurrentLocation;$('stopLocationBtn').onclick=stopLocationSharing;
 async function uploadTo(bucket,file,path){const {error}=await sb.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type,cacheControl:'3600'});if(error)throw error;return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl}
 async function compressImageFile(file,{maxWidth=1600,maxHeight=1600,quality=.82,type='image/jpeg'}={}){
@@ -2966,64 +2958,19 @@ $('adminBtn').onclick=async()=>{if(!isAdmin())return;openModal('adminModal');con
 $$('[data-admin]').forEach(b=>b.onclick=()=>{$$('[data-admin]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');$$('.admin-section').forEach(x=>x.classList.remove('active'));$('adm-'+b.dataset.admin).classList.add('active');if(b.dataset.admin==='tools')refreshAdminTools();if(b.dataset.admin==='users')filterAdminUsers()});
 async function adminApi(body){
   let s=session||null;
-  try{
-    const gs=await sb.auth.getSession();
-    if(gs?.data?.session)s=gs.data.session;
-  }catch(_){}
-
-  if(!s?.access_token){
-    try{
-      const rs=await sb.auth.refreshSession();
-      if(rs?.data?.session){
-        s=rs.data.session;
-        session=s;
-      }
-    }catch(_){}
+  try{const gs=await sb.auth.getSession();if(gs?.data?.session)s=gs.data.session}catch(_){}
+  if(!s?.access_token){await handleSessionEnded(true);throw new Error('登录状态已失效，请重新登录')}
+  const request=async token=>{const r=await fetch(SUPABASE_URL+'/functions/v1/admin-api',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+token},body:JSON.stringify(body)});let j={};try{j=await r.json()}catch(_){}return {r,j}};
+  let {r,j}=await request(s.access_token);
+  if(r.status===401){
+    const ns=await recoverSupabaseSession();
+    if(ns?.access_token&&ns.access_token!==s.access_token){session=ns;({r,j}=await request(ns.access_token))}
+    if(r.status===401){await handleSessionEnded(true);throw new Error('登录状态已失效，请重新登录')}
   }
-
-  if(!s?.access_token){
-    me=null;
-    session=null;
-    throw new Error('登录状态已失效，请退出后重新登录');
-  }
-
-  const r=await fetch(SUPABASE_URL+'/functions/v1/admin-api',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'apikey':SUPABASE_KEY,
-      'Authorization':'Bearer '+s.access_token
-    },
-    body:JSON.stringify(body)
-  });
-
-  let j={};
-  try{j=await r.json()}catch(_){}
-
-  if(r.status===401||r.status===403){
-    const rs=await sb.auth.refreshSession().catch(()=>null);
-    const ns=rs?.data?.session;
-    if(ns?.access_token && ns.access_token!==s.access_token){
-      session=ns;
-      const rr=await fetch(SUPABASE_URL+'/functions/v1/admin-api',{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'apikey':SUPABASE_KEY,
-          'Authorization':'Bearer '+ns.access_token
-        },
-        body:JSON.stringify(body)
-      });
-      let jj={};try{jj=await rr.json()}catch(_){}
-      if(!rr.ok)throw new Error(jj.error||'后台操作失败');
-      return jj;
-    }
-  }
-
   if(!r.ok)throw new Error(j.error||'后台操作失败');
   return j;
 }
-async function loadAdminUsers(){try{const j=await adminApi({action:'list_users'});$('adminUsersCount').textContent=j.users.length;$('usersTable').innerHTML=j.users.map(u=>{const l=u.location||null;const hasLoc=l&&Number.isFinite(Number(l.latitude))&&Number.isFinite(Number(l.longitude));const loc=hasLoc?`<div style="min-width:190px"><b>${Number(l.latitude).toFixed(5)}, ${Number(l.longitude).toFixed(5)}</b><br><span class="muted">${Number.isFinite(Number(l.accuracy_m))?'精度约 '+Math.round(Number(l.accuracy_m))+' 米 · ':''}${l.updated_at?new Date(l.updated_at).toLocaleString():'时间未知'}</span><br><button class="btn small" onclick="openUserLocation(${Number(l.latitude)},${Number(l.longitude)})">地图</button></div>`:'<span class="muted">未共享</span>';return `<tr><td>${esc(u.account)}</td><td>${esc(u.profile?.nickname||'')}</td><td>${esc(u.role)}</td><td>${u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString():'-'}</td><td>${loc}</td><td>${u.role==='superadmin'?'<span class="tag">ROOT</span>':`<button class="btn small" onclick="openAdminMessage('${u.id}','${u.account}')">私信</button> <button class="btn small" onclick="changePw('${u.id}','${u.account}')">改密码</button> <button class="btn small danger" onclick="removeUser('${u.id}','${u.account}')">删除</button>`}</td></tr>`}).join('');filterAdminUsers()}catch(e){toast(e.message)}}
+async function loadAdminUsers(){try{const j=await adminApi({action:'list_users'});const {data:locRows,error:locErr}=await sb.from('user_locations').select('user_id,latitude,longitude,accuracy_m,updated_at');if(locErr)throw locErr;const locMap=new Map((locRows||[]).map(x=>[x.user_id,x]));$('adminUsersCount').textContent=j.users.length;$('usersTable').innerHTML=j.users.map(u=>{const l=locMap.get(u.id)||null;const hasLoc=l&&Number.isFinite(Number(l.latitude))&&Number.isFinite(Number(l.longitude));const loc=hasLoc?`<div style="min-width:190px"><b>${Number(l.latitude).toFixed(5)}, ${Number(l.longitude).toFixed(5)}</b><br><span class="muted">${Number.isFinite(Number(l.accuracy_m))?'精度约 '+Math.round(Number(l.accuracy_m))+' 米 · ':''}${l.updated_at?new Date(l.updated_at).toLocaleString():'时间未知'}</span><br><button class="btn small" onclick="openUserLocation(${Number(l.latitude)},${Number(l.longitude)})">地图</button></div>`:'<span class="muted">未共享</span>';return `<tr><td>${esc(u.account)}</td><td>${esc(u.profile?.nickname||'')}</td><td>${esc(u.role)}</td><td>${u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString():'-'}</td><td>${loc}</td><td>${u.role==='superadmin'?'<span class="tag">ROOT</span>':`<button class="btn small" onclick="openAdminMessage('${u.id}','${u.account}')">私信</button> <button class="btn small" onclick="changePw('${u.id}','${u.account}')">改密码</button> <button class="btn small danger" onclick="removeUser('${u.id}','${u.account}')">删除</button>`}</td></tr>`}).join('');filterAdminUsers()}catch(e){toast(e.message)}}
 window.openUserLocation=(lat,lng)=>{const a=Number(lat),b=Number(lng);if(!Number.isFinite(a)||!Number.isFinite(b))return;window.open(`https://www.google.com/maps?q=${encodeURIComponent(a+','+b)}`,'_blank','noopener,noreferrer')};
 
 function filterAdminUsers(){
@@ -3091,7 +3038,46 @@ $('saveOpacityBtn').onclick=async()=>{try{const a={...(settings.appearance||{}),
 $('bgPage').onchange=updateBgPreview;function updateBgPreview(){const a=settings.appearance||{},u=a[$('bgPage').value+'_bg']||'';$('bgPreview').style.backgroundImage=u?`url("${u}")`:''}
 $('uploadBgBtn').onclick=async()=>withButtonBusy($('uploadBgBtn'),async()=>{const f=$('bgFile').files[0];if(!f)return toast('请选择背景图片');if(!f.type.startsWith('image/'))return toast('背景必须是图片');const maxBg=Number(cfg('media','background_max_upload_bytes',20*1024*1024));if(f.size>maxBg)return toast('背景图片不能超过'+fmtBytes(maxBg));const page=$('bgPage').value,oldUrl=(settings.appearance||{})[page+'_bg']||'';let path='';try{const optimized=await compressImageFile(f,{maxWidth:1920,maxHeight:1920,quality:.78,type:'image/jpeg'});const ext=(optimized.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg';path=`site/${page}_${Date.now()}.${ext}`;const url=await uploadTo('backgrounds',optimized,path);const a={...(settings.appearance||{}),[page+'_bg']:url};try{await saveSetting('appearance',a)}catch(e){await sb.storage.from('backgrounds').remove([path]).catch(()=>{});throw e}const oldPath=storagePathFromPublicUrl(oldUrl,'backgrounds');if(oldPath&&oldPath!==path)await sb.storage.from('backgrounds').remove([oldPath]).catch(()=>{});$('bgFile').value='';updateBgPreview();if(page==='admin'&&!$('adminModal').classList.contains('hidden')){activeBackgroundPage='admin';applyBackground('admin')}toast('背景已实时更新')}catch(e){toast(e.message||'背景上传失败')}},'上传中...');
 $('saveTickerBtn').onclick=async()=>{try{await saveSetting('ticker',{text:$('tickerInput').value.trim()});toast('跑马灯已发布')}catch(e){toast(e.message)}};$('saveAnnouncementBtn').onclick=async()=>{try{await saveSetting('announcement',{text:$('announcementInput').value.trim()});toast('公告已发布')}catch(e){toast(e.message)}};
-$('playAllBtn').onclick=async()=>{try{toast('正在读取全部视频...');await loadAllMediaType('video');if(currentMediaCategory!=='video')currentMediaCategory='video';renderFeed();applyMediaCategory();requestAnimationFrame(()=>{$$('#feed video').forEach(v=>v.play().catch(()=>{}))});toast('已加载并尝试播放全部视频')}catch(e){toast(e.message||'读取视频失败')}};$('deleteAllMediaBtn').onclick=async()=>{if(!confirm('确定删除全部视频和图片？此操作不可恢复。'))return;try{const j=await adminApi({action:'delete_all_media'});toast('已删除 '+j.count+' 个作品');loadMedia()}catch(e){toast(e.message)}};$('deleteAllChatBtn').onclick=async()=>{if(!confirm('确定清空全部聊天？'))return;try{await adminApi({action:'delete_all_chat'});toast('聊天已清空');loadChat()}catch(e){toast(e.message)}};
+$('playAllBtn').onclick=async()=>{try{toast('正在读取全部视频...');await loadAllMediaType('video');if(currentMediaCategory!=='video')currentMediaCategory='video';renderFeed();applyMediaCategory();requestAnimationFrame(()=>{$$('#feed video').forEach(v=>v.play().catch(()=>{}))});toast('已加载并尝试播放全部视频')}catch(e){toast(e.message||'读取视频失败')}};
+async function listStorageFilesRecursive(bucket,prefix=''){
+ const out=[];let offset=0;
+ while(true){const {data,error}=await sb.storage.from(bucket).list(prefix,{limit:1000,offset,sortBy:{column:'name',order:'asc'}});if(error)throw error;const rows=data||[];for(const x of rows){const path=prefix?prefix+'/'+x.name:x.name;if(x.id||x.metadata)out.push({path,created_at:x.created_at||null,updated_at:x.updated_at||null});else out.push(...await listStorageFilesRecursive(bucket,path))}if(rows.length<1000)break;offset+=rows.length}
+ return out;
+}
+async function removeStoragePaths(bucket,paths){for(let i=0;i<paths.length;i+=100){const chunk=paths.slice(i,i+100);if(!chunk.length)continue;const {error}=await sb.storage.from(bucket).remove(chunk);if(error)throw error}return paths.length}
+async function reconcileOrphanStorage(){
+ if(!isSuper())return {media:0,backgrounds:0};
+ const graceBefore=Date.now()-10*60*1000;
+ const oldEnough=x=>{const t=Date.parse(x.updated_at||x.created_at||'');return Number.isFinite(t)&&t<graceBefore};
+ const rows=await fetchAllRowsPaged('media_posts','object_path,cover_url',q=>q.order('created_at',{ascending:false}));
+ const mediaRefs=new Set();for(const x of rows){if(x.object_path)mediaRefs.add(x.object_path);const cp=storagePathFromPublicUrl(x.cover_url,'media');if(cp)mediaRefs.add(cp)}
+ const mediaFiles=await listStorageFilesRecursive('media');const mediaOrphans=mediaFiles.filter(x=>!mediaRefs.has(x.path)&&oldEnough(x)).map(x=>x.path);
+ const a=settings.appearance||{},bgRefs=new Set(['login_bg','home_bg','admin_bg','share_icon'].map(k=>storagePathFromPublicUrl(a[k],'backgrounds')).filter(Boolean));
+ const bgFiles=await listStorageFilesRecursive('backgrounds');const bgOrphans=bgFiles.filter(x=>!bgRefs.has(x.path)&&oldEnough(x)).map(x=>x.path);
+ await removeStoragePaths('media',mediaOrphans);await removeStoragePaths('backgrounds',bgOrphans);
+ return {media:mediaOrphans.length,backgrounds:bgOrphans.length};
+}
+async function deleteAllMediaOfType(type){
+ if(!isAdmin())return toast('没有权限');
+ const isVideo=type==='video',name=isVideo?'视频':'照片',action=isVideo?'delete_all_videos':'delete_all_images';
+ if(!confirm(`确定删除所有${name}？此操作不可恢复，其他类型作品不会受影响。`))return;
+ try{
+  let j;
+  try{j=await adminApi({action})}
+  catch(e){
+    // Compatibility fallback for an older backend. Final backend should support the dedicated action.
+    if(!/unknown_action/i.test(String(e?.message||'')))throw e;
+    const rows=await fetchAllRowsPaged('media_posts','*',q=>q.eq('media_type',type).order('created_at',{ascending:false}));
+    let ok=0,fail=0;for(const row of rows){if(await deleteMediaRowAndStorage(row))ok++;else fail++}
+    j={count:ok,fail};
+  }
+  await loadMedia(true);await loadDbThumbnails();await loadStorageStats();
+  toast(j.fail?`已删除 ${j.count||0} 个${name}，${j.fail} 个删除失败`:`已删除全部 ${j.count||0} 个${name}`);
+ }catch(e){toast(e.message||`删除${name}失败`)}
+}
+$('deleteAllVideosBtn').onclick=()=>deleteAllMediaOfType('video');
+$('deleteAllImagesBtn').onclick=()=>deleteAllMediaOfType('image');
+$('deleteAllChatBtn').onclick=async()=>{if(!confirm('确定清空全部聊天？'))return;try{await adminApi({action:'delete_all_chat'});toast('聊天已清空');loadChat()}catch(e){toast(e.message)}};
 $('saveTitleBtn').onclick=async()=>{try{const a={...(settings.appearance||{}),title:$('siteTitleInput').value.trim()||'清音'};await saveSetting('appearance',a);toast('网页标题已同步')}catch(e){toast(e.message)}};
 $('uploadShareIconBtn').onclick=async()=>withButtonBusy($('uploadShareIconBtn'),async()=>{const f=$('shareIconFile').files[0];if(!f)return toast('请选择图标');if(!f.type.startsWith('image/'))return toast('图标必须是图片');const maxIcon=Number(cfg('media','share_icon_max_upload_bytes',5*1024*1024));if(f.size>maxIcon)return toast('图标不能超过'+fmtBytes(maxIcon));const oldUrl=(settings.appearance||{}).share_icon||'';let path='';try{const optimized=await compressImageFile(f,{maxWidth:512,maxHeight:512,quality:1,type:'image/png'});const ext=(optimized.name.split('.').pop()||'png').replace(/[^a-z0-9]/gi,'')||'png';path=`site/share_icon_${Date.now()}.${ext}`;const url=await uploadTo('backgrounds',optimized,path);try{await saveSetting('appearance',{...(settings.appearance||{}),share_icon:url})}catch(e){await sb.storage.from('backgrounds').remove([path]).catch(()=>{});throw e}const oldPath=storagePathFromPublicUrl(oldUrl,'backgrounds');if(oldPath&&oldPath!==path)await sb.storage.from('backgrounds').remove([oldPath]).catch(()=>{});$('shareIconFile').value='';toast('分享/桌面图标已同步')}catch(e){toast(e.message||'图标上传失败')}},'上传中...');
 window.deleteDbThumbnailMedia=async function(id){
