@@ -2658,7 +2658,7 @@ function applyMediaCategory(){
  const v=document.getElementById('showVideosBtn'),i=document.getElementById('showImagesBtn');if(v)v.classList.toggle('active',currentMediaCategory==='video');if(i)i.classList.toggle('active',currentMediaCategory==='image');
 }
 function renderFeed(){const f=$('feed');f.classList.remove('similar-feed');f.classList.add('media-grid');const visible=media.filter(p=>p.media_type===currentMediaCategory);if(!visible.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;applyMediaCategory();return}f.innerHTML=visible.map(p=>`<article class="media-card" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}" loading="lazy" decoding="async">`:`<video src="${esc(p.url)}" muted preload="metadata"></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy" decoding="async">`}<div class="media-cover"></div><div class="media-info"><b>@${esc(p.account)}</b><br>${esc(p.caption||'影像')}<div class="media-meta">${p.media_type==='video'?`<span>⏱ ${formatDuration(p.duration)}</span><span>▶ ${Number(p.play_count||0)}</span>`:'<span>照片</span>'}</div></div></article>`).join('');applyMediaCategory()}
-window.countPlay=async id=>{try{const p=await ensureMediaItem(id);if(!p||p._played)return;p._played=true;const {data,error}=await sb.rpc('increment_media_play_count',{p_id:id});if(error){p._played=false;console.warn(error);return}p.play_count=Number(data??p.play_count??0)}catch(e){console.warn(e)}};
+window.countPlay=async id=>{try{const p=await ensureMediaItem(id);if(!p||p._played)return;p._played=true;const {data,error}=await sb.functions.invoke('media-play',{body:{id}});if(error){p._played=false;console.warn(error);return}p.play_count=Number(data?.count??p.play_count??0)}catch(e){console.warn(e)}};
 window.sharePost=async id=>{try{const p=await ensureMediaItem(id);if(!p)return toast('作品不存在');const url=new URL(location.href);url.searchParams.set('media',id);if(navigator.share)await navigator.share({title:document.title,text:p.caption||'清音 影像',url:url.toString()});else{await navigator.clipboard.writeText(url.toString());toast('作品链接已复制')}}catch(e){if(e?.name!=='AbortError')toast(e.message||'分享失败')}};
 window.deletePost=async id=>{try{const p=await ensureMediaItem(id);if(!p||!canDeleteMedia(p))return toast('没有删除权限');if(!confirm('确定删除这个作品？'))return;if(!await deleteMediaRowAndStorage(p))throw new Error('Storage 或数据库删除失败');toast('作品已删除');media=media.filter(x=>String(x.id)!==String(id));mediaTotalCount=Math.max(0,mediaTotalCount-1);const mc=$('mediaCount');if(mc)mc.textContent=mediaTotalCount;renderFeed();if(document.getElementById('fullViewerPage')?.classList.contains('active'))document.getElementById('viewerClose')?.click()}catch(e){toast(e.message||'删除失败')}};
 
@@ -3012,7 +3012,15 @@ async function refreshAdminTools(){
  }catch(e){toast(e.message||'运营概览刷新失败')}
 }
 async function exportAdminUsersCsv(){
- try{const j=await adminApi({action:'list_users'});const rows=[['账号','昵称','角色','最近登录','纬度','经度','定位精度(米)','定位更新时间']];(j.users||[]).forEach(u=>{const l=u.location||{};rows.push([u.account,u.profile?.nickname||'',u.role,u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString():'',l.latitude??'',l.longitude??'',l.accuracy_m??'',l.updated_at?new Date(l.updated_at).toLocaleString():''])});downloadCsv(`qingyin_users_${new Date().toISOString().slice(0,10)}.csv`,rows);toast('用户 CSV 已导出')}catch(e){toast(e.message||'导出失败')}
+ try{
+  const j=await adminApi({action:'list_users'});
+  const {data:locRows,error:locErr}=await sb.from('user_locations').select('user_id,latitude,longitude,accuracy_m,updated_at');
+  if(locErr)throw locErr;
+  const locMap=new Map((locRows||[]).map(x=>[x.user_id,x]));
+  const rows=[['账号','昵称','角色','最近登录','纬度','经度','定位精度(米)','定位更新时间']];
+  (j.users||[]).forEach(u=>{const l=locMap.get(u.id)||{};rows.push([u.account,u.profile?.nickname||'',u.role,u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString():'',l.latitude??'',l.longitude??'',l.accuracy_m??'',l.updated_at?new Date(l.updated_at).toLocaleString():''])});
+  downloadCsv(`qingyin_users_${new Date().toISOString().slice(0,10)}.csv`,rows);toast('用户 CSV 已导出')
+ }catch(e){toast(e.message||'导出失败')}
 }
 async function exportAdminMediaCsv(){
  try{const items=await fetchAllRowsPaged('media_posts','id,account,media_type,caption,url,object_path,file_size,duration,play_count,created_at',q=>q.order('created_at',{ascending:false}));const rows=[['ID','账号','类型','描述','文件大小','时长','播放量','创建时间','URL','Storage路径']];items.forEach(x=>rows.push([x.id,x.account,x.media_type,x.caption||'',x.file_size||0,x.duration||0,x.play_count||0,x.created_at||'',x.url||'',x.object_path||'']));downloadCsv(`qingyin_media_${new Date().toISOString().slice(0,10)}.csv`,rows);toast('媒体 CSV 已导出')}catch(e){toast(e.message||'导出失败')}
@@ -3059,20 +3067,14 @@ async function reconcileOrphanStorage(){
 }
 async function deleteAllMediaOfType(type){
  if(!isAdmin())return toast('没有权限');
- const isVideo=type==='video',name=isVideo?'视频':'照片',action=isVideo?'delete_all_videos':'delete_all_images';
+ const isVideo=type==='video',name=isVideo?'视频':'照片';
  if(!confirm(`确定删除所有${name}？此操作不可恢复，其他类型作品不会受影响。`))return;
  try{
-  let j;
-  try{j=await adminApi({action})}
-  catch(e){
-    // Compatibility fallback for an older backend. Final backend should support the dedicated action.
-    if(!/unknown_action/i.test(String(e?.message||'')))throw e;
-    const rows=await fetchAllRowsPaged('media_posts','*',q=>q.eq('media_type',type).order('created_at',{ascending:false}));
-    let ok=0,fail=0;for(const row of rows){if(await deleteMediaRowAndStorage(row))ok++;else fail++}
-    j={count:ok,fail};
-  }
+  const rows=await fetchAllRowsPaged('media_posts','*',q=>q.eq('media_type',type).order('created_at',{ascending:false}));
+  let ok=0,fail=0;
+  for(const row of rows){if(await deleteMediaRowAndStorage(row))ok++;else fail++}
   await loadMedia(true);await loadDbThumbnails();await loadStorageStats();
-  toast(j.fail?`已删除 ${j.count||0} 个${name}，${j.fail} 个删除失败`:`已删除全部 ${j.count||0} 个${name}`);
+  toast(fail?`已删除 ${ok} 个${name}，${fail} 个删除失败`:`已删除全部 ${ok} 个${name}`);
  }catch(e){toast(e.message||`删除${name}失败`)}
 }
 $('deleteAllVideosBtn').onclick=()=>deleteAllMediaOfType('video');
@@ -3592,9 +3594,9 @@ async function openDuplicateCenter(){
  }
 }
 
-async function loadDbStats(){try{let r=await sb.rpc('admin_database_stats');if(r.error&&isPrimarySuperadmin()){await ensurePrimarySuperadmin();r=await sb.rpc('admin_database_stats')}const {data,error}=r;if(error)throw error;$('dbStats').innerHTML=`<p><b>${esc(data.database_pretty)}</b> · 数据库总占用</p><div class="table-wrap"><table class="table"><tr><th>表</th><th>大小</th><th>估算行数</th></tr>${(data.tables||[]).map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.pretty)}</td><td>${x.rows_estimate}</td></tr>`).join('')}</table></div>`}catch(e){$('dbStats').textContent=e.message}}
+async function loadDbStats(){try{const j=await adminApi({action:'database_stats'});const data=j.data;$('dbStats').innerHTML=`<p><b>${esc(data.database_pretty)}</b> · 数据库总占用</p><div class="table-wrap"><table class="table"><tr><th>表</th><th>大小</th><th>估算行数</th></tr>${(data.tables||[]).map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.pretty)}</td><td>${x.rows_estimate}</td></tr>`).join('')}</table></div>`}catch(e){$('dbStats').textContent=e.message}}
 function fmtBytes(n){n=Number(n||0);if(n<1024)return n+' B';if(n<1024**2)return (n/1024).toFixed(1)+' KB';if(n<1024**3)return (n/1024**2).toFixed(1)+' MB';return (n/1024**3).toFixed(2)+' GB'}
-async function loadStorageStats(){const el=$('storageStats');try{let r=await sb.rpc('admin_storage_stats');if(r.error&&isPrimarySuperadmin()){await ensurePrimarySuperadmin();r=await sb.rpc('admin_storage_stats')}const {data,error}=r;if(error)throw error;const quota=Number(cfg('storage','display_quota_bytes',1024**3)),used=Number(data?.used_bytes||0),remain=Math.max(0,quota-used),pct=Math.min(100,used/quota*100),buckets=data?.buckets||[];const byId=Object.fromEntries(buckets.map(x=>[x.bucket_id,x]));const est10=Math.floor(remain/(10*1024**2)),est20=Math.floor(remain/(20*1024**2)),est50=Math.floor(remain/(50*1024**2));el.innerHTML=`<p><b>${fmtBytes(used)}</b> 已用 / <b>${fmtBytes(quota)}</b> 总容量</p><div style="height:10px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;margin:8px 0 10px"><div style="height:100%;width:${pct.toFixed(2)}%;background:currentColor;opacity:.8"></div></div><p>剩余 <b>${fmtBytes(remain)}</b> · 已用 ${pct.toFixed(1)}% · 共 ${Number(data?.object_count||0)} 个文件</p><div class="table-wrap"><table class="table"><tr><th>分类</th><th>已用</th><th>文件数</th></tr><tr><td>视频 / 图片</td><td>${fmtBytes(byId.media?.used_bytes||0)}</td><td>${byId.media?.object_count||0}</td></tr><tr><td>头像</td><td>${fmtBytes(byId.avatars?.used_bytes||0)}</td><td>${byId.avatars?.object_count||0}</td></tr><tr><td>背景 / 图标</td><td>${fmtBytes(byId.backgrounds?.used_bytes||0)}</td><td>${byId.backgrounds?.object_count||0}</td></tr></table></div><p style="font-size:12px">按数据库配置容量估算：剩余空间约还能放 ${est10} 个 10MB 视频 / ${est20} 个 20MB 视频 / ${est50} 个 50MB 视频。单文件上限仍受项目全局上传限制影响。</p>`}catch(e){el.textContent=e.message||String(e)}}
+async function loadStorageStats(){const el=$('storageStats');try{const j=await adminApi({action:'storage_stats'});const data=j.data;const quota=Number(cfg('storage','display_quota_bytes',1024**3)),used=Number(data?.used_bytes||0),remain=Math.max(0,quota-used),pct=Math.min(100,used/quota*100),buckets=data?.buckets||[];const byId=Object.fromEntries(buckets.map(x=>[x.bucket_id,x]));const est10=Math.floor(remain/(10*1024**2)),est20=Math.floor(remain/(20*1024**2)),est50=Math.floor(remain/(50*1024**2));el.innerHTML=`<p><b>${fmtBytes(used)}</b> 已用 / <b>${fmtBytes(quota)}</b> 总容量</p><div style="height:10px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;margin:8px 0 10px"><div style="height:100%;width:${pct.toFixed(2)}%;background:currentColor;opacity:.8"></div></div><p>剩余 <b>${fmtBytes(remain)}</b> · 已用 ${pct.toFixed(1)}% · 共 ${Number(data?.object_count||0)} 个文件</p><div class="table-wrap"><table class="table"><tr><th>分类</th><th>已用</th><th>文件数</th></tr><tr><td>视频 / 图片</td><td>${fmtBytes(byId.media?.used_bytes||0)}</td><td>${byId.media?.object_count||0}</td></tr><tr><td>头像</td><td>${fmtBytes(byId.avatars?.used_bytes||0)}</td><td>${byId.avatars?.object_count||0}</td></tr><tr><td>背景 / 图标</td><td>${fmtBytes(byId.backgrounds?.used_bytes||0)}</td><td>${byId.backgrounds?.object_count||0}</td></tr></table></div><p style="font-size:12px">按数据库配置容量估算：剩余空间约还能放 ${est10} 个 10MB 视频 / ${est20} 个 20MB 视频 / ${est50} 个 50MB 视频。单文件上限仍受项目全局上传限制影响。</p>`}catch(e){el.textContent=e.message||String(e)}}
 $('duplicateCenterBtn')?.addEventListener('click',openDuplicateCenter);
 $('cleanDuplicateBtn')?.addEventListener('click',cleanDuplicateMedia);
 $('backfillDedupBtn')?.addEventListener('click',backfillAndCleanSimilarDuplicates);
