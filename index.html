@@ -1740,6 +1740,253 @@ button,input,textarea,select{max-width:100%}
 @media(max-width:700px){#chatModal>.modal{max-height:calc(100dvh - 16px)}.chat-layout{display:flex;flex-direction:column;min-height:0}.chat-tabs{border-right:0;padding:0 0 8px;display:flex;gap:6px;overflow-x:auto}.chat-body{padding-left:0}.call-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:34vh}.call-tile,.call-tile video{min-height:105px}.call-controls .btn{flex:1 1 auto}.messages{min-height:180px}}
 @media(min-width:1000px){#chatModal>.modal{width:min(96vw,1040px)}.call-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 </style>
+
+<style id="chat-layout-optimized-v1">
+/* Chat layout optimization only: no IDs, buttons or JS behavior changed. */
+#chatModal{
+  padding:14px;
+  background:rgba(0,0,0,.64);
+}
+#chatModal>.modal{
+  width:min(96vw,1180px);
+  height:min(90dvh,860px);
+  max-height:90dvh;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  padding:0;
+  border-radius:24px;
+}
+#chatModal>.modal>.modal-head{
+  margin:0;
+  min-height:62px;
+  padding:0 18px 0 20px;
+  border-bottom:1px solid rgba(255,255,255,.09);
+  background:rgba(5,8,17,.58);
+}
+#chatModal>.modal>.modal-head h2{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:18px;
+  min-width:0;
+}
+#chatModal>.modal>.modal-head [data-close="chatModal"]{
+  width:38px;
+  height:38px;
+  padding:0;
+  flex:0 0 38px;
+}
+#chatModal .chat-layout{
+  min-height:0;
+  height:100%;
+  display:grid;
+  grid-template-columns:170px minmax(0,1fr);
+  overflow:hidden;
+}
+#chatModal .chat-tabs{
+  min-height:0;
+  padding:14px 10px;
+  border-right:1px solid rgba(255,255,255,.08);
+  background:rgba(2,5,12,.26);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+#chatModal .chat-tabs .btn{
+  width:100%;
+  min-height:42px;
+  text-align:left;
+  justify-content:flex-start;
+  border-radius:12px;
+}
+#chatModal .chat-body{
+  min-width:0;
+  min-height:0;
+  height:100%;
+  padding:12px;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  gap:10px;
+  overflow:hidden;
+}
+#chatModal .call-shell{
+  margin:0;
+  padding:10px 12px;
+  border-radius:15px;
+  background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.02));
+}
+#chatModal .call-head{margin-bottom:7px}
+#chatModal .call-controls{margin-bottom:0;gap:6px}
+#chatModal .call-controls .btn{
+  min-height:34px;
+  padding:7px 10px;
+}
+#chatModal .call-grid{
+  margin-top:8px;
+  max-height:230px;
+  grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
+  gap:7px;
+}
+#chatModal .call-tile,
+#chatModal .call-tile video{min-height:108px}
+#chatModal .messages{
+  min-height:0;
+  max-height:none;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:10px 8px;
+  gap:9px;
+  border-radius:14px;
+  background:rgba(0,0,0,.12);
+  border:1px solid rgba(255,255,255,.055);
+  scrollbar-width:thin;
+}
+#chatModal .msg{
+  max-width:min(78%,720px);
+  padding:9px 12px;
+  line-height:1.45;
+  word-break:break-word;
+  border-radius:15px 15px 15px 5px;
+}
+#chatModal .msg.me{
+  border-radius:15px 15px 5px 15px;
+}
+#chatModal .msg small{
+  font-size:11px;
+  margin-bottom:5px;
+}
+#chatModal .send-row{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  padding-top:2px;
+  background:transparent;
+}
+#chatModal .send-row .field{
+  min-width:0;
+  min-height:44px;
+  padding:11px 13px;
+}
+#chatModal #sendChatBtn{
+  min-width:78px;
+  min-height:44px;
+  padding:10px 18px;
+}
+@media(min-width:1100px){
+  #chatModal>.modal{width:min(94vw,1220px)}
+  #chatModal .chat-layout{grid-template-columns:180px minmax(0,1fr)}
+  #chatModal .call-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  #chatModal{
+    padding:max(4px,var(--safe-top)) max(4px,var(--safe-right)) max(4px,var(--safe-bottom)) max(4px,var(--safe-left));
+    align-items:stretch;
+  }
+  #chatModal>.modal{
+    width:100%;
+    height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 8px);
+    max-height:none;
+    border-radius:18px;
+    grid-template-rows:54px minmax(0,1fr);
+  }
+  #chatModal>.modal>.modal-head{
+    min-height:54px;
+    padding:0 10px 0 13px;
+  }
+  #chatModal>.modal>.modal-head h2{font-size:15px}
+  #chatModal>.modal>.modal-head .tag{font-size:9px;padding:4px 6px}
+  #chatModal .chat-layout{
+    display:grid;
+    grid-template-columns:1fr;
+    grid-template-rows:auto minmax(0,1fr);
+  }
+  #chatModal .chat-tabs{
+    padding:7px 8px;
+    flex-direction:row;
+    gap:6px;
+    overflow-x:auto;
+    border-right:0;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    scrollbar-width:none;
+  }
+  #chatModal .chat-tabs::-webkit-scrollbar{display:none}
+  #chatModal .chat-tabs .btn{
+    width:auto;
+    min-width:max-content;
+    min-height:36px;
+    padding:7px 12px;
+    text-align:center;
+    justify-content:center;
+    flex:0 0 auto;
+  }
+  #chatModal .chat-body{
+    padding:8px;
+    gap:8px;
+    grid-template-rows:auto minmax(0,1fr) auto;
+  }
+  #chatModal .call-shell{padding:8px;border-radius:13px}
+  #chatModal .call-head{margin-bottom:6px}
+  #chatModal .call-controls{
+    display:flex;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    gap:5px;
+    padding-bottom:1px;
+    scrollbar-width:none;
+  }
+  #chatModal .call-controls::-webkit-scrollbar{display:none}
+  #chatModal .call-controls .btn{
+    flex:0 0 auto;
+    min-height:34px;
+    padding:7px 9px;
+    white-space:nowrap;
+  }
+  #chatModal .call-grid{
+    max-height:25dvh;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px;
+  }
+  #chatModal .call-tile,
+  #chatModal .call-tile video{min-height:96px}
+  #chatModal .messages{
+    padding:8px 6px;
+    border-radius:12px;
+  }
+  #chatModal .msg{max-width:88%;font-size:14px}
+  #chatModal .send-row{
+    position:sticky;
+    bottom:0;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:6px;
+    padding:2px 0 0;
+  }
+  #chatModal .send-row .field{
+    min-height:42px;
+    font-size:16px;
+    padding:9px 11px;
+  }
+  #chatModal #sendChatBtn{
+    min-width:66px;
+    min-height:42px;
+    padding:9px 13px;
+  }
+}
+@media(max-width:390px){
+  #chatModal .call-grid{grid-template-columns:1fr 1fr}
+  #chatModal .call-tile,#chatModal .call-tile video{min-height:88px}
+  #chatModal .msg{max-width:92%}
+  #chatModal #sendChatBtn{min-width:60px;padding-inline:10px}
+}
+@media(max-height:600px) and (orientation:landscape){
+  #chatModal>.modal{height:calc(100dvh - 8px);max-height:none}
+  #chatModal .call-grid{max-height:22dvh}
+  #chatModal .call-shell{padding:7px 8px}
+  #chatModal .call-head{margin-bottom:4px}
+}
+</style>
+
 </head>
 <body>
 <div id="pageBg" class="bg"></div><canvas id="stars"></canvas><div class="orb"></div><div id="toast" class="toast"></div>
@@ -2222,7 +2469,7 @@ function applyMediaCategory(){
  const v=document.getElementById('showVideosBtn'),i=document.getElementById('showImagesBtn');if(v)v.classList.toggle('active',currentMediaCategory==='video');if(i)i.classList.toggle('active',currentMediaCategory==='image');
 }
 function renderFeed(){const f=$('feed');f.classList.remove('similar-feed');f.classList.add('media-grid');const visible=media.filter(p=>p.media_type===currentMediaCategory);if(!visible.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;applyMediaCategory();return}f.innerHTML=visible.map(p=>`<article class="media-card" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}" loading="lazy" decoding="async">`:`<video src="${esc(p.url)}" muted preload="metadata"></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy" decoding="async">`}<div class="media-cover"></div><div class="media-info"><b>@${esc(p.account)}</b><br>${esc(p.caption||'影像')}<div class="media-meta">${p.media_type==='video'?`<span>⏱ ${formatDuration(p.duration)}</span><span>▶ ${Number(p.play_count||0)}</span>`:'<span>照片</span>'}</div></div></article>`).join('');applyMediaCategory()}
-window.countPlay=async id=>{try{const p=await ensureMediaItem(id);if(!p||p._played)return;p._played=true;let s=session;try{const gs=await sb.auth.getSession();if(gs?.data?.session)s=gs.data.session}catch(_){}if(!s?.access_token){p._played=false;return}const r=await fetch(SUPABASE_URL+'/functions/v1/media-play',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+s.access_token},body:JSON.stringify({id})});let j={};try{j=await r.json()}catch{}if(!r.ok){p._played=false;console.warn(j.error||'播放量计数失败');return}p.play_count=Number(j.count??p.play_count??0)}catch(e){const p=media.find(x=>String(x.id)===String(id));if(p)p._played=false;console.warn(e)}};
+window.countPlay=async id=>{try{const p=await ensureMediaItem(id);if(!p||p._played)return;p._played=true;const {data,error}=await sb.rpc('increment_media_play_count',{p_id:id});if(error){p._played=false;console.warn(error);return}p.play_count=Number(data??p.play_count??0)}catch(e){console.warn(e)}};
 window.sharePost=async id=>{try{const p=await ensureMediaItem(id);if(!p)return toast('作品不存在');const url=new URL(location.href);url.searchParams.set('media',id);if(navigator.share)await navigator.share({title:document.title,text:p.caption||'清音 影像',url:url.toString()});else{await navigator.clipboard.writeText(url.toString());toast('作品链接已复制')}}catch(e){if(e?.name!=='AbortError')toast(e.message||'分享失败')}};
 window.deletePost=async id=>{try{const p=await ensureMediaItem(id);if(!p||!canDeleteMedia(p))return toast('没有删除权限');if(!confirm('确定删除这个作品？'))return;if(!await deleteMediaRowAndStorage(p))throw new Error('Storage 或数据库删除失败');toast('作品已删除');media=media.filter(x=>String(x.id)!==String(id));mediaTotalCount=Math.max(0,mediaTotalCount-1);const mc=$('mediaCount');if(mc)mc.textContent=mediaTotalCount;renderFeed();if(document.getElementById('fullViewerPage')?.classList.contains('active'))document.getElementById('viewerClose')?.click()}catch(e){toast(e.message||'删除失败')}};
 
@@ -2251,10 +2498,6 @@ function buildMainSimilarityGroups(edges){
 async function findSimilarImagesForAdmin(threshold=24){
   if(!isAdmin())throw new Error('没有权限');
   const limit=Math.max(0,Math.min(Number(threshold||24),64));
-  try{
-    const j=await adminApi({action:'find_similar_images',threshold:limit});
-    if(Array.isArray(j.data))return j.data;
-  }catch(e){console.warn('服务端相似检测失败，使用本地回退',e)}
   const rows=await fetchAllRowsPaged(
     'media_posts',
     'id,image_hash,object_path,cover_url,file_size,created_at',
@@ -3105,9 +3348,9 @@ async function openDuplicateCenter(){
  }
 }
 
-async function loadDbStats(){try{const j=await adminApi({action:'database_stats'});const data=j.data;if(!data)throw new Error('数据库统计返回为空');$('dbStats').innerHTML=`<p><b>${esc(data.database_pretty)}</b> · 数据库总占用</p><div class="table-wrap"><table class="table"><tr><th>表</th><th>大小</th><th>估算行数</th></tr>${(data.tables||[]).map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.pretty)}</td><td>${x.rows_estimate}</td></tr>`).join('')}</table></div>`}catch(e){$('dbStats').textContent=e.message||String(e)}}
+async function loadDbStats(){try{let r=await sb.rpc('admin_database_stats');if(r.error&&isPrimarySuperadmin()){await ensurePrimarySuperadmin();r=await sb.rpc('admin_database_stats')}const {data,error}=r;if(error)throw error;$('dbStats').innerHTML=`<p><b>${esc(data.database_pretty)}</b> · 数据库总占用</p><div class="table-wrap"><table class="table"><tr><th>表</th><th>大小</th><th>估算行数</th></tr>${(data.tables||[]).map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.pretty)}</td><td>${x.rows_estimate}</td></tr>`).join('')}</table></div>`}catch(e){$('dbStats').textContent=e.message}}
 function fmtBytes(n){n=Number(n||0);if(n<1024)return n+' B';if(n<1024**2)return (n/1024).toFixed(1)+' KB';if(n<1024**3)return (n/1024**2).toFixed(1)+' MB';return (n/1024**3).toFixed(2)+' GB'}
-async function loadStorageStats(){const el=$('storageStats');try{const j=await adminApi({action:'storage_stats'});const data=j.data;if(!data)throw new Error('Storage 统计返回为空');const quota=Number(cfg('storage','display_quota_bytes',1024**3)),used=Number(data?.used_bytes||0),remain=Math.max(0,quota-used),pct=Math.min(100,used/quota*100),buckets=data?.buckets||[];const byId=Object.fromEntries(buckets.map(x=>[x.bucket_id,x]));const est10=Math.floor(remain/(10*1024**2)),est20=Math.floor(remain/(20*1024**2)),est50=Math.floor(remain/(50*1024**2));el.innerHTML=`<p><b>${fmtBytes(used)}</b> 已用 / <b>${fmtBytes(quota)}</b> 总容量</p><div style="height:10px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;margin:8px 0 10px"><div style="height:100%;width:${pct.toFixed(2)}%;background:currentColor;opacity:.8"></div></div><p>剩余 <b>${fmtBytes(remain)}</b> · 已用 ${pct.toFixed(1)}% · 共 ${Number(data?.object_count||0)} 个文件</p><div class="table-wrap"><table class="table"><tr><th>分类</th><th>已用</th><th>文件数</th></tr><tr><td>视频 / 图片</td><td>${fmtBytes(byId.media?.used_bytes||0)}</td><td>${byId.media?.object_count||0}</td></tr><tr><td>头像</td><td>${fmtBytes(byId.avatars?.used_bytes||0)}</td><td>${byId.avatars?.object_count||0}</td></tr><tr><td>背景 / 图标</td><td>${fmtBytes(byId.backgrounds?.used_bytes||0)}</td><td>${byId.backgrounds?.object_count||0}</td></tr></table></div><p style="font-size:12px">按数据库配置容量估算：剩余空间约还能放 ${est10} 个 10MB 视频 / ${est20} 个 20MB 视频 / ${est50} 个 50MB 视频。单文件上限仍受项目全局上传限制影响。</p>`}catch(e){el.textContent=e.message||String(e)}}
+async function loadStorageStats(){const el=$('storageStats');try{let r=await sb.rpc('admin_storage_stats');if(r.error&&isPrimarySuperadmin()){await ensurePrimarySuperadmin();r=await sb.rpc('admin_storage_stats')}const {data,error}=r;if(error)throw error;const quota=Number(cfg('storage','display_quota_bytes',1024**3)),used=Number(data?.used_bytes||0),remain=Math.max(0,quota-used),pct=Math.min(100,used/quota*100),buckets=data?.buckets||[];const byId=Object.fromEntries(buckets.map(x=>[x.bucket_id,x]));const est10=Math.floor(remain/(10*1024**2)),est20=Math.floor(remain/(20*1024**2)),est50=Math.floor(remain/(50*1024**2));el.innerHTML=`<p><b>${fmtBytes(used)}</b> 已用 / <b>${fmtBytes(quota)}</b> 总容量</p><div style="height:10px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;margin:8px 0 10px"><div style="height:100%;width:${pct.toFixed(2)}%;background:currentColor;opacity:.8"></div></div><p>剩余 <b>${fmtBytes(remain)}</b> · 已用 ${pct.toFixed(1)}% · 共 ${Number(data?.object_count||0)} 个文件</p><div class="table-wrap"><table class="table"><tr><th>分类</th><th>已用</th><th>文件数</th></tr><tr><td>视频 / 图片</td><td>${fmtBytes(byId.media?.used_bytes||0)}</td><td>${byId.media?.object_count||0}</td></tr><tr><td>头像</td><td>${fmtBytes(byId.avatars?.used_bytes||0)}</td><td>${byId.avatars?.object_count||0}</td></tr><tr><td>背景 / 图标</td><td>${fmtBytes(byId.backgrounds?.used_bytes||0)}</td><td>${byId.backgrounds?.object_count||0}</td></tr></table></div><p style="font-size:12px">按数据库配置容量估算：剩余空间约还能放 ${est10} 个 10MB 视频 / ${est20} 个 20MB 视频 / ${est50} 个 50MB 视频。单文件上限仍受项目全局上传限制影响。</p>`}catch(e){el.textContent=e.message||String(e)}}
 $('duplicateCenterBtn')?.addEventListener('click',openDuplicateCenter);
 $('cleanDuplicateBtn')?.addEventListener('click',cleanDuplicateMedia);
 $('backfillDedupBtn')?.addEventListener('click',backfillAndCleanSimilarDuplicates);
