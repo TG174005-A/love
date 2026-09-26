@@ -1,3 +1,8 @@
+
+
+
+
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -1996,6 +2001,164 @@ button,input,textarea,select{max-width:100%}
 }
 </style>
 
+
+<style id="mobile-layout-overlap-fix-v1">
+/* Mobile layout stability: keep toolbars in document flow and reserve space for fixed bottom nav. */
+@media (max-width: 700px){
+  #appView{
+    height:100dvh;
+    min-height:100dvh;
+    overflow:hidden;
+  }
+
+  .ticker{
+    flex:0 0 38px;
+    height:38px;
+  }
+
+  .topbar{
+    height:auto;
+    min-height:112px;
+    flex:0 0 auto;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    grid-template-areas:
+      "brand stats actions"
+      "categories categories categories";
+    column-gap:8px;
+    row-gap:10px;
+    align-items:center;
+    padding:10px 10px 12px;
+    overflow:visible;
+  }
+
+  .top-brand{
+    grid-area:brand;
+    min-width:max-content;
+    font-size:16px;
+  }
+
+  .top-stats{
+    grid-area:stats;
+    min-width:0;
+    justify-self:start;
+    gap:5px;
+  }
+
+  .top-stat{
+    padding:5px 7px;
+    font-size:11px;
+  }
+
+  .top-actions{
+    grid-area:actions;
+    justify-self:end;
+    min-width:0;
+    gap:5px;
+  }
+
+  .top-actions .btn.small{
+    min-width:40px;
+    height:40px;
+    padding:8px 9px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    white-space:nowrap;
+  }
+
+  .top-actions .avatar{
+    width:40px;
+    height:40px;
+    flex:0 0 40px;
+  }
+
+  .top-category-slot{
+    grid-area:categories;
+    width:100%;
+    min-width:0;
+    justify-content:center;
+  }
+
+  .top-category-slot .media-category-bar{
+    width:auto;
+    max-width:100%;
+    margin:0;
+    gap:8px;
+    justify-content:center;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .top-category-slot .media-category-bar::-webkit-scrollbar{display:none}
+
+  .top-category-slot .media-category-bar button{
+    flex:0 0 auto;
+    min-height:38px;
+    padding:8px 15px;
+    font-size:13px;
+  }
+
+  .main{
+    flex:1 1 auto;
+    height:auto;
+    min-height:0;
+    padding:6px;
+    overflow:hidden;
+  }
+
+  .center,
+  #categoryMediaWrap,
+  #feed{
+    min-height:0;
+    height:100%;
+  }
+
+  #feed{
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    scroll-padding-bottom:112px;
+  }
+
+  #feed.media-grid{
+    padding:6px 6px calc(112px + env(safe-area-inset-bottom));
+    gap:8px;
+  }
+
+  .bottom-nav{
+    bottom:max(8px, env(safe-area-inset-bottom));
+    width:calc(100vw - 16px);
+    max-width:none;
+    min-height:68px;
+    padding:8px;
+    gap:6px;
+    border-radius:22px;
+  }
+
+  .bottom-nav .btn{
+    min-width:0;
+    min-height:48px;
+    padding:8px 5px;
+    font-size:12px;
+    white-space:nowrap;
+  }
+}
+
+@media (max-width: 370px){
+  .topbar{
+    grid-template-columns:auto 1fr;
+    grid-template-areas:
+      "brand stats"
+      "actions actions"
+      "categories categories";
+    min-height:158px;
+  }
+  .top-actions{justify-self:stretch;justify-content:flex-end}
+  .top-category-slot .media-category-bar button{padding:8px 12px}
+}
+</style>
 </head>
 <body>
 <div id="pageBg" class="bg"></div><canvas id="stars"></canvas><div class="orb"></div><div id="toast" class="toast"></div>
