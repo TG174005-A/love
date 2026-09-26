@@ -2,6 +2,7 @@
 
 
 
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -12,7 +13,7 @@
 <link rel="manifest" id="importManifest" href="data:application/manifest+json,%7B%22name%22%3A%22%E6%B8%85%E9%9F%B3%22%2C%22short_name%22%3A%22%E6%B8%85%E9%9F%B3%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2305060b%22%2C%22theme_color%22%3A%22%2305060b%22%7D">
 <title>清音</title>
 <link id="favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%2300e5ff'/%3E%3Cstop offset='1' stop-color='%239b5cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='%2305060b'/%3E%3Cpath d='M15 42V20h8l18 22V20h8v24h-8L23 22v20z' fill='url(%23g)'/%3E%3C/svg%3E" />
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js" onerror="document.write('<script src=&quot;https://unpkg.com/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js&quot;><\/script>')"></script>
 <script>
 /* Embedded QR encoder based on Kazuhiko Arase QRCode (MIT), bundled locally to avoid CDN dependency. */
 (function(){
@@ -2095,9 +2096,53 @@ button,input,textarea,select{max-width:100%}
 <script>
 const SUPABASE_URL='https://oyfuocywwujsyxjlpprv.supabase.co';
 const SUPABASE_KEY='sb_publishable_l2CI_nVFQjvnhiYS2UvnzA_vNX6DZgL';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const nativeFetch=window.fetch.bind(window);
+async function stableSupabaseFetch(input,init={}){
+  const url=String(typeof input==='string'?input:(input?.url||''));
+  const method=String(init?.method||(typeof input!=='string'&&input?.method)||'GET').toUpperCase();
+  const retryable=url.includes('/rest/v1/')&&(method==='GET'||method==='HEAD');
+  const attempts=retryable?2:1;
+  let lastError=null;
+  for(let attempt=0;attempt<attempts;attempt++){
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(new DOMException('Supabase request timeout','TimeoutError')),15000);
+    const externalSignal=init?.signal;
+    const abortFromExternal=()=>controller.abort(externalSignal?.reason);
+    if(externalSignal){if(externalSignal.aborted)abortFromExternal();else externalSignal.addEventListener('abort',abortFromExternal,{once:true})}
+    try{
+      const res=await nativeFetch(input,{...init,signal:controller.signal});
+      if(attempt+1<attempts&&[502,503,504].includes(res.status)){
+        await new Promise(r=>setTimeout(r,500*(attempt+1)));
+        continue;
+      }
+      return res;
+    }catch(e){
+      lastError=e;
+      if(attempt+1>=attempts||externalSignal?.aborted)throw e;
+      await new Promise(r=>setTimeout(r,500*(attempt+1)));
+    }finally{
+      clearTimeout(timer);
+      if(externalSignal)externalSignal.removeEventListener('abort',abortFromExternal);
+    }
+  }
+  throw lastError||new Error('Supabase request failed');
+}
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:stableSupabaseFetch}});
 let session=null,me=null,profile=null,settings={},media=[],presence=null,realtimeChannel=null,currentChat='global',installPrompt=null,activeBackgroundPage='login';
 let mediaReloadTimer=null,settingsReloadTimer=null,chatReloadTimer=null,chatLoading=false,chatSending=false,appEntering=false;
+let realtimeRetryTimer=null,presenceRetryTimer=null,realtimeConnecting=false,presenceConnecting=false;
+let appReady=false,lastAppRecoveryAt=0;
+function scheduleRetry(kind,fn,delay=1800){
+  if(kind==='presence'){
+    if(presenceRetryTimer)clearTimeout(presenceRetryTimer);
+    presenceRetryTimer=setTimeout(()=>{presenceRetryTimer=null;Promise.resolve(fn()).catch(e=>console.warn(kind+' retry failed',e))},delay);
+  }else{
+    if(realtimeRetryTimer)clearTimeout(realtimeRetryTimer);
+    realtimeRetryTimer=setTimeout(()=>{realtimeRetryTimer=null;Promise.resolve(fn()).catch(e=>console.warn(kind+' retry failed',e))},delay);
+  }
+}
+window.addEventListener('error',e=>{console.error('Global error:',e.error||e.message||e)});
+window.addEventListener('unhandledrejection',e=>{console.error('Unhandled promise rejection:',e.reason||e)});
 const $=id=>document.getElementById(id); const $$=q=>[...document.querySelectorAll(q)];
 function toast(s){const e=$('toast');if(!e)return;e.textContent=String(s||'');e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),Number(cfg('ui','toast_duration_ms',2600)))}
 function debounceRun(key,fn,delay=180){const timers={media:()=>mediaReloadTimer,settings:()=>settingsReloadTimer,chat:()=>chatReloadTimer};const setters={media:v=>mediaReloadTimer=v,settings:v=>settingsReloadTimer=v,chat:v=>chatReloadTimer=v};if(!timers[key])return fn();const t=timers[key]();if(t)clearTimeout(t);setters[key](setTimeout(()=>{setters[key](null);Promise.resolve(fn()).catch(console.warn)},delay))}
@@ -2111,7 +2156,42 @@ function isAdmin(){return isPrimarySuperadmin()||me?.app_metadata?.role==='admin
 function isSuper(){return isPrimarySuperadmin()||me?.app_metadata?.role==='superadmin'}
 function runtime(){return settings.runtime||{}}
 function cfg(section,key,fallback){const v=runtime()?.[section]?.[key];return v===undefined||v===null?fallback:v}
-async function ensureRealtimeAuth(){try{const {data:{session:s}}=await sb.auth.getSession();if(s?.access_token){session=s;await sb.realtime.setAuth(s.access_token);return s}return null}catch(e){console.warn('Realtime auth',e);return null}}
+function invalidRefreshError(e){return /refresh[_ ]token|invalid refresh token|refresh token not found/i.test(String(e?.message||e||''))}
+async function ensureRealtimeAuth(){
+  try{
+    let {data:{session:s},error}=await sb.auth.getSession();
+    if(error)throw error;
+    if(!s)return null;
+    if(s.expires_at&&Number(s.expires_at)*1000<Date.now()+60000){
+      const refreshed=await sb.auth.refreshSession();
+      if(refreshed.error)throw refreshed.error;
+      s=refreshed.data?.session||null;
+    }
+    if(s?.access_token){session=s;await sb.realtime.setAuth(s.access_token);return s}
+    return null;
+  }catch(e){
+    console.warn('Realtime auth',e);
+    if(invalidRefreshError(e)){
+      try{await sb.auth.signOut({scope:'local'})}catch(_){}
+    }
+    return null;
+  }
+}
+async function handleSessionEnded(showNotice=true){
+  session=null;me=null;profile=null;appReady=false;appEntering=false;
+  if(realtimeRetryTimer){clearTimeout(realtimeRetryTimer);realtimeRetryTimer=null}
+  if(presenceRetryTimer){clearTimeout(presenceRetryTimer);presenceRetryTimer=null}
+  if(realtimeChannel){try{await sb.removeChannel(realtimeChannel)}catch(_){}realtimeChannel=null}
+  if(presence){try{await sb.removeChannel(presence)}catch(_){}presence=null}
+  if(typeof callJoined!=='undefined'&&callJoined&&typeof leaveGroupCall==='function'){try{await leaveGroupCall(true)}catch(_){}}
+  if(typeof callMonitorChannel!=='undefined'&&callMonitorChannel){try{await sb.removeChannel(callMonitorChannel)}catch(_){}callMonitorChannel=null}
+  document.querySelectorAll('.modal-wrap').forEach(x=>x.classList.add('hidden'));
+  $('appView')?.classList.add('hidden');
+  $('authView')?.classList.remove('hidden');
+  activeBackgroundPage='login';
+  try{applyBackground('login')}catch(_){}
+  if(showNotice)toast('登录状态已失效，请重新登录');
+}
 async function ensurePrimarySuperadmin(){if(!isPrimarySuperadmin())return false;try{await adminApi({action:'sync_primary_role'});const {data,error}=await sb.auth.refreshSession();if(error)throw error;if(data?.session){session=data.session;me=data.user||data.session.user||me;await sb.realtime.setAuth(data.session.access_token)}return true}catch(e){console.warn('主超级管理员角色同步失败',e);return false}}
 function openModal(id){$(id).classList.remove('hidden');if(id==='adminModal'){activeBackgroundPage='admin';applyBackground('admin')}}
 function closeModal(id){$(id).classList.add('hidden');if(id==='adminModal'){activeBackgroundPage=session?'home':'login';applyBackground(activeBackgroundPage)}}
@@ -2130,7 +2210,34 @@ function authMode(mode){$('loginForm').classList.toggle('hidden',mode!=='login')
 $('loginTab').onclick=()=>authMode('login');$('registerTab').onclick=()=>authMode('register');
 $('loginForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter||$('loginForm').querySelector('button[type=submit]');await withButtonBusy(btn,async()=>{const account=$('loginAccount').value.trim();if(!/^\d+$/.test(account))return toast('账号只能是数字');if(!isOnline())return toast('当前网络不可用');const {data,error}=await sb.auth.signInWithPassword({email:account+'@numeric.local',password:$('loginPassword').value});if(error)return toast('登录失败：'+error.message);session=data.session;await enterApp()},'登录中...')};
 $('registerForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter||$('registerForm').querySelector('button[type=submit]');await withButtonBusy(btn,async()=>{if(cfg('features','registration_enabled',true)===false)return toast('当前已关闭注册');const account=$('regAccount').value.trim();const password=$('regPassword').value,amin=Number(cfg('registration','account_min_digits',4)),amax=Number(cfg('registration','account_max_digits',18)),pmin=Number(cfg('registration','password_min_length',8)),pmax=Number(cfg('registration','password_max_length',72));if(!(new RegExp('^\\d{'+amin+','+amax+'}$')).test(account))return toast(`账号必须是${amin}-${amax}位纯数字`);if(password.length<pmin||password.length>pmax)return toast(`密码必须为${pmin}-${pmax}位`);if(!isOnline())return toast('当前网络不可用');let r;try{r=await fetch(SUPABASE_URL+'/functions/v1/numeric-register',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({account,password,nickname:$('regNickname').value.trim()})})}catch(e){return toast('注册请求失败，请检查网络')}let j={};try{j=await r.json()}catch{}if(!r.ok)return toast(j.error||'注册失败');toast('注册成功，正在登录');const {data,error}=await sb.auth.signInWithPassword({email:account+'@numeric.local',password});if(error)return toast(error.message);session=data.session;await enterApp()},'注册中...')};
-async function enterApp(){if(appEntering)return;appEntering=true;try{const {data:{user},error}=await sb.auth.getUser();if(error)throw error;me=user;if(!me)return;if(isPrimarySuperadmin())await ensurePrimarySuperadmin();await ensureRealtimeAuth();await loadProfile();$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('adminBtn').classList.toggle('hidden',!isAdmin());$('showSimilarBtn')?.classList.toggle('hidden',!isAdmin());activeBackgroundPage='home';applyBackground('home');await Promise.all([loadMedia(),loadSettings()]);await setupRealtime();await setupPresence();const mid=new URL(location.href).searchParams.get('media');if(mid)await openMediaViewer(mid)}catch(e){console.error(e);toast(e.message||'进入应用失败')}finally{appEntering=false}}
+async function enterApp(){
+  if(appEntering)return;
+  appEntering=true;
+  try{
+    const {data:{user},error}=await sb.auth.getUser();
+    if(error)throw error;
+    me=user;
+    if(!me)return;
+    if(isPrimarySuperadmin())await ensurePrimarySuperadmin();
+    await ensureRealtimeAuth();
+    try{await loadProfile()}catch(e){console.warn('profile init failed',e)}
+    $('authView').classList.add('hidden');
+    $('appView').classList.remove('hidden');
+    $('adminBtn').classList.toggle('hidden',!isAdmin());
+    $('showSimilarBtn')?.classList.toggle('hidden',!isAdmin());
+    activeBackgroundPage='home';
+    applyBackground('home');
+    const initResults=await Promise.allSettled([loadMedia(),loadSettings()]);
+    initResults.forEach((r,i)=>{if(r.status==='rejected')console.warn(i===0?'media init failed':'settings init failed',r.reason)});
+    await Promise.allSettled([setupRealtime(),setupPresence()]);
+    appReady=true;
+    const mid=new URL(location.href).searchParams.get('media');
+    if(mid)await openMediaViewer(mid).catch?.(()=>{});
+  }catch(e){
+    console.error(e);
+    toast(e.message||'进入应用失败');
+  }finally{appEntering=false}
+}
 async function loadProfile(){const {data,error}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();if(error)console.warn(error);profile=data||{id:me.id,account:accountOf(me),nickname:'用户'+accountOf(me).slice(-4),bio:'',avatar_url:''};renderProfile()}
 function renderProfile(){const av=profile.avatar_url||'';$('profileNickname').value=profile.nickname||'';$('profileBio').value=profile.bio||'';[$('topAvatar'),$('profileAvatarPreview')].forEach(i=>{i.src=av||`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><linearGradient id="g"><stop stop-color="#00e5ff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient></defs><rect width="120" height="120" rx="60" fill="#101527"/><text x="60" y="72" text-anchor="middle" font-size="42" fill="url(#g)">${esc((profile.nickname||profile.account||'N').slice(0,1))}</text></svg>`)}`})}
 $('logoutBtn').onclick=async()=>{await withButtonBusy($('logoutBtn'),async()=>{if(callJoined)await leaveGroupCall(true);if(callMonitorChannel){await sb.removeChannel(callMonitorChannel).catch(()=>{});callMonitorChannel=null}if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}await sb.auth.signOut();location.reload()},'退出中...')};$('chatBtn').onclick=()=>{openModal('chatModal');loadChat()};$('topAvatar').onclick=()=>{openModal('profileModal');renderLocationShareStatus()};$('topAvatar').style.cursor='pointer';
@@ -2646,8 +2753,65 @@ async function renderMainSimilarGroups(){
   }
 }
 
-async function setupRealtime(){if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}realtimeChannel=sb.channel('nebula-db-'+me.id).on('postgres_changes',{event:'*',schema:'public',table:'media_posts'},()=>debounceRun('media',()=>loadMedia(true),350)).on('postgres_changes',{event:'*',schema:'public',table:'profiles',filter:`id=eq.${me.id}`},p=>{if(p.new?.id===me.id){profile=p.new;renderProfile()}}).on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>debounceRun('settings',loadSettings,250)).on('postgres_changes',{event:'*',schema:'public',table:'chat_messages'},()=>{if(!$('chatModal').classList.contains('hidden'))debounceRun('chat',loadChat,160)});realtimeChannel.subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Realtime 状态',status)});return realtimeChannel}
-async function setupPresence(){if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}presence=sb.channel('nebula-online',{config:{presence:{key:me.id}}});presence.on('presence',{event:'sync'},()=>{const n=Object.keys(presence.presenceState()).length;const oc=$('onlineCount'),ao=$('adminOnline');if(oc)oc.textContent=n;if(ao)ao.textContent=n}).subscribe(async status=>{if(status==='SUBSCRIBED')await presence.track({account:profile.account,at:new Date().toISOString()});if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Presence 状态',status)});return presence}
+async function setupRealtime(){
+  if(!me||realtimeConnecting)return realtimeChannel;
+  realtimeConnecting=true;
+  try{
+    if(realtimeRetryTimer){clearTimeout(realtimeRetryTimer);realtimeRetryTimer=null}
+    if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}
+    const authSession=await ensureRealtimeAuth();
+    if(!authSession?.access_token)throw new Error('Realtime 登录状态不可用');
+    const ch=sb.channel('nebula-db-'+me.id)
+      .on('postgres_changes',{event:'*',schema:'public',table:'media_posts'},()=>debounceRun('media',()=>loadMedia(true),350))
+      .on('postgres_changes',{event:'*',schema:'public',table:'profiles',filter:`id=eq.${me.id}`},p=>{if(p.new?.id===me.id){profile=p.new;renderProfile()}})
+      .on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>debounceRun('settings',loadSettings,250))
+      .on('postgres_changes',{event:'*',schema:'public',table:'chat_messages'},()=>{if(!$('chatModal').classList.contains('hidden'))debounceRun('chat',loadChat,160)});
+    realtimeChannel=ch;
+    ch.subscribe(status=>{
+      if(status==='SUBSCRIBED'){
+        if(realtimeRetryTimer){clearTimeout(realtimeRetryTimer);realtimeRetryTimer=null}
+      }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
+        console.warn('Realtime 状态',status);
+        if(session&&navigator.onLine!==false)scheduleRetry('realtime',setupRealtime,1800);
+      }
+    });
+    return ch;
+  }catch(e){
+    console.warn('Realtime setup failed',e);
+    if(session&&navigator.onLine!==false)scheduleRetry('realtime',setupRealtime,2200);
+    return null;
+  }finally{realtimeConnecting=false}
+}
+async function setupPresence(){
+  if(!me||presenceConnecting)return presence;
+  presenceConnecting=true;
+  try{
+    if(presenceRetryTimer){clearTimeout(presenceRetryTimer);presenceRetryTimer=null}
+    if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}
+    const authSession=await ensureRealtimeAuth();
+    if(!authSession?.access_token)throw new Error('Presence 登录状态不可用');
+    const ch=sb.channel('nebula-online',{config:{presence:{key:me.id}}});
+    presence=ch;
+    ch.on('presence',{event:'sync'},()=>{
+      const n=Object.keys(ch.presenceState()).length;
+      const oc=$('onlineCount'),ao=$('adminOnline');
+      if(oc)oc.textContent=n;if(ao)ao.textContent=n;
+    }).subscribe(async status=>{
+      if(status==='SUBSCRIBED'){
+        if(presenceRetryTimer){clearTimeout(presenceRetryTimer);presenceRetryTimer=null}
+        try{await ch.track({account:profile?.account||accountOf(me),at:new Date().toISOString()})}catch(e){console.warn('Presence track failed',e)}
+      }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
+        console.warn('Presence 状态',status);
+        if(session&&navigator.onLine!==false)scheduleRetry('presence',setupPresence,2000);
+      }
+    });
+    return ch;
+  }catch(e){
+    console.warn('Presence setup failed',e);
+    if(session&&navigator.onLine!==false)scheduleRetry('presence',setupPresence,2400);
+    return null;
+  }finally{presenceConnecting=false}
+}
 $$('[data-chat]').forEach(b=>b.onclick=()=>{$$('[data-chat]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');currentChat=b.dataset.chat;loadChat()});
 async function loadChat(){if(chatLoading)return;chatLoading=true;try{let q=sb.from('chat_messages').select('id,user_id,recipient_id,account,channel,content,created_at,expires_at').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(Number(cfg('chat','query_limit',300)));if(currentChat==='global')q=q.eq('channel','global');else{q=q.eq('channel','admin');if(!isAdmin())q=q.or(`user_id.eq.${me.id},recipient_id.eq.${me.id}`)}const {data,error}=await q;if(error)throw error;const list=(data||[]).reverse();$('messages').innerHTML=list.length?list.map(m=>`<div class="msg ${m.user_id===me.id?'me':''}"><small>@${esc(m.account)} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small>${esc(m.content)}</div>`).join(''):'<div class="muted" style="padding:14px;text-align:center">暂无消息</div>';$('messages').scrollTop=$('messages').scrollHeight}catch(e){console.warn(e);toast('聊天加载失败')}finally{chatLoading=false}}
 $('sendChatBtn').onclick=sendChat;$('chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}};async function sendChat(){if(chatSending)return;const content=$('chatInput').value.trim();if(!content)return;if(!isOnline())return toast('当前网络不可用');if(cfg('features','chat_enabled',true)===false)return toast('当前已关闭聊天');if(content.length>Number(cfg('chat','max_length',1000)))return toast('消息过长');chatSending=true;const btn=$('sendChatBtn');btn.disabled=true;try{let recipient_id=null;if(currentChat==='admin'&&!isSuper()){const {data,error}=await sb.from('profiles').select('id').eq('account',String(cfg('admin','primary_account',''))).maybeSingle();if(error)throw error;recipient_id=data?.id||null;if(!recipient_id)throw new Error('管理员账号不可用')}const {error}=await sb.from('chat_messages').insert({user_id:me.id,recipient_id,account:profile.account,channel:currentChat,content});if(error)throw error;$('chatInput').value='';await loadChat()}catch(e){toast(e.message||'发送失败')}finally{chatSending=false;btn.disabled=false}}
@@ -3405,13 +3569,28 @@ window.addEventListener('beforeunload',()=>{for(const t of callLocalStream?.getT
 
 // stars
 (function(){const c=$('stars'),x=c.getContext('2d');let w,h,dpr,pts=[];function resize(){dpr=Math.min(devicePixelRatio||1,2);w=innerWidth;h=innerHeight;c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';x.setTransform(dpr,0,0,dpr,0,0);pts=Array.from({length:Math.min(150,Math.floor(w*h/9000))},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.5+.3,v:Math.random()*.22+.05,a:Math.random()*.7+.2}))}function draw(){x.clearRect(0,0,w,h);for(const p of pts){p.y-=p.v;if(p.y<0){p.y=h;p.x=Math.random()*w}x.beginPath();x.fillStyle=`rgba(170,220,255,${p.a})`;x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fill()}requestAnimationFrame(draw)}addEventListener('resize',resize);resize();draw()})();
-(async()=>{await loadSettings();const {data:{session:s}}=await sb.auth.getSession();session=s;if(session)await enterApp();sb.auth.onAuthStateChange((event,s)=>{
-  session=s||null;
-  if(s?.access_token){sb.realtime.setAuth(s.access_token).catch?.(e=>console.warn('Realtime auth update',e))}
-  if(!s && event==='SIGNED_OUT'){
-    me=null;
+(async()=>{
+  try{await loadSettings()}catch(e){console.warn('Initial settings load failed',e)}
+  try{
+    const {data:{session:s},error}=await sb.auth.getSession();
+    if(error){
+      console.warn('Initial session load failed',error);
+      if(invalidRefreshError(error))await handleSessionEnded(false);
+    }
+    session=s||null;
+    if(session)await enterApp();
+  }catch(e){
+    console.error('App bootstrap failed',e);
+    if(invalidRefreshError(e))await handleSessionEnded(false);
+    else toast('初始化遇到网络问题，可稍后自动恢复');
   }
-})})();
+  sb.auth.onAuthStateChange((event,s)=>{
+    session=s||null;
+    if(s?.access_token){Promise.resolve(sb.realtime.setAuth(s.access_token)).catch(e=>console.warn('Realtime auth update',e))}
+    if(!s&&event==='SIGNED_OUT'){handleSessionEnded(true).catch(console.warn);return}
+    if(s&&event==='TOKEN_REFRESHED'&&appReady){setupRealtime().catch(console.warn);setupPresence().catch(console.warn)}
+  })
+})();
 </script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
@@ -3445,10 +3624,23 @@ document.addEventListener('DOMContentLoaded',()=>{
 <script>
 (function(){
   document.addEventListener('visibilitychange',()=>{
-    if(!document.hidden && typeof loadMedia==='function') debounceRun('media',loadMedia,80);
+    if(!document.hidden && typeof loadMedia==='function'){
+      debounceRun('media',loadMedia,80);
+      if(session&&Date.now()-lastAppRecoveryAt>5000){
+        lastAppRecoveryAt=Date.now();
+        Promise.resolve(ensureRealtimeAuth()).then(()=>Promise.allSettled([setupRealtime(),setupPresence()])).catch(console.warn)
+      }
+    }
   });
   window.addEventListener('offline',()=>toast('网络已断开，部分功能暂不可用'));
-  window.addEventListener('online',()=>{toast('网络已恢复');debounceRun('media',loadMedia,120)});
+  window.addEventListener('online',()=>{
+    toast('网络已恢复');
+    if(!session)return;
+    Promise.resolve(ensureRealtimeAuth()).then(()=>Promise.allSettled([
+      loadMedia(true),loadSettings(),setupRealtime(),setupPresence(),
+      (!$('chatModal')?.classList.contains('hidden')?loadChat():Promise.resolve())
+    ])).catch(console.warn)
+  });
   document.addEventListener('play',e=>{
     if(e.target.tagName==='VIDEO'&&!e.target.dataset.callVideo){
       document.querySelectorAll('video:not([data-call-video])').forEach(v=>{if(v!==e.target)v.pause()});
