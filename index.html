@@ -1,9 +1,3 @@
-
-
-
-
-
-
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -13,7 +7,7 @@
 <meta name="theme-color" content="#05060b" />
 <link rel="manifest" id="importManifest" href="data:application/manifest+json,%7B%22name%22%3A%22%E6%B8%85%E9%9F%B3%22%2C%22short_name%22%3A%22%E6%B8%85%E9%9F%B3%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2305060b%22%2C%22theme_color%22%3A%22%2305060b%22%7D">
 <title>清音</title>
-<meta name="qingyin-build" content="home-double-grid-full-media-v2">
+<meta name="qingyin-build" content="stable-v7-full-features-split-delete">
 <link id="favicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%2300e5ff'/%3E%3Cstop offset='1' stop-color='%239b5cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='%2305060b'/%3E%3Cpath d='M15 42V20h8l18 22V20h8v24h-8L23 22v20z' fill='url(%23g)'/%3E%3C/svg%3E" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js" onerror="document.write('<script src=&quot;https://unpkg.com/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js&quot;><\/script>')"></script>
 <script>
@@ -2003,183 +1997,28 @@ button,input,textarea,select{max-width:100%}
 </style>
 
 
-<style id="mobile-layout-overlap-fix-v1">
-/* Mobile layout stability: keep toolbars in document flow and reserve space for fixed bottom nav. */
-@media (max-width: 700px){
-  #appView{
-    height:100dvh;
-    min-height:100dvh;
-    overflow:hidden;
-  }
-
-  .ticker{
-    flex:0 0 38px;
-    height:38px;
-  }
-
-  .topbar{
-    height:auto;
-    min-height:112px;
-    flex:0 0 auto;
-    display:grid;
-    grid-template-columns:auto minmax(0,1fr) auto;
-    grid-template-areas:
-      "brand stats actions"
-      "categories categories categories";
-    column-gap:8px;
-    row-gap:10px;
-    align-items:center;
-    padding:10px 10px 12px;
-    overflow:visible;
-  }
-
-  .top-brand{
-    grid-area:brand;
-    min-width:max-content;
-    font-size:16px;
-  }
-
-  .top-stats{
-    grid-area:stats;
-    min-width:0;
-    justify-self:start;
-    gap:5px;
-  }
-
-  .top-stat{
-    padding:5px 7px;
-    font-size:11px;
-  }
-
-  .top-actions{
-    grid-area:actions;
-    justify-self:end;
-    min-width:0;
-    gap:5px;
-  }
-
-  .top-actions .btn.small{
-    min-width:40px;
-    height:40px;
-    padding:8px 9px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    white-space:nowrap;
-  }
-
-  .top-actions .avatar{
-    width:40px;
-    height:40px;
-    flex:0 0 40px;
-  }
-
-  .top-category-slot{
-    grid-area:categories;
-    width:100%;
-    min-width:0;
-    justify-content:center;
-  }
-
-  .top-category-slot .media-category-bar{
-    width:auto;
-    max-width:100%;
-    margin:0;
-    gap:8px;
-    justify-content:center;
-    overflow-x:auto;
-    overflow-y:hidden;
-    scrollbar-width:none;
-    -webkit-overflow-scrolling:touch;
-  }
-
-  .top-category-slot .media-category-bar::-webkit-scrollbar{display:none}
-
-  .top-category-slot .media-category-bar button{
-    flex:0 0 auto;
-    min-height:38px;
-    padding:8px 15px;
-    font-size:13px;
-  }
-
-  .main{
-    flex:1 1 auto;
-    height:auto;
-    min-height:0;
-    padding:6px;
-    overflow:hidden;
-  }
-
-  .center,
-  #categoryMediaWrap,
-  #feed{
-    min-height:0;
-    height:100%;
-  }
-
-  #feed{
-    overscroll-behavior:contain;
-    -webkit-overflow-scrolling:touch;
-    scroll-padding-bottom:112px;
-  }
-
-  #feed.media-grid{
-    padding:6px 6px calc(112px + env(safe-area-inset-bottom));
-    gap:8px;
-  }
-
-  .bottom-nav{
-    bottom:max(8px, env(safe-area-inset-bottom));
-    width:calc(100vw - 16px);
-    max-width:none;
-    min-height:68px;
-    padding:8px;
-    gap:6px;
-    border-radius:22px;
-  }
-
-  .bottom-nav .btn{
-    min-width:0;
-    min-height:48px;
-    padding:8px 5px;
-    font-size:12px;
-    white-space:nowrap;
-  }
-}
-
-@media (max-width: 370px){
-  .topbar{
-    grid-template-columns:auto 1fr;
-    grid-template-areas:
-      "brand stats"
-      "actions actions"
-      "categories categories";
-    min-height:158px;
-  }
-  .top-actions{justify-self:stretch;justify-content:flex-end}
-  .top-category-slot .media-category-bar button{padding:8px 12px}
-}
-</style>
-
-<style id="home-double-grid-full-media-v2">
-/* Homepage media only: permanent two-column grid, full uncropped media, no overlap. */
+<style id="home-single-column-preserve-all-v1">
+/* Homepage layout only. JavaScript, DOM IDs, controls and data logic are untouched. */
 #feed.media-grid{
   display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-columns:minmax(0,1fr)!important;
   grid-auto-flow:row!important;
   grid-auto-rows:max-content!important;
   align-items:start!important;
   align-content:start!important;
-  gap:clamp(8px,1.5vw,18px)!important;
+  gap:clamp(10px,1.5vw,18px)!important;
   padding:clamp(6px,1.4vw,16px)!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
   overflow-x:hidden!important;
   overflow-y:auto!important;
 }
 #feed.media-grid>.media-card{
   position:relative!important;
-  display:flex!important;
-  flex-direction:column!important;
+  display:block!important;
   width:100%!important;
+  max-width:100%!important;
   min-width:0!important;
   height:auto!important;
   min-height:0!important;
@@ -2190,79 +2029,76 @@ button,input,textarea,select{max-width:100%}
   background:#020308!important;
   contain:layout paint!important;
 }
-#feed.media-grid .media-frame{
+#feed.media-grid>.media-card>img,
+#feed.media-grid>.media-card>video{
   position:relative!important;
-  width:100%!important;
-  min-width:0!important;
-  aspect-ratio:1/1!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  overflow:hidden!important;
-  background:#000!important;
-  flex:0 0 auto!important;
-}
-#feed.media-grid .media-frame>img,
-#feed.media-grid .media-frame>video{
-  position:static!important;
   inset:auto!important;
   display:block!important;
   width:100%!important;
-  height:100%!important;
   max-width:100%!important;
-  max-height:100%!important;
+  height:auto!important;
+  max-height:min(78dvh,920px)!important;
   object-fit:contain!important;
   object-position:center!important;
+  margin:0 auto!important;
   background:#000!important;
 }
-#feed.media-grid .media-cover{display:none!important}
-#feed.media-grid .media-info{
-  position:static!important;
-  inset:auto!important;
+#feed.media-grid>.media-card>.media-cover{
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  background:linear-gradient(180deg,transparent 58%,rgba(0,0,0,.78))!important;
+}
+#feed.media-grid>.media-card>.media-info{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  z-index:2!important;
   width:100%!important;
-  min-width:0!important;
-  padding:10px 11px 11px!important;
-  font-size:clamp(11px,1.2vw,13px)!important;
-  line-height:1.35!important;
-  overflow:hidden!important;
-  background:linear-gradient(180deg,rgba(11,14,24,.98),rgba(4,6,12,.98))!important;
-  flex:0 0 auto!important;
-}
-#feed.media-grid .media-info b,
-#feed.media-grid .media-caption{
-  display:block!important;
   max-width:100%!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-  white-space:nowrap!important;
-}
-#feed.media-grid .media-caption{margin-top:3px;color:#f4f7fb}
-#feed.media-grid .media-meta{
   min-width:0!important;
-  margin-top:6px!important;
+  padding:10px 12px 12px!important;
+  font-size:clamp(12px,1.2vw,14px)!important;
+  line-height:1.4!important;
+  overflow:hidden!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+  background:linear-gradient(180deg,rgba(11,14,24,.98),rgba(4,6,12,.98))!important;
+}
+#feed.media-grid>.media-card>.media-info b,
+#feed.media-grid>.media-card>.media-info .media-meta{
+  max-width:100%!important;
+  min-width:0!important;
+}
+#feed.media-grid>.media-card>.media-info .media-meta{
   display:flex!important;
-  gap:6px!important;
   flex-wrap:wrap!important;
+  gap:6px!important;
   overflow:hidden!important;
 }
-#feed.media-grid .media-play{
+#feed.media-grid>.media-card>.media-play{
   position:absolute!important;
   left:50%!important;
-  top:50%!important;
+  top:min(39dvh,460px)!important;
   transform:translate(-50%,-50%)!important;
   z-index:3!important;
   pointer-events:none!important;
-  font-size:clamp(30px,5vw,48px)!important;
+  font-size:clamp(32px,6vw,52px)!important;
 }
 @media(max-width:640px){
-  #feed.media-grid{gap:7px!important;padding:5px 5px calc(112px + env(safe-area-inset-bottom))!important}
+  #feed.media-grid{
+    padding:5px 5px calc(112px + env(safe-area-inset-bottom))!important;
+    gap:8px!important;
+  }
   #feed.media-grid>.media-card{border-radius:13px!important}
-  #feed.media-grid .media-info{padding:8px!important;font-size:11px!important}
-  #feed.media-grid .media-meta{font-size:10px!important;gap:5px!important}
+  #feed.media-grid>.media-card>img,
+  #feed.media-grid>.media-card>video{max-height:72dvh!important}
+  #feed.media-grid>.media-card>.media-info{padding:9px 10px 10px!important;font-size:12px!important}
+  #feed.media-grid>.media-card>.media-info .media-meta{font-size:10px!important;gap:5px!important}
 }
-@media(min-width:1100px){
-  #feed.media-grid .media-frame{aspect-ratio:4/3!important}
-  #feed.media-grid .media-info{padding:12px 14px 13px!important}
+@media(min-width:1200px){
+  #feed.media-grid{max-width:1180px!important;margin:0 auto!important}
 }
 </style>
 
@@ -2927,7 +2763,7 @@ function applyMediaCategory(){
  document.querySelectorAll('[data-media-type]').forEach(el=>{el.classList.toggle('media-hidden-category',el.dataset.mediaType!==currentMediaCategory)});
  const v=document.getElementById('showVideosBtn'),i=document.getElementById('showImagesBtn');if(v)v.classList.toggle('active',currentMediaCategory==='video');if(i)i.classList.toggle('active',currentMediaCategory==='image');
 }
-function renderFeed(){const f=$('feed');f.classList.remove('similar-feed');f.classList.add('media-grid');const visible=media.filter(p=>p.media_type===currentMediaCategory);if(!visible.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;applyMediaCategory();return}f.innerHTML=visible.map(p=>`<article class="media-card" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')"><div class="media-frame">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}" loading="lazy" decoding="async" alt="视频封面">`:`<video src="${esc(p.url)}" muted preload="metadata" playsinline></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy" decoding="async" alt="照片">`}</div><div class="media-info"><b>@${esc(p.account)}</b><div class="media-caption">${esc(p.caption||'影像')}</div><div class="media-meta">${p.media_type==='video'?`<span>⏱ ${formatDuration(p.duration)}</span><span>▶ ${Number(p.play_count||0)}</span>`:'<span>照片</span>'}</div></div></article>`).join('');applyMediaCategory()}
+function renderFeed(){const f=$('feed');f.classList.remove('similar-feed');f.classList.add('media-grid');const visible=media.filter(p=>p.media_type===currentMediaCategory);if(!visible.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;applyMediaCategory();return}f.innerHTML=visible.map(p=>`<article class="media-card" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}" loading="lazy" decoding="async">`:`<video src="${esc(p.url)}" muted preload="metadata"></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy" decoding="async">`}<div class="media-cover"></div><div class="media-info"><b>@${esc(p.account)}</b><br>${esc(p.caption||'影像')}<div class="media-meta">${p.media_type==='video'?`<span>⏱ ${formatDuration(p.duration)}</span><span>▶ ${Number(p.play_count||0)}</span>`:'<span>照片</span>'}</div></div></article>`).join('');applyMediaCategory()}
 window.countPlay=async id=>{try{const p=await ensureMediaItem(id);if(!p||p._played)return;p._played=true;const {data,error}=await sb.functions.invoke('media-play',{body:{id}});if(error){p._played=false;console.warn(error);return}p.play_count=Number(data?.count??p.play_count??0)}catch(e){console.warn(e)}};
 window.sharePost=async id=>{try{const p=await ensureMediaItem(id);if(!p)return toast('作品不存在');const url=new URL(location.href);url.searchParams.set('media',id);if(navigator.share)await navigator.share({title:document.title,text:p.caption||'清音 影像',url:url.toString()});else{await navigator.clipboard.writeText(url.toString());toast('作品链接已复制')}}catch(e){if(e?.name!=='AbortError')toast(e.message||'分享失败')}};
 window.deletePost=async id=>{try{const p=await ensureMediaItem(id);if(!p||!canDeleteMedia(p))return toast('没有删除权限');if(!confirm('确定删除这个作品？'))return;if(!await deleteMediaRowAndStorage(p))throw new Error('Storage 或数据库删除失败');toast('作品已删除');media=media.filter(x=>String(x.id)!==String(id));mediaTotalCount=Math.max(0,mediaTotalCount-1);const mc=$('mediaCount');if(mc)mc.textContent=mediaTotalCount;renderFeed();if(document.getElementById('fullViewerPage')?.classList.contains('active'))document.getElementById('viewerClose')?.click()}catch(e){toast(e.message||'删除失败')}};
