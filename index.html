@@ -1582,6 +1582,134 @@ img,video{content-visibility:auto;}
 }
 </style>
 
+
+<style>
+/* 后台数据库缩略图：只做视觉分组，不改变原有功能节点或事件 */
+#dbThumbGrid{display:block!important}
+.db-thumb-group{margin-top:14px}
+.db-thumb-group:first-child{margin-top:10px}
+.db-thumb-group-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}
+.db-thumb-group-head h4{margin:0;font-size:14px}
+.db-thumb-group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:10px}
+.db-thumb-group-count{font-size:11px;padding:5px 9px;border-radius:999px;border:1px solid rgba(0,229,255,.22);background:rgba(0,229,255,.06);color:#b8f7ff;white-space:nowrap}
+@media(max-width:640px){.db-thumb-group-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.db-thumb-group-head{padding:9px 10px}}
+</style>
+
+<style>
+/* Safe responsive layer: preserve every feature; only resize/reflow/scroll. */
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+img,video{max-width:100%}
+button,input,textarea,select{max-width:100%}
+
+/* Desktop */
+@media(min-width:1024px){
+  #adminPanel{width:min(97vw,1360px);height:min(92dvh,920px)}
+  #adminPanel>.admin-section{padding:20px}
+  #adm-system .db-thumb-group-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+}
+
+/* Tablet */
+@media(min-width:641px) and (max-width:1023px){
+  #adminModal{padding:8px}
+  #adminPanel{width:100%;height:calc(100dvh - 16px);max-height:calc(100dvh - 16px);border-radius:20px}
+  #adminPanel>.admin-tabs{scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #adminPanel>.admin-tabs::-webkit-scrollbar{display:none}
+  #adminPanel>.admin-section{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  #adminPanel .table-wrap{overflow:auto;-webkit-overflow-scrolling:touch}
+  .db-thumb-group-grid{grid-template-columns:repeat(auto-fill,minmax(115px,1fr))}
+}
+
+/* Phone: all feature entrances remain visible; no feature is hidden by this layer. */
+@media(max-width:640px){
+  body{min-width:320px}
+
+  /* Main app header becomes two rows instead of dropping controls. */
+  .topbar{
+    height:auto;flex:0 0 auto;min-height:102px;
+    display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+    grid-template-areas:"brand stats actions" "cats cats cats";
+    align-items:center;gap:6px 8px;
+    padding:7px max(8px,var(--safe-right)) 7px max(8px,var(--safe-left));
+  }
+  .top-brand{grid-area:brand;font-size:15px;white-space:nowrap}
+  .top-stats{grid-area:stats;display:flex!important;min-width:0;overflow-x:auto;justify-content:center;scrollbar-width:none}
+  .top-stats::-webkit-scrollbar{display:none}
+  .top-stat{font-size:10px;padding:4px 6px;flex:0 0 auto}
+  .top-actions{grid-area:actions;display:flex;min-width:0;gap:4px;overflow-x:auto;justify-content:flex-end;scrollbar-width:none}
+  .top-actions::-webkit-scrollbar{display:none}
+  .top-actions .btn{min-height:36px;padding:7px 8px;flex:0 0 auto}
+  .top-actions .avatar{width:34px;height:34px;flex:0 0 34px}
+  .top-category-slot{grid-area:cats;width:100%;min-width:0;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}
+  .top-category-slot::-webkit-scrollbar{display:none}
+  .top-category-slot .media-category-bar{width:max-content;min-width:100%;justify-content:center;margin:0}
+  .top-category-slot .media-category-bar button{min-height:38px;padding:7px 13px;font-size:12px;flex:0 0 auto}
+
+  /* App body follows the real header height instead of a fixed calculation. */
+  .main{height:auto!important;flex:1;min-height:0;padding:6px 6px calc(78px + var(--safe-bottom))}
+  .center,#categoryMediaWrap,#feed{min-height:0}
+  #feed.media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:6px}
+  .media-card{height:auto;aspect-ratio:3/4;border-radius:15px}
+
+  .bottom-nav{bottom:max(8px,var(--safe-bottom));width:calc(100vw - 12px - var(--safe-left) - var(--safe-right));gap:5px;padding:7px;border-radius:18px}
+  .bottom-nav .btn{min-width:0;min-height:42px;padding:8px 4px;font-size:12px}
+
+  /* Generic modals stay reachable on small screens. */
+  .modal-wrap:not(#adminModal){padding:max(8px,var(--safe-top)) max(8px,var(--safe-right)) max(8px,var(--safe-bottom)) max(8px,var(--safe-left))}
+  .modal-wrap:not(#adminModal)>.modal{width:100%;max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 16px);padding:13px;border-radius:18px}
+  .modal-wrap:not(#adminModal) .grid2{grid-template-columns:1fr}
+  .chat-layout{grid-template-columns:1fr}
+  .chat-tabs{border-right:0;border-bottom:1px solid var(--line);padding:0 0 9px;display:flex;gap:6px;overflow-x:auto}
+  .chat-body{padding:10px 0 0}
+  .messages{min-height:240px;max-height:52dvh}
+  .send-row{align-items:stretch}
+
+  /* Admin becomes full-screen, but every tab/control remains present. */
+  #adminModal{padding:var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);align-items:stretch}
+  #adminPanel{width:100%;height:calc(100dvh - var(--safe-top) - var(--safe-bottom));max-height:none;border-radius:0;grid-template-columns:1fr;grid-template-rows:58px 54px minmax(0,1fr)}
+  #adminPanel>.modal-head{grid-column:1;grid-row:1;padding:0 10px 0 13px;min-width:0}
+  #adminPanel>.modal-head h2{font-size:15px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #adminPanel>.modal-head .tag{display:inline-flex!important;font-size:9px;padding:4px 6px}
+  #adminPanel>.modal-head [data-close="adminModal"]{width:40px;height:40px;flex:0 0 40px}
+  #adminPanel>.admin-tabs{grid-column:1;grid-row:2;display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;padding:6px 8px;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid rgba(255,255,255,.08);scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #adminPanel>.admin-tabs::-webkit-scrollbar{display:none}
+  #adminPanel>.admin-tabs .btn{display:inline-flex!important;width:auto;min-width:max-content;min-height:40px;padding:8px 13px;text-align:center;justify-content:center;font-size:13px;flex:0 0 auto}
+  #adminPanel>.admin-section{grid-column:1;grid-row:3;padding:9px 9px calc(12px + var(--safe-bottom));overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  #adminPanel>.admin-section.active{display:block!important}
+  #adminPanel .grid2,#adm-users>.grid2,#adm-appearance>.grid2,#adm-content>.grid2,#adm-system>.grid2{grid-template-columns:1fr!important}
+  #adm-system>.grid2>.panel:last-child{grid-column:auto}
+  #adminPanel .panel{padding:12px;border-radius:14px;min-width:0}
+  #adminPanel .field,#adminPanel select,#adminPanel input,#adminPanel textarea{font-size:16px;min-height:44px}
+  #adminPanel textarea.field{min-height:92px}
+  #adminPanel .btn{min-height:42px;touch-action:manipulation}
+  #adminPanel .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  #adminPanel .table-wrap{width:100%;max-height:48dvh;overflow:auto;-webkit-overflow-scrolling:touch}
+  #adminPanel .table{min-width:680px}
+  #adminPanel .bg-preview{height:120px}
+
+  /* Video / photo thumbnail groups remain separate and scroll safely. */
+  #dbThumbGrid{min-width:0}
+  .db-thumb-group{min-width:0}
+  .db-thumb-group-head{display:flex!important;position:sticky;top:-9px;z-index:3;padding:8px 9px;border-radius:11px;background:rgba(10,14,26,.96)}
+  .db-thumb-group-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .db-thumb{min-width:0;border-radius:12px}
+  .db-thumb-label{font-size:9px}
+}
+
+@media(max-width:390px){
+  #adminPanel .stat-grid{grid-template-columns:1fr}
+  #adminPanel>.admin-tabs .btn{padding:8px 11px}
+  .bottom-nav .btn{font-size:11px}
+  #feed.media-grid{gap:6px;padding:4px}
+}
+
+@media(max-height:520px) and (orientation:landscape){
+  #adminPanel{grid-template-rows:50px 48px minmax(0,1fr)}
+  #adminPanel>.admin-section{padding:8px}
+  #adminPanel .table-wrap{max-height:55dvh}
+}
+</style>
+
 </head>
 <body>
 <div id="pageBg" class="bg"></div><canvas id="stars"></canvas><div class="orb"></div><div id="toast" class="toast"></div>
@@ -2329,8 +2457,12 @@ async function loadDbThumbnails(){
   const profiles=await fetchAllRowsPaged('profiles','account,nickname,avatar_url',q=>q.order('created_at',{ascending:false}));
   profiles.forEach(x=>{if(x.avatar_url)items.push({kind:'头像',url:x.avatar_url,type:'image',media:false,label:x.nickname||x.account||'头像'})});
   const seen=new Set(),unique=items.filter(x=>x.url&&!seen.has(x.url)&&(seen.add(x.url),true));
-  stat.textContent=`共 ${unique.length} 项 · 图片类 ${unique.filter(x=>x.type!=='video').length} · 视频 ${unique.filter(x=>x.type==='video').length}`;
-  grid.innerHTML=unique.length?unique.map(x=>`<div class="db-thumb" title="${esc(x.kind+' · '+x.label)}">${x.type==='video'?`<video src="${esc(x.url)}" muted playsinline preload="metadata"></video>`:`<img src="${esc(x.url)}" loading="lazy" alt="${esc(x.label)}">`}${x.media?`<button class="btn small danger db-thumb-delete" onclick="deleteDbThumbnailMedia('${x.id}')">删除</button>`:''}<div class="db-thumb-label">${esc(x.kind)} · ${esc(x.label)}</div></div>`).join(''):'<div class="db-thumb-empty">数据库当前没有可预览内容</div>';
+  const videos=unique.filter(x=>x.type==='video');
+  const photos=unique.filter(x=>x.type!=='video');
+  stat.textContent=`共 ${unique.length} 项 · 视频 ${videos.length} · 照片 ${photos.length}`;
+  const card=x=>`<div class="db-thumb" title="${esc(x.kind+' · '+x.label)}">${x.type==='video'?`<video src="${esc(x.url)}" muted playsinline preload="metadata"></video>`:`<img src="${esc(x.url)}" loading="lazy" alt="${esc(x.label)}">`}${x.media?`<button class="btn small danger db-thumb-delete" onclick="deleteDbThumbnailMedia('${x.id}')">删除</button>`:''}<div class="db-thumb-label">${esc(x.kind)} · ${esc(x.label)}</div></div>`;
+  const group=(title,rows,empty)=>`<section class="db-thumb-group"><div class="db-thumb-group-head"><h4>${title}</h4><span class="db-thumb-group-count">${rows.length} 项</span></div><div class="db-thumb-group-grid">${rows.length?rows.map(card).join(''):`<div class="db-thumb-empty">${empty}</div>`}</div></section>`;
+  grid.innerHTML=group('视频',videos,'暂无视频')+group('照片',photos,'暂无照片');
  }catch(e){stat.textContent='读取失败';grid.innerHTML=`<div class="db-thumb-empty">${esc(e.message||String(e))}</div>`}
 }
 
