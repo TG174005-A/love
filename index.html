@@ -1496,6 +1496,160 @@ img,video{content-visibility:auto;}
 }
 @supports not (height:100dvh){#appView{min-height:100vh;}}
 </style>
+
+<style id="admin-layout-v2">
+/* Admin console layout v2: visual-only, preserves all existing IDs and behavior. */
+#adminModal{padding:14px;background-color:rgba(0,0,0,.68)}
+#adminPanel{
+  width:min(97vw,1280px);
+  height:min(92dvh,900px);
+  max-height:92dvh;
+  padding:0;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:190px minmax(0,1fr);
+  grid-template-rows:72px minmax(0,1fr);
+  border-radius:28px;
+  background:linear-gradient(145deg,rgba(12,16,30,.90),rgba(7,10,20,.82));
+  border:1px solid rgba(255,255,255,.13);
+  box-shadow:0 30px 90px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.06);
+}
+#adminPanel>.modal-head{
+  grid-column:1/-1;
+  grid-row:1;
+  margin:0;
+  padding:0 20px 0 24px;
+  border-bottom:1px solid rgba(255,255,255,.09);
+  background:rgba(6,9,18,.56);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+#adminPanel>.modal-head h2{display:flex;align-items:center;gap:10px;font-size:20px;letter-spacing:.02em}
+#adminPanel>.modal-head h2:before{content:"⚡";display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,rgba(0,229,255,.18),rgba(155,92,255,.18));border:1px solid rgba(0,229,255,.22)}
+#adminPanel>.modal-head .tag{margin-left:4px;font-size:10px}
+#adminPanel>.modal-head [data-close="adminModal"]{width:38px;height:38px;padding:0;border-radius:12px;font-size:17px}
+
+#adminPanel>.admin-tabs{
+  grid-column:1;
+  grid-row:2;
+  margin:0;
+  padding:16px 12px;
+  display:flex;
+  flex-direction:column;
+  flex-wrap:nowrap;
+  gap:8px;
+  min-height:0;
+  border-right:1px solid rgba(255,255,255,.08);
+  background:rgba(4,7,15,.38);
+}
+#adminPanel>.admin-tabs:before{content:"控制中心";padding:4px 10px 8px;color:#708197;font-size:11px;font-weight:700;letter-spacing:.12em}
+#adminPanel>.admin-tabs .btn{
+  width:100%;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:13px;
+  border-color:transparent;
+  background:transparent;
+  color:#aebbd0;
+  font-weight:700;
+  text-align:left;
+  box-shadow:none;
+}
+#adminPanel>.admin-tabs .btn:hover{transform:none;background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.08);color:#fff}
+#adminPanel>.admin-tabs .btn.primary{background:linear-gradient(90deg,rgba(0,229,255,.15),rgba(155,92,255,.12));border-color:rgba(0,229,255,.24);color:#ecfdff;box-shadow:inset 3px 0 rgba(0,229,255,.75)}
+#adminPanel>.admin-tabs .btn[data-admin="users"]:before{content:"◎"}
+#adminPanel>.admin-tabs .btn[data-admin="appearance"]:before{content:"◈"}
+#adminPanel>.admin-tabs .btn[data-admin="content"]:before{content:"▤"}
+#adminPanel>.admin-tabs .btn[data-admin="system"]:before{content:"⚙"}
+#adminPanel>.admin-tabs .btn:before{width:22px;text-align:center;font-size:17px;color:#93e9ff}
+
+#adminPanel>.admin-section{
+  grid-column:2;
+  grid-row:2;
+  min-width:0;
+  min-height:0;
+  height:100%;
+  overflow:auto;
+  padding:20px;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(142,167,205,.34) transparent;
+}
+#adminPanel>.admin-section::-webkit-scrollbar{width:8px;height:8px}
+#adminPanel>.admin-section::-webkit-scrollbar-thumb{background:rgba(142,167,205,.28);border-radius:999px}
+#adminPanel>.admin-section.active{display:block}
+
+#adminPanel .grid2{gap:14px}
+#adminPanel .panel{
+  padding:18px;
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  border:1px solid rgba(255,255,255,.085);
+  box-shadow:0 10px 30px rgba(0,0,0,.12);
+}
+#adminPanel .panel h3{display:flex;align-items:center;gap:8px;margin:0 0 14px;font-size:15px;color:#f5fbff}
+#adminPanel .panel h3:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(255,255,255,.10),transparent)}
+#adminPanel .form{gap:10px}
+#adminPanel .field{min-height:44px;border-radius:12px;background:rgba(2,5,12,.52)}
+#adminPanel textarea.field{min-height:86px;resize:vertical}
+#adminPanel .btn{border-radius:12px}
+#adminPanel .btn.primary{box-shadow:0 8px 24px rgba(105,92,255,.16)}
+#adminPanel .btn.danger{background:rgba(251,113,133,.07)}
+
+#adminPanel .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#adminPanel .stat{min-height:96px;padding:15px;border-radius:16px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(145deg,rgba(0,229,255,.075),rgba(155,92,255,.045));border-color:rgba(0,229,255,.12)}
+#adminPanel .stat b{font-size:30px;line-height:1.1;margin-top:6px;letter-spacing:-.03em}
+
+#adminPanel .table-wrap{border:1px solid rgba(255,255,255,.075);border-radius:14px;background:rgba(2,5,12,.28)}
+#adminPanel .table{font-size:12px}
+#adminPanel .table th{position:sticky;top:0;z-index:2;padding:11px 10px;background:rgba(13,18,31,.96);color:#91a3b8;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:none}
+#adminPanel .table td{padding:10px;border-bottom-color:rgba(255,255,255,.055)}
+#adminPanel .table tbody tr:hover{background:rgba(0,229,255,.035)}
+
+#adm-users>.panel{margin-top:14px!important}
+#adm-users>.grid2{grid-template-columns:minmax(300px,.85fr) minmax(280px,1.15fr)}
+#adm-appearance>.grid2{grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr)}
+#adm-content>.grid2{grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr)}
+#adm-system>.grid2{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+#adm-system>.grid2>.panel:first-child{grid-row:span 2}
+#adm-system>.grid2>.panel:last-child{grid-column:1/-1}
+#adm-system #dbStats,#adm-system #storageStats{line-height:1.55}
+#adm-system .db-thumb-grid{grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px;max-height:360px;overflow:auto;padding-right:2px}
+#adm-system .db-thumb{border-radius:13px;background:rgba(2,5,12,.6)}
+#adm-system .db-thumb-label{font-size:10px;backdrop-filter:blur(5px)}
+#adminPanel .bg-preview{height:170px;border-radius:15px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+#adminPanel .range{accent-color:#7c6cff}
+
+@media(max-width:900px){
+  #adminModal{padding:8px}
+  #adminPanel{width:100%;height:calc(100dvh - 16px);max-height:calc(100dvh - 16px);grid-template-columns:1fr;grid-template-rows:62px 56px minmax(0,1fr);border-radius:22px}
+  #adminPanel>.modal-head{grid-column:1;grid-row:1;padding:0 12px 0 16px}
+  #adminPanel>.modal-head h2{font-size:17px}
+  #adminPanel>.modal-head h2:before{width:30px;height:30px;border-radius:10px}
+  #adminPanel>.admin-tabs{grid-column:1;grid-row:2;flex-direction:row;overflow-x:auto;padding:7px 10px;border-right:0;border-bottom:1px solid rgba(255,255,255,.08);gap:6px}
+  #adminPanel>.admin-tabs:before{display:none}
+  #adminPanel>.admin-tabs .btn{width:auto;min-width:max-content;min-height:40px;justify-content:center;padding:8px 12px}
+  #adminPanel>.admin-tabs .btn.primary{box-shadow:inset 0 -2px rgba(0,229,255,.75)}
+  #adminPanel>.admin-section{grid-column:1;grid-row:3;padding:14px}
+  #adm-users>.grid2,#adm-appearance>.grid2,#adm-content>.grid2,#adm-system>.grid2{grid-template-columns:1fr}
+  #adm-system>.grid2>.panel:first-child,#adm-system>.grid2>.panel:last-child{grid-row:auto;grid-column:auto}
+}
+@media(max-width:560px){
+  #adminPanel>.modal-head .tag{display:none}
+  #adminPanel>.admin-section{padding:10px}
+  #adminPanel .panel{padding:14px;border-radius:16px}
+  #adminPanel .grid2{gap:10px}
+  #adminPanel .stat-grid{gap:8px}
+  #adminPanel .stat{min-height:82px;padding:12px}
+  #adminPanel .stat b{font-size:25px}
+  #adminPanel .table th,#adminPanel .table td{padding:9px 8px}
+  #adm-system .db-thumb-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+
 </head>
 <body>
 <div id="pageBg" class="bg"></div><canvas id="stars"></canvas><div class="orb"></div><div id="toast" class="toast"></div>
@@ -1570,7 +1724,7 @@ img,video{content-visibility:auto;}
 </div>
 <div id="similarReviewList" style="margin-top:14px"></div><button id="cleanDuplicateBtn" class="btn danger" style="margin-top:12px">清理完全重复文件</button><button id="backfillDedupBtn" class="btn primary" style="margin-top:12px">扫描旧媒体并清理相似重复</button><button id="reviewSimilarBtn" class="btn" style="margin-top:12px">相似照片 / 视频分组展示</button>
 </div></div>
-<div id="adminModal" class="modal-wrap hidden"><div id="adminPanel" class="modal wide glass"><div class="modal-head"><h2>清音 CONTROL <span class="tag">SUPERADMIN</span></h2><button class="btn small" data-close="adminModal">✕</button></div><div class="admin-tabs"><button class="btn small primary" data-admin="users">用户</button><button class="btn small" data-admin="appearance">视觉</button><button class="btn small" data-admin="content">内容</button><button class="btn small" data-admin="system">系统</button></div>
+<div id="adminModal" class="modal-wrap hidden"><div id="adminPanel" class="modal wide glass"><div class="modal-head"><h2>清音 CONTROL <span class="tag">SUPERADMIN</span></h2><button class="btn small" data-close="adminModal">✕</button></div><div class="admin-tabs"><button class="btn small primary" data-admin="users">用户管理</button><button class="btn small" data-admin="appearance">视觉设置</button><button class="btn small" data-admin="content">内容运营</button><button class="btn small" data-admin="system">系统状态</button></div>
   <section id="adm-users" class="admin-section active"><div class="grid2"><div class="panel"><h3>增加管理员</h3><div class="form"><input id="newAdminAccount" class="field" inputmode="numeric" placeholder="数字账号"><input id="newAdminPassword" class="field" type="password" placeholder="初始密码"><input id="newAdminNickname" class="field" placeholder="昵称"><button id="createAdminBtn" class="btn primary">创建管理员</button></div></div><div class="panel"><h3>实时状态</h3><div class="stat-grid"><div class="stat"><span class="muted">在线人数</span><b id="adminOnline">0</b></div><div class="stat"><span class="muted">用户数</span><b id="adminUsersCount">0</b></div></div></div></div><div class="panel" style="margin-top:12px"><h3>用户管理（可私信用户）</h3><div class="table-wrap"><table class="table"><thead><tr><th>账号</th><th>昵称</th><th>角色</th><th>最近登录</th><th>操作</th></tr></thead><tbody id="usersTable"></tbody></table></div></div></section>
   <section id="adm-appearance" class="admin-section"><div class="grid2"><div class="panel"><h3>页面背景</h3><div class="form"><label>页面<select id="bgPage" class="field"><option value="login">登录页</option><option value="home">主页</option><option value="admin">后台页</option></select></label><input id="bgFile" type="file" accept="image/*" class="field"><button id="uploadBgBtn" class="btn primary">上传并实时应用</button><div id="bgPreview" class="bg-preview"></div></div></div><div class="panel"><h3>玻璃透明度</h3><p class="muted" style="font-size:12px;margin-top:-4px">0% = 完全显示背景 · 100% = 完全不显示背景</p><div class="form"><label>登录页 <span id="loginOpVal"></span><input id="loginOpacity" class="range" type="range" min="0" max="1" step="0.01"></label><label>主页 <span id="homeOpVal"></span><input id="homeOpacity" class="range" type="range" min="0" max="1" step="0.01"></label><label>后台 <span id="adminOpVal"></span><input id="adminOpacity" class="range" type="range" min="0" max="1" step="0.01"></label><button id="saveOpacityBtn" class="btn primary">保存透明度</button></div></div></div></section>
   <section id="adm-content" class="admin-section"><div class="grid2"><div class="panel"><h3>实时信息</h3><div class="form"><textarea id="tickerInput" class="field" rows="3" placeholder="跑马灯内容"></textarea><button id="saveTickerBtn" class="btn primary">发送到跑马灯</button><textarea id="announcementInput" class="field" rows="3" placeholder="登录页公告"></textarea><button id="saveAnnouncementBtn" class="btn">发布公告</button></div></div><div class="panel"><h3>媒体 / 聊天</h3><div class="form"><button id="playAllBtn" class="btn">一键播放所有视频</button><button id="deleteAllMediaBtn" class="btn danger">删除所有视频 / 图片</button><button id="deleteAllChatBtn" class="btn danger">删除全部聊天</button><button id="duplicateCenterBtn" class="btn">重复检测中心</button><button id="scanDuplicateBtn" class="btn">扫描重复作品</button></div></div></div></section>
