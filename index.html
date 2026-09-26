@@ -1710,6 +1710,36 @@ button,input,textarea,select{max-width:100%}
 }
 </style>
 
+
+<style>
+/* Admin practical tools */
+.admin-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+.admin-toolbar .field{flex:1 1 220px;min-width:0}
+.admin-toolbar select.field{flex:0 0 150px;width:150px}
+.admin-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.admin-kpi{padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);min-width:0}
+.admin-kpi span{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
+.admin-kpi b{display:block;font-size:24px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-tools-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}
+.admin-quick-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.admin-ops-status{display:grid;gap:8px;font-size:13px}
+.admin-ops-status>div{display:flex;justify-content:space-between;gap:12px;padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}
+.admin-ops-status b{font-weight:700;text-align:right;word-break:break-word}
+.admin-filter-count{font-size:12px;color:var(--muted);margin-left:auto}
+@media(max-width:900px){.admin-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-tools-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.admin-toolbar{align-items:stretch}.admin-toolbar .field,.admin-toolbar select.field{flex:1 1 100%;width:100%}.admin-filter-count{width:100%;margin-left:0}.admin-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.admin-kpi{padding:11px}.admin-kpi b{font-size:20px}.admin-quick-actions{grid-template-columns:1fr}}
+</style>
+
+
+<style id="group-call-style">
+.call-shell{margin:0 0 12px;padding:10px;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(0,0,0,.14)}
+.call-head,.call-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.call-head{justify-content:space-between;margin-bottom:8px}.call-controls{margin-bottom:8px}
+.call-status{font-size:12px;color:var(--muted)}.call-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;max-height:40vh;overflow:auto}
+.call-tile{position:relative;min-height:120px;border-radius:14px;overflow:hidden;background:#05070c;border:1px solid rgba(255,255,255,.08)}.call-tile video{display:block;width:100%;height:100%;min-height:120px;object-fit:cover;background:#05070c}.call-tile .call-label{position:absolute;left:7px;bottom:7px;padding:4px 7px;border-radius:999px;background:rgba(0,0,0,.62);font-size:11px;max-width:calc(100% - 14px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.call-tile.audio-only video{opacity:.12}.call-empty{padding:18px;text-align:center;color:var(--muted);grid-column:1/-1}
+.call-admin-list{display:grid;gap:8px}.call-admin-user{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:12px}.call-admin-user .muted{font-size:12px}
+@media(max-width:700px){#chatModal>.modal{max-height:calc(100dvh - 16px)}.chat-layout{display:flex;flex-direction:column;min-height:0}.chat-tabs{border-right:0;padding:0 0 8px;display:flex;gap:6px;overflow-x:auto}.chat-body{padding-left:0}.call-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:34vh}.call-tile,.call-tile video{min-height:105px}.call-controls .btn{flex:1 1 auto}.messages{min-height:180px}}
+@media(min-width:1000px){#chatModal>.modal{width:min(96vw,1040px)}.call-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
 </head>
 <body>
 <div id="pageBg" class="bg"></div><canvas id="stars"></canvas><div class="orb"></div><div id="toast" class="toast"></div>
@@ -1719,7 +1749,7 @@ button,input,textarea,select{max-width:100%}
     <div id="announcement" class="announcement hidden"></div>
     <div class="tabs"><button id="loginTab" class="btn primary">登录</button><button id="registerTab" class="btn">注册</button></div>
     <form id="loginForm" class="form"><input id="loginAccount" class="field" inputmode="numeric" pattern="[0-9]*" placeholder="数字账号" required><input id="loginPassword" class="field" type="password" placeholder="密码" required><button class="btn primary" type="submit">进入未来空间</button></form>
-    <form id="registerForm" class="form hidden"><input id="regAccount" class="field" inputmode="numeric" pattern="[0-9]*" placeholder="4-18位纯数字账号" required><input id="regNickname" class="field" maxlength="30" placeholder="昵称（可选）"><input id="regPassword" class="field" type="password" minlength="6" maxlength="72" placeholder="密码（6-72位）" required><button class="btn primary" type="submit">创建数字身份</button></form>
+    <form id="registerForm" class="form hidden"><input id="regAccount" class="field" inputmode="numeric" pattern="[0-9]*" placeholder="4-18位纯数字账号" required><input id="regNickname" class="field" maxlength="30" placeholder="昵称（可选）"><input id="regPassword" class="field" type="password" minlength="8" maxlength="72" placeholder="密码（8-72位）" required><button class="btn primary" type="submit">创建数字身份</button></form>
     <div class="tech-row"><span class="tag">玻璃界面</span><span class="tag">霓虹核心</span><span class="tag">24小时聊天</span><span class="tag">实时同步</span></div>
   </div>
 </section>
@@ -1740,9 +1770,9 @@ button,input,textarea,select{max-width:100%}
     </section>
   </main>
 </section>
-<div id="profileModal" class="modal-wrap hidden"><div class="modal glass"><div class="modal-head"><h2>个人资料</h2><button class="btn small" data-close="profileModal">✕</button></div><div class="grid2"><div class="panel"><img id="profileAvatarPreview" class="avatar" style="width:100px;height:100px"><p><input id="avatarFile" type="file" accept="image/*"></p><button id="uploadAvatarBtn" class="btn small">上传头像</button></div><div class="form"><label>昵称<input id="profileNickname" class="field" maxlength="30"></label><label>个人简介<textarea id="profileBio" class="field" rows="5" maxlength="240"></textarea></label><button id="saveProfileBtn" class="btn primary">实时保存</button></div></div></div></div>
+<div id="profileModal" class="modal-wrap hidden"><div class="modal glass"><div class="modal-head"><h2>个人资料</h2><button class="btn small" data-close="profileModal">✕</button></div><div class="grid2"><div class="panel"><img id="profileAvatarPreview" class="avatar" style="width:100px;height:100px"><p><input id="avatarFile" type="file" accept="image/*"></p><button id="uploadAvatarBtn" class="btn small">上传头像</button><div class="panel" style="margin-top:12px;padding:12px"><h3 style="margin-top:0">位置共享</h3><p id="locationShareStatus" class="muted" style="margin:6px 0 10px">未共享位置</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="shareLocationBtn" class="btn small">共享当前位置</button><button id="stopLocationBtn" class="btn small danger">停止共享</button></div><p class="muted" style="font-size:12px;margin:9px 0 0">只有你主动点击后才会请求浏览器定位权限。管理员后台可查看你共享的坐标、精度和更新时间。</p></div></div><div class="form"><label>昵称<input id="profileNickname" class="field" maxlength="30"></label><label>个人简介<textarea id="profileBio" class="field" rows="5" maxlength="240"></textarea></label><button id="saveProfileBtn" class="btn primary">实时保存</button></div></div></div></div>
 <div id="uploadModal" class="modal-wrap hidden"><div class="modal glass"><div class="modal-head"><h2>上传作品</h2><button class="btn small" data-close="uploadModal">✕</button></div><div class="form"><input id="mediaFile" type="file" accept="image/*,video/*" multiple class="field"><div class="muted" style="font-size:12px">支持一次选择多个视频和图片，自动逐个上传并去重</div><textarea id="mediaCaption" class="field" rows="3" maxlength="180" placeholder="作品描述"></textarea><select id="videoQuality" class="field"><option value="original">原始质量</option><option value="720">720P压缩</option><option value="480">480P省流</option></select><div class="muted" style="font-size:12px">视频自动生成封面、记录时长、压缩并统计播放量</div><input id="importMediaFile" type="file" accept="image/*,video/*" multiple hidden><div class="progress"><i id="uploadProgress"></i></div><button id="doUploadBtn" class="btn primary">发布到星河</button><button id="importMediaBtn" class="btn">从其他APP/网页导入</button></div></div></div>
-<div id="chatModal" class="modal-wrap hidden"><div class="modal glass"><div class="modal-head"><h2>实时聊天 <span class="tag">保存24小时</span></h2><button class="btn small" data-close="chatModal">✕</button></div><div class="chat-layout"><div class="chat-tabs"><button class="btn small primary" data-chat="global">全部聊天</button><button class="btn small" data-chat="admin">联系管理员</button></div><div class="chat-body"><div id="messages" class="messages"></div><div class="send-row"><input id="chatInput" class="field" maxlength="1000" placeholder="输入消息..."><button id="sendChatBtn" class="btn primary">发送</button></div></div></div></div></div>
+<div id="chatModal" class="modal-wrap hidden"><div class="modal glass"><div class="modal-head"><h2>实时聊天 <span class="tag">保存24小时</span></h2><button class="btn small" data-close="chatModal">✕</button></div><div class="chat-layout"><div class="chat-tabs"><button class="btn small primary" data-chat="global">全部聊天</button><button class="btn small" data-chat="admin">联系管理员</button></div><div class="chat-body"><div id="groupCallPanel" class="call-shell"><div class="call-head"><div><b>多人音视频</b> <span id="callMemberCount" class="tag">0 人</span></div><span id="callStatus" class="call-status">未加入</span></div><div class="call-controls"><button id="joinCallBtn" class="btn small primary">加入视频</button><button id="joinVoiceCallBtn" class="btn small">仅语音加入</button><button id="leaveCallBtn" class="btn small danger hidden">离开</button><button id="toggleMicBtn" class="btn small hidden">🎙 麦克风开</button><button id="toggleCamBtn" class="btn small hidden">📷 摄像头开</button><button id="switchCameraBtn" class="btn small hidden">🔄 切换摄像头</button><button id="shareScreenBtn" class="btn small hidden">🖥 分享屏幕</button></div><div id="callGrid" class="call-grid"><div class="call-empty">加入后可与所有在线通话用户实时语音 / 视频</div></div></div><div id="messages" class="messages"></div><div class="send-row"><input id="chatInput" class="field" maxlength="1000" placeholder="输入消息..."><button id="sendChatBtn" class="btn primary">发送</button></div></div></div></div></div>
 <div id="shareModal" class="modal-wrap hidden"><div class="modal glass" style="width:min(94vw,520px)"><div class="modal-head"><h2>分享空间</h2><button class="btn small" data-close="shareModal">✕</button></div><div class="form"><input id="shareUrl" class="field" readonly><div id="qrBox" class="qrbox"><canvas id="qrCanvas"></canvas></div><button id="nativeShareBtn" class="btn primary">系统分享</button></div></div></div>
 <div id="adminMessageModal" class="modal-wrap hidden">
 <div class="modal glass">
@@ -1784,11 +1814,36 @@ button,input,textarea,select{max-width:100%}
 </div>
 <div id="similarReviewList" style="margin-top:14px"></div><button id="cleanDuplicateBtn" class="btn danger" style="margin-top:12px">清理完全重复文件</button><button id="backfillDedupBtn" class="btn primary" style="margin-top:12px">扫描旧媒体并清理相似重复</button><button id="reviewSimilarBtn" class="btn" style="margin-top:12px">相似照片 / 视频分组展示</button>
 </div></div>
-<div id="adminModal" class="modal-wrap hidden"><div id="adminPanel" class="modal wide glass"><div class="modal-head"><h2>清音 CONTROL <span class="tag">SUPERADMIN</span></h2><button class="btn small" data-close="adminModal">✕</button></div><div class="admin-tabs"><button class="btn small primary" data-admin="users">用户</button><button class="btn small" data-admin="appearance">视觉</button><button class="btn small" data-admin="content">内容</button><button class="btn small" data-admin="system">系统</button></div>
-  <section id="adm-users" class="admin-section active"><div class="grid2"><div class="panel"><h3>增加管理员</h3><div class="form"><input id="newAdminAccount" class="field" inputmode="numeric" placeholder="数字账号"><input id="newAdminPassword" class="field" type="password" placeholder="初始密码"><input id="newAdminNickname" class="field" placeholder="昵称"><button id="createAdminBtn" class="btn primary">创建管理员</button></div></div><div class="panel"><h3>实时状态</h3><div class="stat-grid"><div class="stat"><span class="muted">在线人数</span><b id="adminOnline">0</b></div><div class="stat"><span class="muted">用户数</span><b id="adminUsersCount">0</b></div></div></div></div><div class="panel" style="margin-top:12px"><h3>用户管理（可私信用户）</h3><div class="table-wrap"><table class="table"><thead><tr><th>账号</th><th>昵称</th><th>角色</th><th>最近登录</th><th>操作</th></tr></thead><tbody id="usersTable"></tbody></table></div></div></section>
+<div id="adminModal" class="modal-wrap hidden"><div id="adminPanel" class="modal wide glass"><div class="modal-head"><h2>清音 CONTROL <span class="tag">SUPERADMIN</span></h2><button class="btn small" data-close="adminModal">✕</button></div><div class="admin-tabs"><button class="btn small primary" data-admin="users">用户</button><button class="btn small" data-admin="appearance">视觉</button><button class="btn small" data-admin="content">内容</button><button class="btn small" data-admin="system">系统</button><button class="btn small" data-admin="tools">工具</button><button class="btn small" data-admin="calls">音视频</button></div>
+  <section id="adm-users" class="admin-section active"><div class="grid2"><div class="panel"><h3>增加管理员</h3><div class="form"><input id="newAdminAccount" class="field" inputmode="numeric" placeholder="数字账号"><input id="newAdminPassword" class="field" type="password" placeholder="初始密码"><input id="newAdminNickname" class="field" placeholder="昵称"><button id="createAdminBtn" class="btn primary">创建管理员</button></div></div><div class="panel"><h3>实时状态</h3><div class="stat-grid"><div class="stat"><span class="muted">在线人数</span><b id="adminOnline">0</b></div><div class="stat"><span class="muted">用户数</span><b id="adminUsersCount">0</b></div></div></div></div><div class="panel" style="margin-top:12px"><h3>用户管理（可私信用户）</h3><div class="admin-toolbar"><input id="adminUserSearch" class="field" placeholder="搜索账号 / 昵称 / 角色"><select id="adminUserRoleFilter" class="field"><option value="all">全部角色</option><option value="superadmin">超级管理员</option><option value="admin">管理员</option><option value="user">普通用户</option></select><button id="clearAdminUserFilterBtn" class="btn small">清除筛选</button><span id="adminUserFilterCount" class="admin-filter-count">显示全部</span></div><div class="table-wrap"><table class="table"><thead><tr><th>账号</th><th>昵称</th><th>角色</th><th>最近登录</th><th>定位</th><th>操作</th></tr></thead><tbody id="usersTable"></tbody></table></div></div></section>
   <section id="adm-appearance" class="admin-section"><div class="grid2"><div class="panel"><h3>页面背景</h3><div class="form"><label>页面<select id="bgPage" class="field"><option value="login">登录页</option><option value="home">主页</option><option value="admin">后台页</option></select></label><input id="bgFile" type="file" accept="image/*" class="field"><button id="uploadBgBtn" class="btn primary">上传并实时应用</button><div id="bgPreview" class="bg-preview"></div></div></div><div class="panel"><h3>玻璃透明度</h3><p class="muted" style="font-size:12px;margin-top:-4px">0% = 完全显示背景 · 100% = 完全不显示背景</p><div class="form"><label>登录页 <span id="loginOpVal"></span><input id="loginOpacity" class="range" type="range" min="0" max="1" step="0.01"></label><label>主页 <span id="homeOpVal"></span><input id="homeOpacity" class="range" type="range" min="0" max="1" step="0.01"></label><label>后台 <span id="adminOpVal"></span><input id="adminOpacity" class="range" type="range" min="0" max="1" step="0.01"></label><button id="saveOpacityBtn" class="btn primary">保存透明度</button></div></div></div></section>
   <section id="adm-content" class="admin-section"><div class="grid2"><div class="panel"><h3>实时信息</h3><div class="form"><textarea id="tickerInput" class="field" rows="3" placeholder="跑马灯内容"></textarea><button id="saveTickerBtn" class="btn primary">发送到跑马灯</button><textarea id="announcementInput" class="field" rows="3" placeholder="登录页公告"></textarea><button id="saveAnnouncementBtn" class="btn">发布公告</button></div></div><div class="panel"><h3>媒体 / 聊天</h3><div class="form"><button id="playAllBtn" class="btn">一键播放所有视频</button><button id="deleteAllMediaBtn" class="btn danger">删除所有视频 / 图片</button><button id="deleteAllChatBtn" class="btn danger">删除全部聊天</button><button id="duplicateCenterBtn" class="btn">重复检测中心</button><button id="scanDuplicateBtn" class="btn">扫描重复作品</button></div></div></div></section>
   <section id="adm-system" class="admin-section"><div class="grid2"><div class="panel"><h3>站点系统</h3><div class="form"><input id="siteTitleInput" class="field" placeholder="网页标题"><button id="saveTitleBtn" class="btn primary">修改网页标题</button><label>分享图标<input id="shareIconFile" type="file" accept="image/*" class="field"></label><button id="uploadShareIconBtn" class="btn">上传分享图标</button><button id="refreshStatsBtn" class="btn">刷新容量信息</button></div></div><div class="panel"><h3>数据库内存</h3><div id="dbStats" class="muted">等待读取...</div></div><div class="panel"><h3>Storage 存储空间</h3><div id="storageStats" class="muted">等待读取...</div></div><div class="panel"><h3>数据库内容缩略图</h3><div class="muted" style="font-size:12px;margin-bottom:10px">媒体、头像、登录/主页/后台背景和分享图标</div><button id="refreshDbThumbsBtn" class="btn">刷新缩略图</button><div id="dbThumbStats" class="muted" style="margin-top:10px"></div><div id="dbThumbGrid" class="db-thumb-grid"></div></div></div></section>
+  <section id="adm-tools" class="admin-section">
+    <div class="panel"><h3>运营概览</h3><div class="admin-kpi-grid">
+      <div class="admin-kpi"><span>用户总数</span><b id="toolUsersCount">-</b></div>
+      <div class="admin-kpi"><span>在线人数</span><b id="toolOnlineCount">-</b></div>
+      <div class="admin-kpi"><span>视频作品</span><b id="toolVideoCount">-</b></div>
+      <div class="admin-kpi"><span>照片作品</span><b id="toolImageCount">-</b></div>
+    </div></div>
+    <div class="admin-tools-grid" style="margin-top:12px">
+      <div class="panel"><h3>快捷操作</h3><div class="admin-quick-actions">
+        <button id="adminRefreshAllBtn" class="btn primary">刷新后台全部数据</button>
+        <button id="adminExportUsersBtn" class="btn">导出用户 CSV</button>
+        <button id="adminExportMediaBtn" class="btn">导出媒体 CSV</button>
+        <button id="adminCopySiteLinkBtn" class="btn">复制站点链接</button>
+        <button id="adminOpenDuplicateBtn" class="btn">打开重复检测</button>
+        <button id="adminRefreshThumbsQuickBtn" class="btn">刷新媒体缩略图</button>
+      </div></div>
+      <div class="panel"><h3>运行状态</h3><div class="admin-ops-status">
+        <div><span class="muted">当前管理员</span><b id="toolAdminAccount">-</b></div>
+        <div><span class="muted">当前角色</span><b id="toolAdminRole">-</b></div>
+        <div><span class="muted">网络状态</span><b id="toolNetworkState">-</b></div>
+        <div><span class="muted">最后刷新</span><b id="toolLastRefresh">尚未刷新</b></div>
+      </div></div>
+    </div>
+  </section>
+  <section id="adm-calls" class="admin-section"><div class="grid2"><div class="panel"><h3>当前音视频房间</h3><div class="stat-grid"><div class="stat"><span class="muted">通话人数</span><b id="adminCallCount">0</b></div><div class="stat"><span class="muted">视频人数</span><b id="adminVideoCallCount">0</b></div><div class="stat"><span class="muted">语音人数</span><b id="adminVoiceCallCount">0</b></div><div class="stat"><span class="muted">状态</span><b id="adminCallState">监听中</b></div></div><p class="muted" style="font-size:12px">这里只显示当前主动加入群组音视频的用户及麦克风/摄像头状态，不接收或录制通话内容。</p></div><div class="panel"><h3>实时通话用户</h3><div id="adminCallUsers" class="call-admin-list"><div class="muted">暂无用户在通话</div></div></div></div></section>
 </div></div>
 <script>
 const SUPABASE_URL='https://oyfuocywwujsyxjlpprv.supabase.co';
@@ -1804,10 +1859,13 @@ function cleanBaseUrl(){const u=new URL(location.href);u.searchParams.delete('me
 function isOnline(){return navigator.onLine!==false}
 function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function accountOf(u){return (u?.email||'').split('@')[0]}
-function isAdmin(){return me?.app_metadata?.role==='admin'||me?.app_metadata?.role==='superadmin'}
-function isSuper(){return me?.app_metadata?.role==='superadmin'}
+function isPrimarySuperadmin(){return accountOf(me)==='306680070'}
+function isAdmin(){return isPrimarySuperadmin()||me?.app_metadata?.role==='admin'||me?.app_metadata?.role==='superadmin'}
+function isSuper(){return isPrimarySuperadmin()||me?.app_metadata?.role==='superadmin'}
 function runtime(){return settings.runtime||{}}
 function cfg(section,key,fallback){const v=runtime()?.[section]?.[key];return v===undefined||v===null?fallback:v}
+async function ensureRealtimeAuth(){try{const {data:{session:s}}=await sb.auth.getSession();if(s?.access_token){session=s;await sb.realtime.setAuth(s.access_token);return s}return null}catch(e){console.warn('Realtime auth',e);return null}}
+async function ensurePrimarySuperadmin(){if(!isPrimarySuperadmin())return false;try{await adminApi({action:'sync_primary_role'});const {data,error}=await sb.auth.refreshSession();if(error)throw error;if(data?.session){session=data.session;me=data.user||data.session.user||me;await sb.realtime.setAuth(data.session.access_token)}return true}catch(e){console.warn('主超级管理员角色同步失败',e);return false}}
 function openModal(id){$(id).classList.remove('hidden');if(id==='adminModal'){activeBackgroundPage='admin';applyBackground('admin')}}
 function closeModal(id){$(id).classList.add('hidden');if(id==='adminModal'){activeBackgroundPage=session?'home':'login';applyBackground(activeBackgroundPage)}}
 $$('[data-close]').forEach(b=>b.onclick=()=>closeModal(b.dataset.close));
@@ -1815,7 +1873,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installProm
 $('installBtn').onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$('installBtn').classList.add('hidden')}else toast('可使用浏览器“添加到主屏幕/桌面”功能')};
 function manifest(){const a=settings.appearance||{};const m={name:a.title||'清音',short_name:(a.title||'清音').slice(0,12),start_url:cleanBaseUrl(),display:'standalone',background_color:'#05060b',theme_color:'#05060b'};if(a.share_icon)m.icons=[{src:a.share_icon,sizes:'512x512',type:'image/png',purpose:'any maskable'}];let l=document.querySelector('link[rel=manifest]');if(!l){l=document.createElement('link');l.rel='manifest';document.head.appendChild(l)}l.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(m))}
 async function loadSettings(){const {data,error}=await sb.from('site_settings').select('*');if(error){console.warn(error);return}settings={};(data||[]).forEach(x=>settings[x.key]=x.value||{});applySettings();applyRuntimeConfig()}
-function applyRuntimeConfig(){const r=runtime(),reg=r.registration||{},m=r.media||{},chat=r.chat||{},sim=r.similarity||{},ui=r.ui||{},features=r.features||{};const setAttr=(id,k,v)=>{const el=$(id);if(el&&v!=null)el.setAttribute(k,String(v))};setAttr('regNickname','maxlength',reg.nickname_max_length);setAttr('regPassword','minlength',reg.password_min_length);setAttr('regPassword','maxlength',reg.password_max_length);setAttr('mediaCaption','maxlength',m.caption_max_length);setAttr('chatInput','maxlength',chat.max_length);setAttr('profileBio','maxlength',ui.profile_bio_max_length);if($('dedupThreshold')){$('dedupThreshold').min=sim.display_min??8;$('dedupThreshold').max=sim.display_max??64;if(!$('dedupThreshold').dataset.dbInit){$('dedupThreshold').value=sim.display_threshold??48;$('dedupThreshold').dataset.dbInit='1';if($('dedupThresholdValue'))$('dedupThresholdValue').textContent=$('dedupThreshold').value}}$('registerTab')?.classList.toggle('hidden',features.registration_enabled===false);$('bottomUploadBtn')?.classList.toggle('hidden',features.uploads_enabled===false);$('chatBtn')?.classList.toggle('hidden',features.chat_enabled===false);$('bottomChatBtn')?.classList.toggle('hidden',features.chat_enabled===false);$('showSimilarBtn')?.classList.toggle('hidden',!isAdmin()||features.similarity_enabled===false)}
+function applyRuntimeConfig(){const r=runtime(),reg=r.registration||{},m=r.media||{},chat=r.chat||{},sim=r.similarity||{},ui=r.ui||{},features=r.features||{};const setAttr=(id,k,v)=>{const el=$(id);if(el&&v!=null)el.setAttribute(k,String(v))};setAttr('regNickname','maxlength',reg.nickname_max_length);setAttr('regPassword','minlength',reg.password_min_length);setAttr('regPassword','maxlength',reg.password_max_length);setAttr('mediaCaption','maxlength',m.caption_max_length);setAttr('chatInput','maxlength',chat.max_length);setAttr('profileBio','maxlength',ui.profile_bio_max_length);if($('dedupThreshold')){$('dedupThreshold').min=sim.display_min??8;$('dedupThreshold').max=sim.display_max??84;if(!$('dedupThreshold').dataset.dbInit){$('dedupThreshold').value=sim.display_threshold??48;$('dedupThreshold').dataset.dbInit='1';if($('dedupThresholdValue'))$('dedupThresholdValue').textContent=$('dedupThreshold').value}}$('registerTab')?.classList.toggle('hidden',features.registration_enabled===false);$('bottomUploadBtn')?.classList.toggle('hidden',features.uploads_enabled===false);$('chatBtn')?.classList.toggle('hidden',features.chat_enabled===false);$('bottomChatBtn')?.classList.toggle('hidden',features.chat_enabled===false);$('showSimilarBtn')?.classList.toggle('hidden',!isAdmin()||features.similarity_enabled===false)}
 function setGlassAlpha(el,alpha){if(!el)return;alpha=Math.max(0,Math.min(1,Number(alpha)));el.style.background=`rgba(8,11,22,${alpha})`;const blur=alpha<=0.001?'none':`blur(${Math.round(24*alpha)}px) saturate(${Math.round(100+40*alpha)}%)`;el.style.backdropFilter=blur;el.style.webkitBackdropFilter=blur}
 function applyGlassOpacity(){const a=settings.appearance||{},login=a.login_opacity??.72,home=a.home_opacity??.70,admin=a.admin_opacity??.78;setGlassAlpha($('authCard'),login);$$('#appView .glass').forEach(el=>setGlassAlpha(el,home));$$('#profileModal .glass,#uploadModal .glass,#chatModal .glass,#shareModal .glass').forEach(el=>setGlassAlpha(el,home));setGlassAlpha($('adminPanel'),admin)}
 function applySettings(){const a=settings.appearance||{},t=settings.ticker?.text||'清音 · REALTIME',ann=settings.announcement?.text||'';document.title=a.title||'清音';$('loginTitle').textContent=a.title||'清音';$('topTitle').textContent=a.title||'清音';$('tickerTrack').innerHTML=`<span>${esc(t)}</span><span>${esc(t)}</span>`;$('announcement').textContent=ann;$('announcement').classList.toggle('hidden',!ann);if(a.share_icon){$('favicon').href=a.share_icon;let apple=document.querySelector('link[rel="apple-touch-icon"]');if(!apple){apple=document.createElement('link');apple.rel='apple-touch-icon';document.head.appendChild(apple)}apple.href=a.share_icon}manifest();applyBackground(activeBackgroundPage);applyGlassOpacity()}
@@ -1824,12 +1882,17 @@ async function saveSetting(key,value){const {error}=await sb.from('site_settings
 function authMode(mode){$('loginForm').classList.toggle('hidden',mode!=='login');$('registerForm').classList.toggle('hidden',mode!=='register');$('loginTab').classList.toggle('primary',mode==='login');$('registerTab').classList.toggle('primary',mode==='register')}
 $('loginTab').onclick=()=>authMode('login');$('registerTab').onclick=()=>authMode('register');
 $('loginForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter||$('loginForm').querySelector('button[type=submit]');await withButtonBusy(btn,async()=>{const account=$('loginAccount').value.trim();if(!/^\d+$/.test(account))return toast('账号只能是数字');if(!isOnline())return toast('当前网络不可用');const {data,error}=await sb.auth.signInWithPassword({email:account+'@numeric.local',password:$('loginPassword').value});if(error)return toast('登录失败：'+error.message);session=data.session;await enterApp()},'登录中...')};
-$('registerForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter||$('registerForm').querySelector('button[type=submit]');await withButtonBusy(btn,async()=>{if(cfg('features','registration_enabled',true)===false)return toast('当前已关闭注册');const account=$('regAccount').value.trim();const password=$('regPassword').value,amin=Number(cfg('registration','account_min_digits',4)),amax=Number(cfg('registration','account_max_digits',18)),pmin=Number(cfg('registration','password_min_length',6)),pmax=Number(cfg('registration','password_max_length',72));if(!(new RegExp('^\\d{'+amin+','+amax+'}$')).test(account))return toast(`账号必须是${amin}-${amax}位纯数字`);if(password.length<pmin||password.length>pmax)return toast(`密码必须为${pmin}-${pmax}位`);if(!isOnline())return toast('当前网络不可用');let r;try{r=await fetch(SUPABASE_URL+'/functions/v1/numeric-register',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({account,password,nickname:$('regNickname').value.trim()})})}catch(e){return toast('注册请求失败，请检查网络')}let j={};try{j=await r.json()}catch{}if(!r.ok)return toast(j.error||'注册失败');toast('注册成功，正在登录');const {data,error}=await sb.auth.signInWithPassword({email:account+'@numeric.local',password});if(error)return toast(error.message);session=data.session;await enterApp()},'注册中...')};
-async function enterApp(){if(appEntering)return;appEntering=true;try{const {data:{user},error}=await sb.auth.getUser();if(error)throw error;me=user;if(!me)return;await loadProfile();$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('adminBtn').classList.toggle('hidden',!isAdmin());$('showSimilarBtn')?.classList.toggle('hidden',!isAdmin());activeBackgroundPage='home';applyBackground('home');await Promise.all([loadMedia(),loadSettings()]);await setupRealtime();await setupPresence();const mid=new URL(location.href).searchParams.get('media');if(mid)await openMediaViewer(mid)}catch(e){console.error(e);toast(e.message||'进入应用失败')}finally{appEntering=false}}
+$('registerForm').onsubmit=async e=>{e.preventDefault();const btn=e.submitter||$('registerForm').querySelector('button[type=submit]');await withButtonBusy(btn,async()=>{if(cfg('features','registration_enabled',true)===false)return toast('当前已关闭注册');const account=$('regAccount').value.trim();const password=$('regPassword').value,amin=Number(cfg('registration','account_min_digits',4)),amax=Number(cfg('registration','account_max_digits',18)),pmin=Number(cfg('registration','password_min_length',8)),pmax=Number(cfg('registration','password_max_length',72));if(!(new RegExp('^\\d{'+amin+','+amax+'}$')).test(account))return toast(`账号必须是${amin}-${amax}位纯数字`);if(password.length<pmin||password.length>pmax)return toast(`密码必须为${pmin}-${pmax}位`);if(!isOnline())return toast('当前网络不可用');let r;try{r=await fetch(SUPABASE_URL+'/functions/v1/numeric-register',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({account,password,nickname:$('regNickname').value.trim()})})}catch(e){return toast('注册请求失败，请检查网络')}let j={};try{j=await r.json()}catch{}if(!r.ok)return toast(j.error||'注册失败');toast('注册成功，正在登录');const {data,error}=await sb.auth.signInWithPassword({email:account+'@numeric.local',password});if(error)return toast(error.message);session=data.session;await enterApp()},'注册中...')};
+async function enterApp(){if(appEntering)return;appEntering=true;try{const {data:{user},error}=await sb.auth.getUser();if(error)throw error;me=user;if(!me)return;if(isPrimarySuperadmin())await ensurePrimarySuperadmin();await ensureRealtimeAuth();await loadProfile();$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('adminBtn').classList.toggle('hidden',!isAdmin());$('showSimilarBtn')?.classList.toggle('hidden',!isAdmin());activeBackgroundPage='home';applyBackground('home');await Promise.all([loadMedia(),loadSettings()]);await setupRealtime();await setupPresence();const mid=new URL(location.href).searchParams.get('media');if(mid)await openMediaViewer(mid)}catch(e){console.error(e);toast(e.message||'进入应用失败')}finally{appEntering=false}}
 async function loadProfile(){const {data,error}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();if(error)console.warn(error);profile=data||{id:me.id,account:accountOf(me),nickname:'用户'+accountOf(me).slice(-4),bio:'',avatar_url:''};renderProfile()}
 function renderProfile(){const av=profile.avatar_url||'';$('profileNickname').value=profile.nickname||'';$('profileBio').value=profile.bio||'';[$('topAvatar'),$('profileAvatarPreview')].forEach(i=>{i.src=av||`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><linearGradient id="g"><stop stop-color="#00e5ff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient></defs><rect width="120" height="120" rx="60" fill="#101527"/><text x="60" y="72" text-anchor="middle" font-size="42" fill="url(#g)">${esc((profile.nickname||profile.account||'N').slice(0,1))}</text></svg>`)}`})}
-$('logoutBtn').onclick=async()=>{await withButtonBusy($('logoutBtn'),async()=>{if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}await sb.auth.signOut();location.reload()},'退出中...')};$('chatBtn').onclick=()=>{openModal('chatModal');loadChat()};$('topAvatar').onclick=()=>openModal('profileModal');$('topAvatar').style.cursor='pointer';
+$('logoutBtn').onclick=async()=>{await withButtonBusy($('logoutBtn'),async()=>{if(callJoined)await leaveGroupCall(true);if(callMonitorChannel){await sb.removeChannel(callMonitorChannel).catch(()=>{});callMonitorChannel=null}if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}await sb.auth.signOut();location.reload()},'退出中...')};$('chatBtn').onclick=()=>{openModal('chatModal');loadChat()};$('topAvatar').onclick=()=>{openModal('profileModal');renderLocationShareStatus()};$('topAvatar').style.cursor='pointer';
 $('saveProfileBtn').onclick=async()=>withButtonBusy($('saveProfileBtn'),async()=>{const patch={nickname:$('profileNickname').value.trim()||('用户'+profile.account.slice(-4)),bio:$('profileBio').value.trim(),updated_at:new Date().toISOString()};const {error}=await sb.from('profiles').update(patch).eq('id',me.id);if(error)return toast(error.message);Object.assign(profile,patch);renderProfile();toast('资料已实时更新')},'保存中...');
+function locationShare(){return me?.user_metadata?.location_share||null}
+function renderLocationShareStatus(){const el=$('locationShareStatus');if(!el)return;const l=locationShare();if(!l||!Number.isFinite(Number(l.latitude))||!Number.isFinite(Number(l.longitude))){el.textContent='未共享位置';return}const t=l.updated_at?new Date(l.updated_at).toLocaleString():'时间未知';const acc=Number.isFinite(Number(l.accuracy_m))?` · 精度约 ${Math.round(Number(l.accuracy_m))} 米`:'';el.textContent=`已共享：${Number(l.latitude).toFixed(5)}, ${Number(l.longitude).toFixed(5)}${acc} · ${t}`}
+async function shareCurrentLocation(){if(!navigator.geolocation)return toast('当前浏览器不支持定位');const btn=$('shareLocationBtn');if(btn)btn.disabled=true;toast('请在浏览器提示中允许定位');navigator.geolocation.getCurrentPosition(async pos=>{try{const loc={latitude:Number(pos.coords.latitude),longitude:Number(pos.coords.longitude),accuracy_m:Number(pos.coords.accuracy||0),updated_at:new Date().toISOString()};const {data,error}=await sb.auth.updateUser({data:{location_share:loc}});if(error)throw error;if(data?.user)me=data.user;else me={...me,user_metadata:{...(me?.user_metadata||{}),location_share:loc}};renderLocationShareStatus();toast('位置已共享给管理员')}catch(e){toast(e.message||'位置共享失败')}finally{if(btn)btn.disabled=false}},err=>{if(btn)btn.disabled=false;const msg=err.code===1?'你拒绝了定位权限':err.code===2?'暂时无法获取位置':'定位请求超时';toast(msg)},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})}
+async function stopLocationSharing(){const btn=$('stopLocationBtn');if(btn)btn.disabled=true;try{const {data,error}=await sb.auth.updateUser({data:{location_share:null}});if(error)throw error;if(data?.user)me=data.user;else me={...me,user_metadata:{...(me?.user_metadata||{}),location_share:null}};renderLocationShareStatus();toast('已停止共享位置')}catch(e){toast(e.message||'操作失败')}finally{if(btn)btn.disabled=false}}
+$('shareLocationBtn').onclick=shareCurrentLocation;$('stopLocationBtn').onclick=stopLocationSharing;
 async function uploadTo(bucket,file,path){const {error}=await sb.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type,cacheControl:'3600'});if(error)throw error;return sb.storage.from(bucket).getPublicUrl(path).data.publicUrl}
 async function compressImageFile(file,{maxWidth=1600,maxHeight=1600,quality=.82,type='image/jpeg'}={}){
   if(!file?.type?.startsWith('image/'))return file;
@@ -2159,7 +2222,7 @@ function applyMediaCategory(){
  const v=document.getElementById('showVideosBtn'),i=document.getElementById('showImagesBtn');if(v)v.classList.toggle('active',currentMediaCategory==='video');if(i)i.classList.toggle('active',currentMediaCategory==='image');
 }
 function renderFeed(){const f=$('feed');f.classList.remove('similar-feed');f.classList.add('media-grid');const visible=media.filter(p=>p.media_type===currentMediaCategory);if(!visible.length){f.innerHTML=`<div class="empty glass"><div><div class="big">◈</div><h2 class="neon">暂无内容</h2><p class="muted">上传第一张照片或第一段视频</p></div></div>`;applyMediaCategory();return}f.innerHTML=visible.map(p=>`<article class="media-card" data-media-type="${p.media_type}" onclick="openMediaViewer('${p.id}')">${p.media_type==='video'?`${p.cover_url?`<img src="${esc(p.cover_url)}" loading="lazy" decoding="async">`:`<video src="${esc(p.url)}" muted preload="metadata"></video>`}<div class="media-play">▶</div>`:`<img src="${esc(p.url)}" loading="lazy" decoding="async">`}<div class="media-cover"></div><div class="media-info"><b>@${esc(p.account)}</b><br>${esc(p.caption||'影像')}<div class="media-meta">${p.media_type==='video'?`<span>⏱ ${formatDuration(p.duration)}</span><span>▶ ${Number(p.play_count||0)}</span>`:'<span>照片</span>'}</div></div></article>`).join('');applyMediaCategory()}
-window.countPlay=async id=>{try{const p=await ensureMediaItem(id);if(!p||p._played)return;p._played=true;const {data,error}=await sb.rpc('increment_media_play_count',{p_id:id});if(error){p._played=false;console.warn(error);return}p.play_count=Number(data??p.play_count??0)}catch(e){console.warn(e)}};
+window.countPlay=async id=>{try{const p=await ensureMediaItem(id);if(!p||p._played)return;p._played=true;let s=session;try{const gs=await sb.auth.getSession();if(gs?.data?.session)s=gs.data.session}catch(_){}if(!s?.access_token){p._played=false;return}const r=await fetch(SUPABASE_URL+'/functions/v1/media-play',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+s.access_token},body:JSON.stringify({id})});let j={};try{j=await r.json()}catch{}if(!r.ok){p._played=false;console.warn(j.error||'播放量计数失败');return}p.play_count=Number(j.count??p.play_count??0)}catch(e){const p=media.find(x=>String(x.id)===String(id));if(p)p._played=false;console.warn(e)}};
 window.sharePost=async id=>{try{const p=await ensureMediaItem(id);if(!p)return toast('作品不存在');const url=new URL(location.href);url.searchParams.set('media',id);if(navigator.share)await navigator.share({title:document.title,text:p.caption||'清音 影像',url:url.toString()});else{await navigator.clipboard.writeText(url.toString());toast('作品链接已复制')}}catch(e){if(e?.name!=='AbortError')toast(e.message||'分享失败')}};
 window.deletePost=async id=>{try{const p=await ensureMediaItem(id);if(!p||!canDeleteMedia(p))return toast('没有删除权限');if(!confirm('确定删除这个作品？'))return;if(!await deleteMediaRowAndStorage(p))throw new Error('Storage 或数据库删除失败');toast('作品已删除');media=media.filter(x=>String(x.id)!==String(id));mediaTotalCount=Math.max(0,mediaTotalCount-1);const mc=$('mediaCount');if(mc)mc.textContent=mediaTotalCount;renderFeed();if(document.getElementById('fullViewerPage')?.classList.contains('active'))document.getElementById('viewerClose')?.click()}catch(e){toast(e.message||'删除失败')}};
 
@@ -2185,6 +2248,53 @@ function buildMainSimilarityGroups(edges){
   return [...groups.values()].map(s=>[...s]).filter(g=>g.length>1);
 }
 
+async function findSimilarImagesForAdmin(threshold=24){
+  if(!isAdmin())throw new Error('没有权限');
+  const limit=Math.max(0,Math.min(Number(threshold||24),64));
+  try{
+    const j=await adminApi({action:'find_similar_images',threshold:limit});
+    if(Array.isArray(j.data))return j.data;
+  }catch(e){console.warn('服务端相似检测失败，使用本地回退',e)}
+  const rows=await fetchAllRowsPaged(
+    'media_posts',
+    'id,image_hash,object_path,cover_url,file_size,created_at',
+    q=>q.eq('media_type','image').not('image_hash','is',null).order('created_at',{ascending:true})
+  );
+  const valid=(rows||[]).filter(x=>typeof x.image_hash==='string'&&x.image_hash.length===256);
+  const result=[];
+  for(let i=0;i<valid.length;i++){
+    const old=valid[i];
+    let best=null,bestDistance=Infinity;
+    for(let j=i+1;j<valid.length;j++){
+      const newer=valid[j];
+      let distance=0;
+      for(let k=0;k<256;k++){
+        if(old.image_hash.charCodeAt(k)!==newer.image_hash.charCodeAt(k)){
+          distance++;
+          if(distance>limit)break;
+        }
+      }
+      if(distance>limit)continue;
+      if(distance<bestDistance || (distance===bestDistance && new Date(newer.created_at).getTime()>new Date(best?.created_at||0).getTime())){
+        best=newer;
+        bestDistance=distance;
+      }
+    }
+    if(best){
+      result.push({
+        duplicate_id:old.id,
+        keeper_id:best.id,
+        distance:bestDistance,
+        object_path:old.object_path,
+        cover_url:old.cover_url,
+        file_size:old.file_size,
+        created_at:old.created_at
+      });
+    }
+  }
+  return result;
+}
+
 async function renderMainSimilarGroups(){
   const f=$('feed');
   if(!f)return;
@@ -2202,17 +2312,13 @@ async function renderMainSimilarGroups(){
   try{
     let threshold=Number(cfg('similarity','group_initial_threshold',40));
 
-    let {data:imgRows,error:imgErr}=await sb.rpc('admin_find_similar_images',{
-      p_threshold:threshold
-    });
+    let imgRows=[],imgErr=null;try{imgRows=await findSimilarImagesForAdmin(threshold)}catch(e){imgErr=e}
     if(imgErr)throw imgErr;
 
     // 当前阈值没有候选时自动放宽到 48，只用于分组展示，不自动删除
     if(!(imgRows||[]).length){
       threshold=Number(cfg('similarity','group_fallback_threshold',48));
-      const retry=await sb.rpc('admin_find_similar_images',{p_threshold:threshold});
-      if(retry.error)throw retry.error;
-      imgRows=retry.data||[];
+      imgRows=await findSimilarImagesForAdmin(threshold);
     }
 
     const imageEdges=(imgRows||[]).map(x=>({
@@ -2300,7 +2406,7 @@ async function renderMainSimilarGroups(){
 async function setupRealtime(){if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}realtimeChannel=sb.channel('nebula-db-'+me.id).on('postgres_changes',{event:'*',schema:'public',table:'media_posts'},()=>debounceRun('media',()=>loadMedia(true),350)).on('postgres_changes',{event:'*',schema:'public',table:'profiles',filter:`id=eq.${me.id}`},p=>{if(p.new?.id===me.id){profile=p.new;renderProfile()}}).on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>debounceRun('settings',loadSettings,250)).on('postgres_changes',{event:'*',schema:'public',table:'chat_messages'},()=>{if(!$('chatModal').classList.contains('hidden'))debounceRun('chat',loadChat,160)});realtimeChannel.subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Realtime 状态',status)});return realtimeChannel}
 async function setupPresence(){if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}presence=sb.channel('nebula-online',{config:{presence:{key:me.id}}});presence.on('presence',{event:'sync'},()=>{const n=Object.keys(presence.presenceState()).length;const oc=$('onlineCount'),ao=$('adminOnline');if(oc)oc.textContent=n;if(ao)ao.textContent=n}).subscribe(async status=>{if(status==='SUBSCRIBED')await presence.track({account:profile.account,at:new Date().toISOString()});if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('Presence 状态',status)});return presence}
 $$('[data-chat]').forEach(b=>b.onclick=()=>{$$('[data-chat]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');currentChat=b.dataset.chat;loadChat()});
-async function loadChat(){if(chatLoading)return;chatLoading=true;try{let q=sb.from('chat_messages').select('id,user_id,recipient_id,account,channel,content,created_at,expires_at').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:true}).limit(Number(cfg('chat','query_limit',300)));if(currentChat==='global')q=q.eq('channel','global');else{q=q.eq('channel','admin');if(!isSuper())q=q.or(`user_id.eq.${me.id},recipient_id.eq.${me.id}`)}const {data,error}=await q;if(error)throw error;const list=data||[];$('messages').innerHTML=list.length?list.map(m=>`<div class="msg ${m.user_id===me.id?'me':''}"><small>@${esc(m.account)} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small>${esc(m.content)}</div>`).join(''):'<div class="muted" style="padding:14px;text-align:center">暂无消息</div>';$('messages').scrollTop=$('messages').scrollHeight}catch(e){console.warn(e);toast('聊天加载失败')}finally{chatLoading=false}}
+async function loadChat(){if(chatLoading)return;chatLoading=true;try{let q=sb.from('chat_messages').select('id,user_id,recipient_id,account,channel,content,created_at,expires_at').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(Number(cfg('chat','query_limit',300)));if(currentChat==='global')q=q.eq('channel','global');else{q=q.eq('channel','admin');if(!isAdmin())q=q.or(`user_id.eq.${me.id},recipient_id.eq.${me.id}`)}const {data,error}=await q;if(error)throw error;const list=(data||[]).reverse();$('messages').innerHTML=list.length?list.map(m=>`<div class="msg ${m.user_id===me.id?'me':''}"><small>@${esc(m.account)} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small>${esc(m.content)}</div>`).join(''):'<div class="muted" style="padding:14px;text-align:center">暂无消息</div>';$('messages').scrollTop=$('messages').scrollHeight}catch(e){console.warn(e);toast('聊天加载失败')}finally{chatLoading=false}}
 $('sendChatBtn').onclick=sendChat;$('chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}};async function sendChat(){if(chatSending)return;const content=$('chatInput').value.trim();if(!content)return;if(!isOnline())return toast('当前网络不可用');if(cfg('features','chat_enabled',true)===false)return toast('当前已关闭聊天');if(content.length>Number(cfg('chat','max_length',1000)))return toast('消息过长');chatSending=true;const btn=$('sendChatBtn');btn.disabled=true;try{let recipient_id=null;if(currentChat==='admin'&&!isSuper()){const {data,error}=await sb.from('profiles').select('id').eq('account',String(cfg('admin','primary_account',''))).maybeSingle();if(error)throw error;recipient_id=data?.id||null;if(!recipient_id)throw new Error('管理员账号不可用')}const {error}=await sb.from('chat_messages').insert({user_id:me.id,recipient_id,account:profile.account,channel:currentChat,content});if(error)throw error;$('chatInput').value='';await loadChat()}catch(e){toast(e.message||'发送失败')}finally{chatSending=false;btn.disabled=false}}
 async function showShare(){
   openModal('shareModal');
@@ -2355,8 +2461,8 @@ $('sendAdminMessageBtn').onclick=async()=>{
  closeModal('adminMessageModal');
 };
 // admin
-$('adminBtn').onclick=async()=>{if(!isAdmin())return;openModal('adminModal');await loadAdminUsers();fillAdminSettings();loadDbStats();loadStorageStats();loadDbThumbnails()};
-$$('[data-admin]').forEach(b=>b.onclick=()=>{$$('[data-admin]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');$$('.admin-section').forEach(x=>x.classList.remove('active'));$('adm-'+b.dataset.admin).classList.add('active')});
+$('adminBtn').onclick=async()=>{if(!isAdmin())return;openModal('adminModal');const superOnly=['newAdminAccount','newAdminPassword','newAdminNickname','createAdminBtn'];superOnly.forEach(id=>{const el=$(id);if(el)el.disabled=!isSuper()});if($('createAdminBtn'))$('createAdminBtn').title=isSuper()?'':'仅超级管理员可以创建管理员';await setupCallMonitor();await loadAdminUsers();fillAdminSettings();loadDbStats();loadStorageStats();loadDbThumbnails()};
+$$('[data-admin]').forEach(b=>b.onclick=()=>{$$('[data-admin]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');$$('.admin-section').forEach(x=>x.classList.remove('active'));$('adm-'+b.dataset.admin).classList.add('active');if(b.dataset.admin==='tools')refreshAdminTools();if(b.dataset.admin==='users')filterAdminUsers()});
 async function adminApi(body){
   let s=session||null;
   try{
@@ -2416,9 +2522,66 @@ async function adminApi(body){
   if(!r.ok)throw new Error(j.error||'后台操作失败');
   return j;
 }
-async function loadAdminUsers(){try{const j=await adminApi({action:'list_users'});$('adminUsersCount').textContent=j.users.length;$('usersTable').innerHTML=j.users.map(u=>`<tr><td>${esc(u.account)}</td><td>${esc(u.profile?.nickname||'')}</td><td>${esc(u.role)}</td><td>${u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString():'-'}</td><td>${u.role==='superadmin'?'<span class="tag">ROOT</span>':`<button class="btn small" onclick="openAdminMessage('${u.id}','${u.account}')">私信</button> <button class="btn small" onclick="changePw('${u.id}','${u.account}')">改密码</button> <button class="btn small danger" onclick="removeUser('${u.id}','${u.account}')">删除</button>`}</td></tr>`).join('')}catch(e){toast(e.message)}}
+async function loadAdminUsers(){try{const j=await adminApi({action:'list_users'});$('adminUsersCount').textContent=j.users.length;$('usersTable').innerHTML=j.users.map(u=>{const l=u.location||null;const hasLoc=l&&Number.isFinite(Number(l.latitude))&&Number.isFinite(Number(l.longitude));const loc=hasLoc?`<div style="min-width:190px"><b>${Number(l.latitude).toFixed(5)}, ${Number(l.longitude).toFixed(5)}</b><br><span class="muted">${Number.isFinite(Number(l.accuracy_m))?'精度约 '+Math.round(Number(l.accuracy_m))+' 米 · ':''}${l.updated_at?new Date(l.updated_at).toLocaleString():'时间未知'}</span><br><button class="btn small" onclick="openUserLocation(${Number(l.latitude)},${Number(l.longitude)})">地图</button></div>`:'<span class="muted">未共享</span>';return `<tr><td>${esc(u.account)}</td><td>${esc(u.profile?.nickname||'')}</td><td>${esc(u.role)}</td><td>${u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString():'-'}</td><td>${loc}</td><td>${u.role==='superadmin'?'<span class="tag">ROOT</span>':`<button class="btn small" onclick="openAdminMessage('${u.id}','${u.account}')">私信</button> <button class="btn small" onclick="changePw('${u.id}','${u.account}')">改密码</button> <button class="btn small danger" onclick="removeUser('${u.id}','${u.account}')">删除</button>`}</td></tr>`}).join('');filterAdminUsers()}catch(e){toast(e.message)}}
+window.openUserLocation=(lat,lng)=>{const a=Number(lat),b=Number(lng);if(!Number.isFinite(a)||!Number.isFinite(b))return;window.open(`https://www.google.com/maps?q=${encodeURIComponent(a+','+b)}`,'_blank','noopener,noreferrer')};
+
+function filterAdminUsers(){
+ const body=$('usersTable');if(!body)return;
+ const q=String($('adminUserSearch')?.value||'').trim().toLowerCase();
+ const role=$('adminUserRoleFilter')?.value||'all';
+ const rows=[...body.querySelectorAll('tr')];let shown=0;
+ rows.forEach(row=>{
+   const text=(row.textContent||'').toLowerCase();
+   const cells=row.querySelectorAll('td');
+   const rowRole=(cells[2]?.textContent||'').trim().toLowerCase();
+   const ok=(!q||text.includes(q))&&(role==='all'||rowRole===role);
+   row.style.display=ok?'':'none';if(ok)shown++;
+ });
+ if($('adminUserFilterCount'))$('adminUserFilterCount').textContent=`显示 ${shown} / ${rows.length}`;
+}
+$('adminUserSearch')?.addEventListener('input',filterAdminUsers);
+$('adminUserRoleFilter')?.addEventListener('change',filterAdminUsers);
+$('clearAdminUserFilterBtn')?.addEventListener('click',()=>{if($('adminUserSearch'))$('adminUserSearch').value='';if($('adminUserRoleFilter'))$('adminUserRoleFilter').value='all';filterAdminUsers()});
+
+function csvCell(v){const s=String(v??'');return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function downloadCsv(filename,rows){const csv='\uFEFF'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+async function refreshAdminTools(){
+ if(!isAdmin())return;
+ const set=(id,v)=>{if($(id))$(id).textContent=String(v)};
+ set('toolAdminAccount',profile?.account||accountOf(me)||'-');
+ set('toolAdminRole',me?.app_metadata?.role||'-');
+ set('toolNetworkState',navigator.onLine===false?'离线':'在线');
+ set('toolOnlineCount',$('onlineCount')?.textContent||0);
+ try{
+   const [users,video,image]=await Promise.all([
+     adminApi({action:'list_users'}),
+     sb.from('media_posts').select('*',{count:'exact',head:true}).eq('media_type','video'),
+     sb.from('media_posts').select('*',{count:'exact',head:true}).eq('media_type','image')
+   ]);
+   if(video.error)throw video.error;if(image.error)throw image.error;
+   set('toolUsersCount',users.users?.length||0);set('toolVideoCount',video.count||0);set('toolImageCount',image.count||0);
+   set('toolLastRefresh',new Date().toLocaleString());
+ }catch(e){toast(e.message||'运营概览刷新失败')}
+}
+async function exportAdminUsersCsv(){
+ try{const j=await adminApi({action:'list_users'});const rows=[['账号','昵称','角色','最近登录','纬度','经度','定位精度(米)','定位更新时间']];(j.users||[]).forEach(u=>{const l=u.location||{};rows.push([u.account,u.profile?.nickname||'',u.role,u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleString():'',l.latitude??'',l.longitude??'',l.accuracy_m??'',l.updated_at?new Date(l.updated_at).toLocaleString():''])});downloadCsv(`qingyin_users_${new Date().toISOString().slice(0,10)}.csv`,rows);toast('用户 CSV 已导出')}catch(e){toast(e.message||'导出失败')}
+}
+async function exportAdminMediaCsv(){
+ try{const items=await fetchAllRowsPaged('media_posts','id,account,media_type,caption,url,object_path,file_size,duration,play_count,created_at',q=>q.order('created_at',{ascending:false}));const rows=[['ID','账号','类型','描述','文件大小','时长','播放量','创建时间','URL','Storage路径']];items.forEach(x=>rows.push([x.id,x.account,x.media_type,x.caption||'',x.file_size||0,x.duration||0,x.play_count||0,x.created_at||'',x.url||'',x.object_path||'']));downloadCsv(`qingyin_media_${new Date().toISOString().slice(0,10)}.csv`,rows);toast('媒体 CSV 已导出')}catch(e){toast(e.message||'导出失败')}
+}
+async function refreshAllAdminData(){
+ try{await Promise.all([loadAdminUsers(),loadDbStats(),loadStorageStats(),loadDbThumbnails(),refreshAdminTools()]);filterAdminUsers();toast('后台数据已全部刷新')}catch(e){toast(e.message||'刷新失败')}
+}
+$('adminRefreshAllBtn')?.addEventListener('click',()=>withButtonBusy($('adminRefreshAllBtn'),refreshAllAdminData,'刷新中...'));
+$('adminExportUsersBtn')?.addEventListener('click',()=>withButtonBusy($('adminExportUsersBtn'),exportAdminUsersCsv,'导出中...'));
+$('adminExportMediaBtn')?.addEventListener('click',()=>withButtonBusy($('adminExportMediaBtn'),exportAdminMediaCsv,'导出中...'));
+$('adminCopySiteLinkBtn')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(cleanBaseUrl());toast('站点链接已复制')}catch{const x=document.createElement('textarea');x.value=cleanBaseUrl();document.body.appendChild(x);x.select();document.execCommand('copy');x.remove();toast('站点链接已复制')}});
+$('adminOpenDuplicateBtn')?.addEventListener('click',()=>{openModal('duplicateCenterModal')});
+$('adminRefreshThumbsQuickBtn')?.addEventListener('click',()=>withButtonBusy($('adminRefreshThumbsQuickBtn'),loadDbThumbnails,'刷新中...'));
+window.addEventListener('online',()=>{if($('toolNetworkState'))$('toolNetworkState').textContent='在线'});
+window.addEventListener('offline',()=>{if($('toolNetworkState'))$('toolNetworkState').textContent='离线'});
 $('createAdminBtn').onclick=async()=>{try{await adminApi({action:'create_admin',account:$('newAdminAccount').value.trim(),password:$('newAdminPassword').value,nickname:$('newAdminNickname').value.trim()});toast('管理员已创建');$('newAdminAccount').value=$('newAdminPassword').value=$('newAdminNickname').value='';loadAdminUsers()}catch(e){toast(e.message)}};
-window.changePw=async(id,account)=>{const minLen=Number(cfg('registration','password_min_length',6));const p=prompt('为账号 '+account+' 设置新密码（至少'+minLen+'位）');if(!p)return;try{await adminApi({action:'set_password',user_id:id,password:p});toast('密码已修改')}catch(e){toast(e.message)}};window.removeUser=async(id,account)=>{if(!confirm('永久删除账号 '+account+'？'))return;try{await adminApi({action:'delete_user',user_id:id});toast('账户已删除');loadAdminUsers()}catch(e){toast(e.message)}};
+window.changePw=async(id,account)=>{const minLen=Number(cfg('registration','password_min_length',8));const p=prompt('为账号 '+account+' 设置新密码（至少'+minLen+'位）');if(!p)return;try{await adminApi({action:'set_password',user_id:id,password:p});toast('密码已修改')}catch(e){toast(e.message)}};window.removeUser=async(id,account)=>{if(!confirm('永久删除账号 '+account+'？'))return;try{await adminApi({action:'delete_user',user_id:id});toast('账户已删除');loadAdminUsers()}catch(e){toast(e.message)}};
 function fillAdminSettings(){const a=settings.appearance||{};$('loginOpacity').value=a.login_opacity??.72;$('homeOpacity').value=a.home_opacity??.70;$('adminOpacity').value=a.admin_opacity??.78;$('siteTitleInput').value=a.title||'清音';$('tickerInput').value=settings.ticker?.text||'';$('announcementInput').value=settings.announcement?.text||'';updateRangeLabels();updateBgPreview()}
 function updateRangeLabels(){$('loginOpVal').textContent=Math.round($('loginOpacity').value*100)+'%';$('homeOpVal').textContent=Math.round($('homeOpacity').value*100)+'%';$('adminOpVal').textContent=Math.round($('adminOpacity').value*100)+'%'}
 function previewOpacity(){updateRangeLabels();setGlassAlpha($('authCard'),+$('loginOpacity').value);$$('#appView .glass').forEach(el=>setGlassAlpha(el,+$('homeOpacity').value));$$('#profileModal .glass,#uploadModal .glass,#chatModal .glass,#shareModal .glass').forEach(el=>setGlassAlpha(el,+$('homeOpacity').value));setGlassAlpha($('adminPanel'),+$('adminOpacity').value)}
@@ -2521,7 +2684,7 @@ async function backfillAndCleanSimilarDuplicates(){
  try{
   box.textContent='数据库正在扫描相似图片...';
 
-  const {data:imgDup,error:imgErr}=await sb.rpc('admin_find_similar_images',{p_threshold:threshold});
+  let imgDup=[],imgErr=null;try{imgDup=await findSimilarImagesForAdmin(threshold)}catch(e){imgErr=e}
   if(imgErr)throw imgErr;
 
   let removedImages=0,removedBytes=0;
@@ -2729,10 +2892,7 @@ async function reviewSimilarCandidates(){
   if(toolbar)toolbar.style.display='none';
 
   try{
-    const {data:imgRows,error:imgErr}=await sb.rpc('admin_find_similar_images',{
-      p_threshold:reviewThreshold
-    });
-    if(imgErr)throw imgErr;
+    const imgRows=await findSimilarImagesForAdmin(reviewThreshold);
 
     const imgEdges=(imgRows||[]).map(x=>({
       a:x.duplicate_id,
@@ -2945,9 +3105,9 @@ async function openDuplicateCenter(){
  }
 }
 
-async function loadDbStats(){try{const {data,error}=await sb.rpc('admin_database_stats');if(error)throw error;$('dbStats').innerHTML=`<p><b>${esc(data.database_pretty)}</b> · 数据库总占用</p><div class="table-wrap"><table class="table"><tr><th>表</th><th>大小</th><th>估算行数</th></tr>${(data.tables||[]).map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.pretty)}</td><td>${x.rows_estimate}</td></tr>`).join('')}</table></div>`}catch(e){$('dbStats').textContent=e.message}}
+async function loadDbStats(){try{const j=await adminApi({action:'database_stats'});const data=j.data;if(!data)throw new Error('数据库统计返回为空');$('dbStats').innerHTML=`<p><b>${esc(data.database_pretty)}</b> · 数据库总占用</p><div class="table-wrap"><table class="table"><tr><th>表</th><th>大小</th><th>估算行数</th></tr>${(data.tables||[]).map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.pretty)}</td><td>${x.rows_estimate}</td></tr>`).join('')}</table></div>`}catch(e){$('dbStats').textContent=e.message||String(e)}}
 function fmtBytes(n){n=Number(n||0);if(n<1024)return n+' B';if(n<1024**2)return (n/1024).toFixed(1)+' KB';if(n<1024**3)return (n/1024**2).toFixed(1)+' MB';return (n/1024**3).toFixed(2)+' GB'}
-async function loadStorageStats(){const el=$('storageStats');try{const {data,error}=await sb.rpc('admin_storage_stats');if(error)throw error;const quota=Number(cfg('storage','display_quota_bytes',1024**3)),used=Number(data?.used_bytes||0),remain=Math.max(0,quota-used),pct=Math.min(100,used/quota*100),buckets=data?.buckets||[];const byId=Object.fromEntries(buckets.map(x=>[x.bucket_id,x]));const est10=Math.floor(remain/(10*1024**2)),est20=Math.floor(remain/(20*1024**2)),est50=Math.floor(remain/(50*1024**2));el.innerHTML=`<p><b>${fmtBytes(used)}</b> 已用 / <b>${fmtBytes(quota)}</b> 总容量</p><div style="height:10px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;margin:8px 0 10px"><div style="height:100%;width:${pct.toFixed(2)}%;background:currentColor;opacity:.8"></div></div><p>剩余 <b>${fmtBytes(remain)}</b> · 已用 ${pct.toFixed(1)}% · 共 ${Number(data?.object_count||0)} 个文件</p><div class="table-wrap"><table class="table"><tr><th>分类</th><th>已用</th><th>文件数</th></tr><tr><td>视频 / 图片</td><td>${fmtBytes(byId.media?.used_bytes||0)}</td><td>${byId.media?.object_count||0}</td></tr><tr><td>头像</td><td>${fmtBytes(byId.avatars?.used_bytes||0)}</td><td>${byId.avatars?.object_count||0}</td></tr><tr><td>背景 / 图标</td><td>${fmtBytes(byId.backgrounds?.used_bytes||0)}</td><td>${byId.backgrounds?.object_count||0}</td></tr></table></div><p style="font-size:12px">按数据库配置容量估算：剩余空间约还能放 ${est10} 个 10MB 视频 / ${est20} 个 20MB 视频 / ${est50} 个 50MB 视频。单文件上限仍受项目全局上传限制影响。</p>`}catch(e){el.textContent=e.message||String(e)}}
+async function loadStorageStats(){const el=$('storageStats');try{const j=await adminApi({action:'storage_stats'});const data=j.data;if(!data)throw new Error('Storage 统计返回为空');const quota=Number(cfg('storage','display_quota_bytes',1024**3)),used=Number(data?.used_bytes||0),remain=Math.max(0,quota-used),pct=Math.min(100,used/quota*100),buckets=data?.buckets||[];const byId=Object.fromEntries(buckets.map(x=>[x.bucket_id,x]));const est10=Math.floor(remain/(10*1024**2)),est20=Math.floor(remain/(20*1024**2)),est50=Math.floor(remain/(50*1024**2));el.innerHTML=`<p><b>${fmtBytes(used)}</b> 已用 / <b>${fmtBytes(quota)}</b> 总容量</p><div style="height:10px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;margin:8px 0 10px"><div style="height:100%;width:${pct.toFixed(2)}%;background:currentColor;opacity:.8"></div></div><p>剩余 <b>${fmtBytes(remain)}</b> · 已用 ${pct.toFixed(1)}% · 共 ${Number(data?.object_count||0)} 个文件</p><div class="table-wrap"><table class="table"><tr><th>分类</th><th>已用</th><th>文件数</th></tr><tr><td>视频 / 图片</td><td>${fmtBytes(byId.media?.used_bytes||0)}</td><td>${byId.media?.object_count||0}</td></tr><tr><td>头像</td><td>${fmtBytes(byId.avatars?.used_bytes||0)}</td><td>${byId.avatars?.object_count||0}</td></tr><tr><td>背景 / 图标</td><td>${fmtBytes(byId.backgrounds?.used_bytes||0)}</td><td>${byId.backgrounds?.object_count||0}</td></tr></table></div><p style="font-size:12px">按数据库配置容量估算：剩余空间约还能放 ${est10} 个 10MB 视频 / ${est20} 个 20MB 视频 / ${est50} 个 50MB 视频。单文件上限仍受项目全局上传限制影响。</p>`}catch(e){el.textContent=e.message||String(e)}}
 $('duplicateCenterBtn')?.addEventListener('click',openDuplicateCenter);
 $('cleanDuplicateBtn')?.addEventListener('click',cleanDuplicateMedia);
 $('backfillDedupBtn')?.addEventListener('click',backfillAndCleanSimilarDuplicates);
@@ -2970,10 +3130,41 @@ $('dedupThreshold')?.addEventListener('input',e=>{
 });
 $('refreshStatsBtn').onclick=()=>{loadDbStats();loadStorageStats()};$('refreshDbThumbsBtn').onclick=loadDbThumbnails;
 $('scanDuplicateBtn')?.addEventListener('click',scanDuplicateMedia);
+
+// group WebRTC call: Supabase Realtime is signaling/presence only; media stays peer-to-peer.
+const CALL_TOPIC='qingyin-group-call-v1';
+function callIceServers(){const c=runtime()?.call||{};const list=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];if(c.turn_urls){list.push({urls:c.turn_urls,username:c.turn_username||'',credential:c.turn_credential||''})}return list}
+let callChannel=null,callMonitorChannel=null,callLocalStream=null,callScreenStream=null,callJoined=false,callMic=false,callCam=false,callJoinedAt=null,callFacing='user';
+const callPeers=new Map(),callPendingIce=new Map();
+function callLabel(p){return String(p?.nickname||p?.account||'用户')}
+function callPresenceRows(ch){if(!ch)return[];const st=ch.presenceState()||{};const rows=[];Object.entries(st).forEach(([key,arr])=>(arr||[]).forEach(p=>rows.push({...p,presence_key:key})));const m=new Map();rows.forEach(p=>{if(p.user_id)m.set(p.user_id,p)});return [...m.values()]}
+function updateCallButtons(){const j=$('joinCallBtn'),jv=$('joinVoiceCallBtn'),l=$('leaveCallBtn'),m=$('toggleMicBtn'),c=$('toggleCamBtn'),sw=$('switchCameraBtn'),ss=$('shareScreenBtn');j?.classList.toggle('hidden',callJoined);jv?.classList.toggle('hidden',callJoined);[l,m,c,ss].forEach(x=>x?.classList.toggle('hidden',!callJoined));sw?.classList.toggle('hidden',!callJoined||!callCam);if(m)m.textContent=callMic?'🎙 麦克风开':'🔇 麦克风关';if(c)c.textContent=callCam?'📷 摄像头开':'🚫 摄像头关'}
+function renderCallGrid(){const g=$('callGrid');if(!g)return;const tiles=[];if(callJoined){tiles.push(`<div class="call-tile ${callCam?'':'audio-only'}" id="callTile-local"><video id="callVideo-local" autoplay muted playsinline data-call-video="1"></video><div class="call-label">我 · ${callMic?'🎙':'🔇'} ${callCam?'📷':'🎧'}</div></div>`)}for(const [uid,p] of callPeers){tiles.push(`<div class="call-tile ${p.cam===false?'audio-only':''}" id="callTile-${esc(uid)}"><video id="callVideo-${esc(uid)}" autoplay playsinline data-call-video="1"></video><div class="call-label">${esc(p.label||uid)} · ${p.mic===false?'🔇':'🎙'} ${p.cam===false?'🎧':'📷'}</div></div>`)}g.innerHTML=tiles.join('')||'<div class="call-empty">可选择视频或仅语音加入多人通话</div>';if(callLocalStream){const v=$('callVideo-local');if(v&&v.srcObject!==callLocalStream)v.srcObject=callLocalStream}for(const [uid,p] of callPeers){const v=$('callVideo-'+uid);if(v&&p.stream&&v.srcObject!==p.stream){v.srcObject=p.stream;v.play().catch(()=>{})}}}
+async function callTrackPresence(){if(!callChannel||!callJoined)return;await callChannel.track({user_id:me.id,account:profile?.account||accountOf(me),nickname:profile?.nickname||'',mic:callMic,cam:callCam,mode:callCam?'video':'voice',joined_at:callJoinedAt||new Date().toISOString()})}
+function syncCallPresence(){const rows=callPresenceRows(callChannel).filter(p=>p.user_id!==me?.id);if($('callMemberCount'))$('callMemberCount').textContent=(rows.length+(callJoined?1:0))+' 人';const active=new Set(rows.map(p=>p.user_id));for(const [uid] of callPeers)if(!active.has(uid))dropCallPeer(uid);if(callJoined)for(const p of rows)ensureCallPeer(p.user_id,p,me.id<p.user_id).catch(console.warn);for(const p of rows){const item=callPeers.get(p.user_id);if(item){item.mic=p.mic!==false;item.cam=p.cam!==false;item.label=callLabel(p)}}renderCallGrid();renderAdminCallUsers(rows.concat(callJoined?[{user_id:me.id,account:profile?.account,nickname:profile?.nickname,mic:callMic,cam:callCam,joined_at:callJoinedAt}]:[]))}
+function renderAdminCallUsers(rows){if($('adminCallCount'))$('adminCallCount').textContent=rows.length;if($('adminVideoCallCount'))$('adminVideoCallCount').textContent=rows.filter(p=>p.cam!==false).length;if($('adminVoiceCallCount'))$('adminVoiceCallCount').textContent=rows.filter(p=>p.cam===false).length;const box=$('adminCallUsers');if(!box)return;box.innerHTML=rows.length?rows.map(p=>`<div class="call-admin-user"><div><b>@${esc(p.account||'')} ${p.nickname?('· '+esc(p.nickname)):''}</b><div class="muted">${p.joined_at?new Date(p.joined_at).toLocaleString():'刚刚加入'}</div></div><div><span class="tag">${p.mic===false?'🔇 静音':'🎙 语音'}</span> <span class="tag">${p.cam===false?'🎧 仅语音':'📷 视频'}</span></div></div>`).join(''):'<div class="muted">暂无用户在通话</div>'}
+async function ensureCallPeer(uid,pres,initiator=false){if(!uid||uid===me.id)return null;let item=callPeers.get(uid);if(item){item.label=callLabel(pres);item.mic=pres?.mic!==false;item.cam=pres?.cam!==false;return item.pc}const pc=new RTCPeerConnection({iceServers:callIceServers()});item={pc,stream:new MediaStream(),label:callLabel(pres),mic:pres?.mic!==false,cam:pres?.cam!==false};callPeers.set(uid,item);for(const t of callLocalStream?.getTracks()||[])pc.addTrack(t,callLocalStream);pc.ontrack=e=>{const st=e.streams?.[0];if(st)item.stream=st;else if(!item.stream.getTracks().includes(e.track))item.stream.addTrack(e.track);renderCallGrid()};pc.onicecandidate=e=>{if(e.candidate)callSendSignal(uid,{kind:'ice',candidate:e.candidate.toJSON()})};pc.onconnectionstatechange=()=>{if(['failed','closed'].includes(pc.connectionState))dropCallPeer(uid)};renderCallGrid();if(initiator){const offer=await pc.createOffer();await pc.setLocalDescription(offer);await callSendSignal(uid,{kind:'offer',sdp:pc.localDescription})}return pc}
+async function callSendSignal(to,data){if(!callChannel)return;await callChannel.send({type:'broadcast',event:'webrtc',payload:{from:me.id,to,...data}})}
+async function onCallSignal(msg){const d=msg?.payload||msg;if(!callJoined||!d||d.to!==me.id||d.from===me.id)return;try{const pres=callPresenceRows(callChannel).find(x=>x.user_id===d.from)||{user_id:d.from,account:'用户'};const pc=await ensureCallPeer(d.from,pres,false);if(d.kind==='offer'){if(pc.signalingState!=='stable')await pc.setLocalDescription({type:'rollback'}).catch(()=>{});await pc.setRemoteDescription(d.sdp);for(const c of callPendingIce.get(d.from)||[])await pc.addIceCandidate(c).catch(()=>{});callPendingIce.delete(d.from);const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await callSendSignal(d.from,{kind:'answer',sdp:pc.localDescription})}else if(d.kind==='answer'){if(pc.signalingState==='have-local-offer'){await pc.setRemoteDescription(d.sdp);for(const c of callPendingIce.get(d.from)||[])await pc.addIceCandidate(c).catch(()=>{});callPendingIce.delete(d.from)}}else if(d.kind==='ice'&&d.candidate){if(pc.remoteDescription)await pc.addIceCandidate(d.candidate).catch(()=>{});else{const a=callPendingIce.get(d.from)||[];a.push(d.candidate);callPendingIce.set(d.from,a)}}}catch(e){console.warn('WebRTC signal',e)}}
+function dropCallPeer(uid){const p=callPeers.get(uid);if(p){try{p.pc.close()}catch(_){}callPeers.delete(uid)}renderCallGrid()}
+async function acquireCallStream(mode='video'){const audio={echoCancellation:true,noiseSuppression:true,autoGainControl:true};if(mode==='voice')return await navigator.mediaDevices.getUserMedia({audio,video:false});try{return await navigator.mediaDevices.getUserMedia({audio,video:{width:{ideal:640},height:{ideal:480},facingMode:callFacing}})}catch(e){if(e?.name==='NotAllowedError'||e?.name==='NotFoundError'||e?.name==='OverconstrainedError'){const a=await navigator.mediaDevices.getUserMedia({audio,video:false});toast('摄像头不可用，已改为仅语音加入');return a}throw e}}
+async function joinGroupCall(mode='video',button=null){if(callJoined)return;if(!navigator.mediaDevices?.getUserMedia)return toast('当前浏览器不支持音视频');if(!window.isSecureContext)return toast('音视频需要 HTTPS 安全连接');const btn=button||$('joinCallBtn');await withButtonBusy(btn,async()=>{const authSession=await ensureRealtimeAuth();if(!authSession?.access_token)throw new Error('登录状态已失效，无法加入通话');callLocalStream=await acquireCallStream(mode);callMic=callLocalStream.getAudioTracks().length>0;callCam=callLocalStream.getVideoTracks().length>0;callJoined=true;callJoinedAt=new Date().toISOString();callChannel=sb.channel(CALL_TOPIC,{config:{private:true,presence:{key:me.id}}}).on('broadcast',{event:'webrtc'},onCallSignal).on('presence',{event:'sync'},syncCallPresence).on('presence',{event:'join'},syncCallPresence).on('presence',{event:'leave'},syncCallPresence);await new Promise((resolve,reject)=>{let done=false;const t=setTimeout(()=>{if(!done)reject(new Error('通话房间连接超时'))},10000);callChannel.subscribe(async(status,err)=>{if(status==='SUBSCRIBED'&&!done){done=true;clearTimeout(t);await callTrackPresence();resolve()}else if((status==='CHANNEL_ERROR'||status==='TIMED_OUT')&&!done){done=true;clearTimeout(t);reject(err||new Error('无法连接通话房间'))}})});if($('callStatus'))$('callStatus').textContent=callCam?'视频通话中':'语音通话中';updateCallButtons();syncCallPresence()},'连接中...').catch(async e=>{await leaveGroupCall(true);toast(e.message||'无法加入音视频')})}
+async function leaveGroupCall(silent=false){callJoined=false;for(const [uid] of [...callPeers])dropCallPeer(uid);for(const t of callLocalStream?.getTracks()||[])t.stop();for(const t of callScreenStream?.getTracks()||[])t.stop();callLocalStream=null;callScreenStream=null;if(callChannel){try{await callChannel.untrack()}catch(_){}try{await sb.removeChannel(callChannel)}catch(_){}callChannel=null}callPendingIce.clear();callJoinedAt=null;callMic=false;callCam=false;if($('callStatus'))$('callStatus').textContent='未加入';if($('callMemberCount'))$('callMemberCount').textContent='0 人';updateCallButtons();renderCallGrid();if(!silent)toast('已离开音视频')}
+async function replaceTrackForPeers(kind,track){for(const {pc} of callPeers.values()){let sender=pc.getSenders().find(s=>s.track?.kind===kind);if(sender){await sender.replaceTrack(track)}else if(track&&callLocalStream){pc.addTrack(track,(callScreenStream&&kind==='video')?callScreenStream:callLocalStream);const offer=await pc.createOffer();await pc.setLocalDescription(offer);const peer=[...callPeers.entries()].find(([,v])=>v.pc===pc)?.[0];if(peer)await callSendSignal(peer,{kind:'offer',sdp:pc.localDescription})}}}
+async function toggleCallMic(){if(!callJoined)return;let track=callLocalStream?.getAudioTracks()[0];if(!track){try{const s=await navigator.mediaDevices.getUserMedia({audio:true,video:false});track=s.getAudioTracks()[0];callLocalStream.addTrack(track);await replaceTrackForPeers('audio',track);callMic=true}catch(e){return toast('无法打开麦克风')}}else{callMic=!callMic;track.enabled=callMic}await callTrackPresence();updateCallButtons();syncCallPresence()}
+async function toggleCallCam(){if(!callJoined)return;let track=callLocalStream?.getVideoTracks()[0];if(!track){try{const s=await navigator.mediaDevices.getUserMedia({audio:false,video:{width:{ideal:640},height:{ideal:480},facingMode:callFacing}});track=s.getVideoTracks()[0];callLocalStream.addTrack(track);await replaceTrackForPeers('video',track);callCam=true}catch(e){return toast('无法打开摄像头')}}else{callCam=!callCam;track.enabled=callCam}if($('callStatus'))$('callStatus').textContent=callCam?'视频通话中':'语音通话中';await callTrackPresence();updateCallButtons();syncCallPresence()}
+async function switchCallCamera(){if(!callJoined||!callCam)return;const old=callLocalStream?.getVideoTracks()[0];try{callFacing=callFacing==='user'?'environment':'user';const s=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:callFacing},width:{ideal:640},height:{ideal:480}}});const tr=s.getVideoTracks()[0];if(old){callLocalStream.removeTrack(old);old.stop()}callLocalStream.addTrack(tr);await replaceTrackForPeers('video',tr);renderCallGrid()}catch(e){callFacing=callFacing==='user'?'environment':'user';toast('切换摄像头失败')}}
+async function toggleCallScreen(){if(!callJoined||!navigator.mediaDevices?.getDisplayMedia)return toast('当前浏览器不支持屏幕共享');try{if(callScreenStream){await stopCallScreen();return}callScreenStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});const tr=callScreenStream.getVideoTracks()[0];await replaceTrackForPeers('video',tr);tr.onended=()=>stopCallScreen();if($('shareScreenBtn'))$('shareScreenBtn').textContent='停止共享'}catch(e){if(e.name!=='NotAllowedError')toast(e.message||'屏幕共享失败')}}
+async function stopCallScreen(){if(!callScreenStream)return;callScreenStream.getTracks().forEach(t=>t.stop());callScreenStream=null;const cam=callLocalStream?.getVideoTracks()[0]||null;await replaceTrackForPeers('video',cam);if($('shareScreenBtn'))$('shareScreenBtn').textContent='🖥 分享屏幕'}
+async function setupCallMonitor(){if(!isAdmin()||callMonitorChannel)return;const authSession=await ensureRealtimeAuth();if(!authSession?.access_token){if($('adminCallState'))$('adminCallState').textContent='登录失效';return}callMonitorChannel=sb.channel(CALL_TOPIC,{config:{private:true,presence:{key:'monitor-'+me.id+'-'+Math.random().toString(36).slice(2)}}});callMonitorChannel.on('presence',{event:'sync'},()=>{const rows=callPresenceRows(callMonitorChannel).filter(p=>p.user_id);renderAdminCallUsers(rows)}).subscribe(status=>{if($('adminCallState'))$('adminCallState').textContent=status==='SUBSCRIBED'?'实时监听':status==='CHANNEL_ERROR'?'连接失败':'连接中';});}
+$('joinCallBtn')?.addEventListener('click',()=>joinGroupCall('video',$('joinCallBtn')));$('joinVoiceCallBtn')?.addEventListener('click',()=>joinGroupCall('voice',$('joinVoiceCallBtn')));$('leaveCallBtn')?.addEventListener('click',()=>leaveGroupCall());$('toggleMicBtn')?.addEventListener('click',toggleCallMic);$('toggleCamBtn')?.addEventListener('click',toggleCallCam);$('switchCameraBtn')?.addEventListener('click',switchCallCamera);$('shareScreenBtn')?.addEventListener('click',toggleCallScreen);
+window.addEventListener('beforeunload',()=>{for(const t of callLocalStream?.getTracks()||[])t.stop()});
+
 // stars
 (function(){const c=$('stars'),x=c.getContext('2d');let w,h,dpr,pts=[];function resize(){dpr=Math.min(devicePixelRatio||1,2);w=innerWidth;h=innerHeight;c.width=w*dpr;c.height=h*dpr;c.style.width=w+'px';c.style.height=h+'px';x.setTransform(dpr,0,0,dpr,0,0);pts=Array.from({length:Math.min(150,Math.floor(w*h/9000))},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.5+.3,v:Math.random()*.22+.05,a:Math.random()*.7+.2}))}function draw(){x.clearRect(0,0,w,h);for(const p of pts){p.y-=p.v;if(p.y<0){p.y=h;p.x=Math.random()*w}x.beginPath();x.fillStyle=`rgba(170,220,255,${p.a})`;x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fill()}requestAnimationFrame(draw)}addEventListener('resize',resize);resize();draw()})();
 (async()=>{await loadSettings();const {data:{session:s}}=await sb.auth.getSession();session=s;if(session)await enterApp();sb.auth.onAuthStateChange((event,s)=>{
   session=s||null;
+  if(s?.access_token){sb.realtime.setAuth(s.access_token).catch?.(e=>console.warn('Realtime auth update',e))}
   if(!s && event==='SIGNED_OUT'){
     me=null;
   }
@@ -3016,8 +3207,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   window.addEventListener('offline',()=>toast('网络已断开，部分功能暂不可用'));
   window.addEventListener('online',()=>{toast('网络已恢复');debounceRun('media',loadMedia,120)});
   document.addEventListener('play',e=>{
-    if(e.target.tagName==='VIDEO'){
-      document.querySelectorAll('video').forEach(v=>{if(v!==e.target)v.pause()});
+    if(e.target.tagName==='VIDEO'&&!e.target.dataset.callVideo){
+      document.querySelectorAll('video:not([data-call-video])').forEach(v=>{if(v!==e.target)v.pause()});
     }
   },true);
 })();
