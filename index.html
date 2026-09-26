@@ -1388,22 +1388,34 @@ window.QRCode={
 #feed.media-grid{
  display:grid;
  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+ grid-auto-flow:row;
  gap:14px;
  padding:14px;
  overflow:auto;
  align-content:start;
+ align-items:start;
 }
 .media-card{
  height:240px;
+ width:100%;
+ min-width:0;
+ min-height:0;
  position:relative;
  overflow:hidden;
+ isolation:isolate;
+ contain:layout paint;
  border-radius:22px;
  background:#020308;
  border:1px solid rgba(255,255,255,.12);
  cursor:pointer;
 }
-.media-card img,.media-card video{
- width:100%;height:100%;object-fit:cover;display:block;
+.media-card>img,.media-card>video{
+ position:absolute;
+ inset:0;
+ width:100%;
+ height:100%;
+ object-fit:cover;
+ display:block;
 }
 .media-card .media-cover{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.8));}
 .media-card .media-info{position:absolute;left:12px;right:12px;bottom:12px;font-size:13px;z-index:2}
@@ -1649,8 +1661,8 @@ button,input,textarea,select{max-width:100%}
   /* App body follows the real header height instead of a fixed calculation. */
   .main{height:auto!important;flex:1;min-height:0;padding:6px 6px calc(78px + var(--safe-bottom))}
   .center,#categoryMediaWrap,#feed{min-height:0}
-  #feed.media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:6px}
-  .media-card{height:auto;aspect-ratio:3/4;border-radius:15px}
+  #feed.media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:6px;grid-auto-rows:auto}
+  .media-card{height:auto;aspect-ratio:3/4;border-radius:15px;align-self:start}
 
   .bottom-nav{bottom:max(8px,var(--safe-bottom));width:calc(100vw - 12px - var(--safe-left) - var(--safe-right));gap:5px;padding:7px;border-radius:18px}
   .bottom-nav .btn{min-width:0;min-height:42px;padding:8px 4px;font-size:12px}
@@ -2157,6 +2169,27 @@ function isSuper(){return isPrimarySuperadmin()||me?.app_metadata?.role==='super
 function runtime(){return settings.runtime||{}}
 function cfg(section,key,fallback){const v=runtime()?.[section]?.[key];return v===undefined||v===null?fallback:v}
 function invalidRefreshError(e){return /refresh[_ ]token|invalid refresh token|refresh token not found/i.test(String(e?.message||e||''))}
+async function ensureAppIdentity(showNotice=true){
+  if(me?.id&&profile?.id===me.id)return true;
+  try{
+    const {data:{user},error}=await sb.auth.getUser();
+    if(error)throw error;
+    if(!user?.id){await handleSessionEnded(showNotice);return false}
+    me=user;
+    if(!profile||profile.id!==user.id){
+      const {data,error:pe}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();
+      if(pe)throw pe;
+      profile=data||{id:user.id,account:accountOf(user),nickname:'用户'+accountOf(user).slice(-4),bio:'',avatar_url:''};
+      try{renderProfile()}catch(_){}
+    }
+    return true;
+  }catch(e){
+    console.warn('Identity recovery failed',e);
+    if(invalidRefreshError(e)){try{await sb.auth.signOut({scope:'local'})}catch(_){};await handleSessionEnded(showNotice)}
+    else if(showNotice)toast('登录状态正在恢复，请稍后重试');
+    return false;
+  }
+}
 async function ensureRealtimeAuth(){
   try{
     let {data:{session:s},error}=await sb.auth.getSession();
@@ -2238,10 +2271,10 @@ async function enterApp(){
     toast(e.message||'进入应用失败');
   }finally{appEntering=false}
 }
-async function loadProfile(){const {data,error}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();if(error)console.warn(error);profile=data||{id:me.id,account:accountOf(me),nickname:'用户'+accountOf(me).slice(-4),bio:'',avatar_url:''};renderProfile()}
+async function loadProfile(){if(!me?.id){if(!await ensureAppIdentity(false))return null}const user=me;const {data,error}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();if(error)console.warn(error);profile=data||{id:user.id,account:accountOf(user),nickname:'用户'+accountOf(user).slice(-4),bio:'',avatar_url:''};renderProfile();return profile}
 function renderProfile(){const av=profile.avatar_url||'';$('profileNickname').value=profile.nickname||'';$('profileBio').value=profile.bio||'';[$('topAvatar'),$('profileAvatarPreview')].forEach(i=>{i.src=av||`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><defs><linearGradient id="g"><stop stop-color="#00e5ff"/><stop offset="1" stop-color="#9b5cff"/></linearGradient></defs><rect width="120" height="120" rx="60" fill="#101527"/><text x="60" y="72" text-anchor="middle" font-size="42" fill="url(#g)">${esc((profile.nickname||profile.account||'N').slice(0,1))}</text></svg>`)}`})}
 $('logoutBtn').onclick=async()=>{await withButtonBusy($('logoutBtn'),async()=>{if(callJoined)await leaveGroupCall(true);if(callMonitorChannel){await sb.removeChannel(callMonitorChannel).catch(()=>{});callMonitorChannel=null}if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}await sb.auth.signOut();location.reload()},'退出中...')};$('chatBtn').onclick=()=>{openModal('chatModal');loadChat()};$('topAvatar').onclick=()=>{openModal('profileModal');renderLocationShareStatus()};$('topAvatar').style.cursor='pointer';
-$('saveProfileBtn').onclick=async()=>withButtonBusy($('saveProfileBtn'),async()=>{const patch={nickname:$('profileNickname').value.trim()||('用户'+profile.account.slice(-4)),bio:$('profileBio').value.trim(),updated_at:new Date().toISOString()};const {error}=await sb.from('profiles').update(patch).eq('id',me.id);if(error)return toast(error.message);Object.assign(profile,patch);renderProfile();toast('资料已实时更新')},'保存中...');
+$('saveProfileBtn').onclick=async()=>withButtonBusy($('saveProfileBtn'),async()=>{if(!await ensureAppIdentity())return;const user=me,prof=profile;const patch={nickname:$('profileNickname').value.trim()||('用户'+(prof?.account||accountOf(user)).slice(-4)),bio:$('profileBio').value.trim(),updated_at:new Date().toISOString()};const {error}=await sb.from('profiles').update(patch).eq('id',user.id);if(error)return toast(error.message);Object.assign(profile,patch);renderProfile();toast('资料已实时更新')},'保存中...');
 function locationShare(){return me?.user_metadata?.location_share||null}
 function renderLocationShareStatus(){const el=$('locationShareStatus');if(!el)return;const l=locationShare();if(!l||!Number.isFinite(Number(l.latitude))||!Number.isFinite(Number(l.longitude))){el.textContent='未共享位置';return}const t=l.updated_at?new Date(l.updated_at).toLocaleString():'时间未知';const acc=Number.isFinite(Number(l.accuracy_m))?` · 精度约 ${Math.round(Number(l.accuracy_m))} 米`:'';el.textContent=`已共享：${Number(l.latitude).toFixed(5)}, ${Number(l.longitude).toFixed(5)}${acc} · ${t}`}
 async function shareCurrentLocation(){if(!navigator.geolocation)return toast('当前浏览器不支持定位');const btn=$('shareLocationBtn');if(btn)btn.disabled=true;toast('请在浏览器提示中允许定位');navigator.geolocation.getCurrentPosition(async pos=>{try{const loc={latitude:Number(pos.coords.latitude),longitude:Number(pos.coords.longitude),accuracy_m:Number(pos.coords.accuracy||0),updated_at:new Date().toISOString()};const {data,error}=await sb.auth.updateUser({data:{location_share:loc}});if(error)throw error;if(data?.user)me=data.user;else me={...me,user_metadata:{...(me?.user_metadata||{}),location_share:loc}};renderLocationShareStatus();toast('位置已共享给管理员')}catch(e){toast(e.message||'位置共享失败')}finally{if(btn)btn.disabled=false}},err=>{if(btn)btn.disabled=false;const msg=err.code===1?'你拒绝了定位权限':err.code===2?'暂时无法获取位置':'定位请求超时';toast(msg)},{enableHighAccuracy:true,timeout:12000,maximumAge:60000})}
@@ -2269,7 +2302,7 @@ async function compressImageFile(file,{maxWidth=1600,maxHeight=1600,quality=.82,
   }catch(e){console.warn('图片压缩失败，使用原图',e);return file}
   finally{try{bitmap?.close?.()}catch{}if(url)URL.revokeObjectURL(url)}
 }
-$('uploadAvatarBtn').onclick=async()=>withButtonBusy($('uploadAvatarBtn'),async()=>{const f=$('avatarFile').files[0];if(!f)return toast('请选择头像');if(!f.type.startsWith('image/'))return toast('头像必须是图片');const maxAvatar=Number(cfg('media','avatar_max_upload_bytes',10*1024*1024));if(f.size>maxAvatar)return toast('头像不能超过'+fmtBytes(maxAvatar));const oldUrl=profile.avatar_url||'';try{const optimized=await compressImageFile(f,{maxWidth:512,maxHeight:512,quality:.8,type:'image/jpeg'});const ext=(optimized.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg';const path=`${me.id}/avatar_${Date.now()}.${ext}`;const url=await uploadTo('avatars',optimized,path);const {error}=await sb.from('profiles').update({avatar_url:url,updated_at:new Date().toISOString()}).eq('id',me.id);if(error){await sb.storage.from('avatars').remove([path]).catch(()=>{});throw error}profile.avatar_url=url;renderProfile();const oldPath=storagePathFromPublicUrl(oldUrl,'avatars');if(oldPath&&oldPath!==path)await sb.storage.from('avatars').remove([oldPath]).catch(()=>{});$('avatarFile').value='';toast('头像已更新')}catch(e){toast(e.message||'头像上传失败')}},'上传中...');
+$('uploadAvatarBtn').onclick=async()=>withButtonBusy($('uploadAvatarBtn'),async()=>{if(!await ensureAppIdentity())return;const user=me,prof=profile;const f=$('avatarFile').files[0];if(!f)return toast('请选择头像');if(!f.type.startsWith('image/'))return toast('头像必须是图片');const maxAvatar=Number(cfg('media','avatar_max_upload_bytes',10*1024*1024));if(f.size>maxAvatar)return toast('头像不能超过'+fmtBytes(maxAvatar));const oldUrl=prof?.avatar_url||'';try{const optimized=await compressImageFile(f,{maxWidth:512,maxHeight:512,quality:.8,type:'image/jpeg'});const ext=(optimized.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg';const path=`${user.id}/avatar_${Date.now()}.${ext}`;const url=await uploadTo('avatars',optimized,path);const {error}=await sb.from('profiles').update({avatar_url:url,updated_at:new Date().toISOString()}).eq('id',user.id);if(error){await sb.storage.from('avatars').remove([path]).catch(()=>{});throw error}profile.avatar_url=url;renderProfile();const oldPath=storagePathFromPublicUrl(oldUrl,'avatars');if(oldPath&&oldPath!==path)await sb.storage.from('avatars').remove([oldPath]).catch(()=>{});$('avatarFile').value='';toast('头像已更新')}catch(e){toast(e.message||'头像上传失败')}},'上传中...');
 function formatDuration(sec){sec=Math.max(0,Number(sec||0));const m=Math.floor(sec/60),ss=Math.floor(sec%60);return m+':'+String(ss).padStart(2,'0')}
 function storagePathFromPublicUrl(url,bucket='media'){if(!url)return '';const marker=`/storage/v1/object/public/${bucket}/`;const i=String(url).indexOf(marker);return i>=0?decodeURIComponent(String(url).slice(i+marker.length)):''}
 function canDeleteMedia(item){return !!item && (isAdmin()||item.user_id===me?.id||item.account===profile?.account)}
@@ -2418,6 +2451,8 @@ async function compressVideo(file){
  finally{if(timer)clearInterval(timer);try{stream?.getTracks().forEach(t=>t.stop())}catch{}try{srcStream?.getTracks().forEach(t=>t.stop())}catch{}if(objectUrl)URL.revokeObjectURL(objectUrl)}
 }
 async function publishFile(sourceFile,caption='',bar,finalize=true){
+ if(!await ensureAppIdentity())return false;
+ const user=me,prof=profile;
  if(!sourceFile){toast('请选择文件');return false}
  const maxBytes=Number(cfg('media','max_upload_bytes',100*1024*1024));if(sourceFile.size>maxBytes){toast('文件不能超过 '+fmtBytes(maxBytes));return false}if(cfg('features','uploads_enabled',true)===false){toast('当前已关闭上传');return false}
  const originalType=sourceFile.type.startsWith('video/')?'video':sourceFile.type.startsWith('image/')?'image':null;
@@ -2445,12 +2480,12 @@ async function publishFile(sourceFile,caption='',bar,finalize=true){
   if(bar)bar.style.width='18%';
 
   const ext=(f.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'');
-  path=`${me.id}/${Date.now()}_${crypto.randomUUID()}.${ext}`;
+  path=`${user.id}/${Date.now()}_${crypto.randomUUID()}.${ext}`;
   // 媒体上传立即开始；视频封面生成与主文件上传并行。
   const mediaUpload=uploadTo('media',f,path);
   let coverUrl='';
   if(type==='video'){
-    const coverTask=(async()=>{const cover=await createVideoCover(f);if(!cover)return '';coverPath=`${me.id}/${Date.now()}_${crypto.randomUUID()}_cover.jpg`;return await uploadTo('media',cover,coverPath)})();
+    const coverTask=(async()=>{const cover=await createVideoCover(f);if(!cover)return '';coverPath=`${user.id}/${Date.now()}_${crypto.randomUUID()}_cover.jpg`;return await uploadTo('media',cover,coverPath)})();
     [coverUrl]=await Promise.all([coverTask,mediaUpload.then(()=>null)]).then(([c])=>[c]);
   }else{
     await mediaUpload;
@@ -2458,7 +2493,7 @@ async function publishFile(sourceFile,caption='',bar,finalize=true){
   const url=sb.storage.from('media').getPublicUrl(path).data.publicUrl;
   if(bar)bar.style.width='78%';
 
-  const payload={user_id:me.id,account:profile.account,url,object_path:path,media_type:type,caption,content_hash:sourceHash,image_hash,video_fingerprint:'',file_size:f.size,duplicate_checked_at:new Date().toISOString(),duration:videoInfo.duration,cover_url:coverUrl,play_count:0,updated_at:new Date().toISOString()};
+  const payload={user_id:user.id,account:prof?.account||accountOf(user),url,object_path:path,media_type:type,caption,content_hash:sourceHash,image_hash,video_fingerprint:'',file_size:f.size,duplicate_checked_at:new Date().toISOString(),duration:videoInfo.duration,cover_url:coverUrl,play_count:0,updated_at:new Date().toISOString()};
   const {data:inserted,error}=await sb.from('media_posts').insert(payload).select('id').single();
   if(error)throw error;
   if(bar)bar.style.width='100%';
@@ -2760,10 +2795,11 @@ async function setupRealtime(){
     if(realtimeRetryTimer){clearTimeout(realtimeRetryTimer);realtimeRetryTimer=null}
     if(realtimeChannel){await sb.removeChannel(realtimeChannel).catch(()=>{});realtimeChannel=null}
     const authSession=await ensureRealtimeAuth();
-    if(!authSession?.access_token)throw new Error('Realtime 登录状态不可用');
-    const ch=sb.channel('nebula-db-'+me.id)
+    if(!authSession?.access_token||!await ensureAppIdentity(false))throw new Error('Realtime 登录状态不可用');
+    const user=me;
+    const ch=sb.channel('nebula-db-'+user.id)
       .on('postgres_changes',{event:'*',schema:'public',table:'media_posts'},()=>debounceRun('media',()=>loadMedia(true),350))
-      .on('postgres_changes',{event:'*',schema:'public',table:'profiles',filter:`id=eq.${me.id}`},p=>{if(p.new?.id===me.id){profile=p.new;renderProfile()}})
+      .on('postgres_changes',{event:'*',schema:'public',table:'profiles',filter:`id=eq.${user.id}`},p=>{if(p.new?.id===user.id){profile=p.new;renderProfile()}})
       .on('postgres_changes',{event:'*',schema:'public',table:'site_settings'},()=>debounceRun('settings',loadSettings,250))
       .on('postgres_changes',{event:'*',schema:'public',table:'chat_messages'},()=>{if(!$('chatModal').classList.contains('hidden'))debounceRun('chat',loadChat,160)});
     realtimeChannel=ch;
@@ -2789,8 +2825,9 @@ async function setupPresence(){
     if(presenceRetryTimer){clearTimeout(presenceRetryTimer);presenceRetryTimer=null}
     if(presence){await sb.removeChannel(presence).catch(()=>{});presence=null}
     const authSession=await ensureRealtimeAuth();
-    if(!authSession?.access_token)throw new Error('Presence 登录状态不可用');
-    const ch=sb.channel('nebula-online',{config:{presence:{key:me.id}}});
+    if(!authSession?.access_token||!await ensureAppIdentity(false))throw new Error('Presence 登录状态不可用');
+    const user=me;
+    const ch=sb.channel('nebula-online',{config:{presence:{key:user.id}}});
     presence=ch;
     ch.on('presence',{event:'sync'},()=>{
       const n=Object.keys(ch.presenceState()).length;
@@ -2799,7 +2836,7 @@ async function setupPresence(){
     }).subscribe(async status=>{
       if(status==='SUBSCRIBED'){
         if(presenceRetryTimer){clearTimeout(presenceRetryTimer);presenceRetryTimer=null}
-        try{await ch.track({account:profile?.account||accountOf(me),at:new Date().toISOString()})}catch(e){console.warn('Presence track failed',e)}
+        try{await ch.track({account:profile?.account||accountOf(user),at:new Date().toISOString()})}catch(e){console.warn('Presence track failed',e)}
       }else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
         console.warn('Presence 状态',status);
         if(session&&navigator.onLine!==false)scheduleRetry('presence',setupPresence,2000);
@@ -2813,8 +2850,8 @@ async function setupPresence(){
   }finally{presenceConnecting=false}
 }
 $$('[data-chat]').forEach(b=>b.onclick=()=>{$$('[data-chat]').forEach(x=>x.classList.remove('primary'));b.classList.add('primary');currentChat=b.dataset.chat;loadChat()});
-async function loadChat(){if(chatLoading)return;chatLoading=true;try{let q=sb.from('chat_messages').select('id,user_id,recipient_id,account,channel,content,created_at,expires_at').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(Number(cfg('chat','query_limit',300)));if(currentChat==='global')q=q.eq('channel','global');else{q=q.eq('channel','admin');if(!isAdmin())q=q.or(`user_id.eq.${me.id},recipient_id.eq.${me.id}`)}const {data,error}=await q;if(error)throw error;const list=(data||[]).reverse();$('messages').innerHTML=list.length?list.map(m=>`<div class="msg ${m.user_id===me.id?'me':''}"><small>@${esc(m.account)} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small>${esc(m.content)}</div>`).join(''):'<div class="muted" style="padding:14px;text-align:center">暂无消息</div>';$('messages').scrollTop=$('messages').scrollHeight}catch(e){console.warn(e);toast('聊天加载失败')}finally{chatLoading=false}}
-$('sendChatBtn').onclick=sendChat;$('chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}};async function sendChat(){if(chatSending)return;const content=$('chatInput').value.trim();if(!content)return;if(!isOnline())return toast('当前网络不可用');if(cfg('features','chat_enabled',true)===false)return toast('当前已关闭聊天');if(content.length>Number(cfg('chat','max_length',1000)))return toast('消息过长');chatSending=true;const btn=$('sendChatBtn');btn.disabled=true;try{let recipient_id=null;if(currentChat==='admin'&&!isSuper()){const {data,error}=await sb.from('profiles').select('id').eq('account',String(cfg('admin','primary_account',''))).maybeSingle();if(error)throw error;recipient_id=data?.id||null;if(!recipient_id)throw new Error('管理员账号不可用')}const {error}=await sb.from('chat_messages').insert({user_id:me.id,recipient_id,account:profile.account,channel:currentChat,content});if(error)throw error;$('chatInput').value='';await loadChat()}catch(e){toast(e.message||'发送失败')}finally{chatSending=false;btn.disabled=false}}
+async function loadChat(){if(chatLoading)return;if(!await ensureAppIdentity())return;const user=me;chatLoading=true;try{let q=sb.from('chat_messages').select('id,user_id,recipient_id,account,channel,content,created_at,expires_at').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(Number(cfg('chat','query_limit',300)));if(currentChat==='global')q=q.eq('channel','global');else{q=q.eq('channel','admin');if(!isAdmin())q=q.or(`user_id.eq.${user.id},recipient_id.eq.${user.id}`)}const {data,error}=await q;if(error)throw error;const list=(data||[]).reverse();$('messages').innerHTML=list.length?list.map(m=>`<div class="msg ${m.user_id===user.id?'me':''}"><small>@${esc(m.account)} · ${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</small>${esc(m.content)}</div>`).join(''):'<div class="muted" style="padding:14px;text-align:center">暂无消息</div>';$('messages').scrollTop=$('messages').scrollHeight}catch(e){console.warn(e);toast('聊天加载失败')}finally{chatLoading=false}}
+$('sendChatBtn').onclick=sendChat;$('chatInput').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}};async function sendChat(){if(chatSending)return;if(!await ensureAppIdentity())return;const user=me,prof=profile;const content=$('chatInput').value.trim();if(!content)return;if(!isOnline())return toast('当前网络不可用');if(cfg('features','chat_enabled',true)===false)return toast('当前已关闭聊天');if(content.length>Number(cfg('chat','max_length',1000)))return toast('消息过长');chatSending=true;const btn=$('sendChatBtn');btn.disabled=true;try{let recipient_id=null;if(currentChat==='admin'&&!isSuper()){const {data,error}=await sb.from('profiles').select('id').eq('account',String(cfg('admin','primary_account',''))).maybeSingle();if(error)throw error;recipient_id=data?.id||null;if(!recipient_id)throw new Error('管理员账号不可用')}const {error}=await sb.from('chat_messages').insert({user_id:user.id,recipient_id,account:prof?.account||accountOf(user),channel:currentChat,content});if(error)throw error;$('chatInput').value='';await loadChat()}catch(e){toast(e.message||'发送失败')}finally{chatSending=false;btn.disabled=false}}
 async function showShare(){
   openModal('shareModal');
   const c=$('qrCanvas'),ctx=c.getContext('2d');
@@ -2854,10 +2891,12 @@ window.openAdminMessage=async(id,account)=>{
 };
 $('closeAdminMessageBtn').onclick=()=>closeModal('adminMessageModal');
 $('sendAdminMessageBtn').onclick=async()=>{
+ if(!await ensureAppIdentity())return;
+ const user=me;
  const text=$('adminMessageText').value.trim();
  if(!adminPrivateTarget||!text)return toast('请选择用户并输入消息');
  const {error}=await sb.from('chat_messages').insert({
-   user_id:me.id,
+   user_id:user.id,
    recipient_id:adminPrivateTarget,
    account:profile?.account||accountOf(me)||cfg('admin','primary_account',''),
    channel:'admin',
@@ -3547,15 +3586,15 @@ function callLabel(p){return String(p?.nickname||p?.account||'用户')}
 function callPresenceRows(ch){if(!ch)return[];const st=ch.presenceState()||{};const rows=[];Object.entries(st).forEach(([key,arr])=>(arr||[]).forEach(p=>rows.push({...p,presence_key:key})));const m=new Map();rows.forEach(p=>{if(p.user_id)m.set(p.user_id,p)});return [...m.values()]}
 function updateCallButtons(){const j=$('joinCallBtn'),jv=$('joinVoiceCallBtn'),l=$('leaveCallBtn'),m=$('toggleMicBtn'),c=$('toggleCamBtn'),sw=$('switchCameraBtn'),ss=$('shareScreenBtn');j?.classList.toggle('hidden',callJoined);jv?.classList.toggle('hidden',callJoined);[l,m,c,ss].forEach(x=>x?.classList.toggle('hidden',!callJoined));sw?.classList.toggle('hidden',!callJoined||!callCam);if(m)m.textContent=callMic?'🎙 麦克风开':'🔇 麦克风关';if(c)c.textContent=callCam?'📷 摄像头开':'🚫 摄像头关'}
 function renderCallGrid(){const g=$('callGrid');if(!g)return;const tiles=[];if(callJoined){tiles.push(`<div class="call-tile ${callCam?'':'audio-only'}" id="callTile-local"><video id="callVideo-local" autoplay muted playsinline data-call-video="1"></video><div class="call-label">我 · ${callMic?'🎙':'🔇'} ${callCam?'📷':'🎧'}</div></div>`)}for(const [uid,p] of callPeers){tiles.push(`<div class="call-tile ${p.cam===false?'audio-only':''}" id="callTile-${esc(uid)}"><video id="callVideo-${esc(uid)}" autoplay playsinline data-call-video="1"></video><div class="call-label">${esc(p.label||uid)} · ${p.mic===false?'🔇':'🎙'} ${p.cam===false?'🎧':'📷'}</div></div>`)}g.innerHTML=tiles.join('')||'<div class="call-empty">可选择视频或仅语音加入多人通话</div>';if(callLocalStream){const v=$('callVideo-local');if(v&&v.srcObject!==callLocalStream)v.srcObject=callLocalStream}for(const [uid,p] of callPeers){const v=$('callVideo-'+uid);if(v&&p.stream&&v.srcObject!==p.stream){v.srcObject=p.stream;v.play().catch(()=>{})}}}
-async function callTrackPresence(){if(!callChannel||!callJoined)return;await callChannel.track({user_id:me.id,account:profile?.account||accountOf(me),nickname:profile?.nickname||'',mic:callMic,cam:callCam,mode:callCam?'video':'voice',joined_at:callJoinedAt||new Date().toISOString()})}
-function syncCallPresence(){const rows=callPresenceRows(callChannel).filter(p=>p.user_id!==me?.id);if($('callMemberCount'))$('callMemberCount').textContent=(rows.length+(callJoined?1:0))+' 人';const active=new Set(rows.map(p=>p.user_id));for(const [uid] of callPeers)if(!active.has(uid))dropCallPeer(uid);if(callJoined)for(const p of rows)ensureCallPeer(p.user_id,p,me.id<p.user_id).catch(console.warn);for(const p of rows){const item=callPeers.get(p.user_id);if(item){item.mic=p.mic!==false;item.cam=p.cam!==false;item.label=callLabel(p)}}renderCallGrid();renderAdminCallUsers(rows.concat(callJoined?[{user_id:me.id,account:profile?.account,nickname:profile?.nickname,mic:callMic,cam:callCam,joined_at:callJoinedAt}]:[]))}
+async function callTrackPresence(){if(!callChannel||!callJoined||!me?.id)return;const user=me;await callChannel.track({user_id:user.id,account:profile?.account||accountOf(user),nickname:profile?.nickname||'',mic:callMic,cam:callCam,mode:callCam?'video':'voice',joined_at:callJoinedAt||new Date().toISOString()})}
+function syncCallPresence(){const myId=me?.id||null;const rows=callPresenceRows(callChannel).filter(p=>p.user_id!==myId);if($('callMemberCount'))$('callMemberCount').textContent=(rows.length+(callJoined&&myId?1:0))+' 人';const active=new Set(rows.map(p=>p.user_id));for(const [uid] of callPeers)if(!active.has(uid))dropCallPeer(uid);if(callJoined&&myId)for(const p of rows)ensureCallPeer(p.user_id,p,myId<p.user_id).catch(console.warn);for(const p of rows){const item=callPeers.get(p.user_id);if(item){item.mic=p.mic!==false;item.cam=p.cam!==false;item.label=callLabel(p)}}renderCallGrid();renderAdminCallUsers(rows.concat(callJoined&&myId?[{user_id:myId,account:profile?.account,nickname:profile?.nickname,mic:callMic,cam:callCam,joined_at:callJoinedAt}]:[]))}
 function renderAdminCallUsers(rows){if($('adminCallCount'))$('adminCallCount').textContent=rows.length;if($('adminVideoCallCount'))$('adminVideoCallCount').textContent=rows.filter(p=>p.cam!==false).length;if($('adminVoiceCallCount'))$('adminVoiceCallCount').textContent=rows.filter(p=>p.cam===false).length;const box=$('adminCallUsers');if(!box)return;box.innerHTML=rows.length?rows.map(p=>`<div class="call-admin-user"><div><b>@${esc(p.account||'')} ${p.nickname?('· '+esc(p.nickname)):''}</b><div class="muted">${p.joined_at?new Date(p.joined_at).toLocaleString():'刚刚加入'}</div></div><div><span class="tag">${p.mic===false?'🔇 静音':'🎙 语音'}</span> <span class="tag">${p.cam===false?'🎧 仅语音':'📷 视频'}</span></div></div>`).join(''):'<div class="muted">暂无用户在通话</div>'}
-async function ensureCallPeer(uid,pres,initiator=false){if(!uid||uid===me.id)return null;let item=callPeers.get(uid);if(item){item.label=callLabel(pres);item.mic=pres?.mic!==false;item.cam=pres?.cam!==false;return item.pc}const pc=new RTCPeerConnection({iceServers:callIceServers()});item={pc,stream:new MediaStream(),label:callLabel(pres),mic:pres?.mic!==false,cam:pres?.cam!==false};callPeers.set(uid,item);for(const t of callLocalStream?.getTracks()||[])pc.addTrack(t,callLocalStream);pc.ontrack=e=>{const st=e.streams?.[0];if(st)item.stream=st;else if(!item.stream.getTracks().includes(e.track))item.stream.addTrack(e.track);renderCallGrid()};pc.onicecandidate=e=>{if(e.candidate)callSendSignal(uid,{kind:'ice',candidate:e.candidate.toJSON()})};pc.onconnectionstatechange=()=>{if(['failed','closed'].includes(pc.connectionState))dropCallPeer(uid)};renderCallGrid();if(initiator){const offer=await pc.createOffer();await pc.setLocalDescription(offer);await callSendSignal(uid,{kind:'offer',sdp:pc.localDescription})}return pc}
-async function callSendSignal(to,data){if(!callChannel)return;await callChannel.send({type:'broadcast',event:'webrtc',payload:{from:me.id,to,...data}})}
-async function onCallSignal(msg){const d=msg?.payload||msg;if(!callJoined||!d||d.to!==me.id||d.from===me.id)return;try{const pres=callPresenceRows(callChannel).find(x=>x.user_id===d.from)||{user_id:d.from,account:'用户'};const pc=await ensureCallPeer(d.from,pres,false);if(d.kind==='offer'){if(pc.signalingState!=='stable')await pc.setLocalDescription({type:'rollback'}).catch(()=>{});await pc.setRemoteDescription(d.sdp);for(const c of callPendingIce.get(d.from)||[])await pc.addIceCandidate(c).catch(()=>{});callPendingIce.delete(d.from);const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await callSendSignal(d.from,{kind:'answer',sdp:pc.localDescription})}else if(d.kind==='answer'){if(pc.signalingState==='have-local-offer'){await pc.setRemoteDescription(d.sdp);for(const c of callPendingIce.get(d.from)||[])await pc.addIceCandidate(c).catch(()=>{});callPendingIce.delete(d.from)}}else if(d.kind==='ice'&&d.candidate){if(pc.remoteDescription)await pc.addIceCandidate(d.candidate).catch(()=>{});else{const a=callPendingIce.get(d.from)||[];a.push(d.candidate);callPendingIce.set(d.from,a)}}}catch(e){console.warn('WebRTC signal',e)}}
+async function ensureCallPeer(uid,pres,initiator=false){if(!uid||uid===me?.id)return null;let item=callPeers.get(uid);if(item){item.label=callLabel(pres);item.mic=pres?.mic!==false;item.cam=pres?.cam!==false;return item.pc}const pc=new RTCPeerConnection({iceServers:callIceServers()});item={pc,stream:new MediaStream(),label:callLabel(pres),mic:pres?.mic!==false,cam:pres?.cam!==false};callPeers.set(uid,item);for(const t of callLocalStream?.getTracks()||[])pc.addTrack(t,callLocalStream);pc.ontrack=e=>{const st=e.streams?.[0];if(st)item.stream=st;else if(!item.stream.getTracks().includes(e.track))item.stream.addTrack(e.track);renderCallGrid()};pc.onicecandidate=e=>{if(e.candidate)callSendSignal(uid,{kind:'ice',candidate:e.candidate.toJSON()})};pc.onconnectionstatechange=()=>{if(['failed','closed'].includes(pc.connectionState))dropCallPeer(uid)};renderCallGrid();if(initiator){const offer=await pc.createOffer();await pc.setLocalDescription(offer);await callSendSignal(uid,{kind:'offer',sdp:pc.localDescription})}return pc}
+async function callSendSignal(to,data){if(!callChannel||!me?.id)return;await callChannel.send({type:'broadcast',event:'webrtc',payload:{from:me.id,to,...data}})}
+async function onCallSignal(msg){const d=msg?.payload||msg;const myId=me?.id;if(!callJoined||!myId||!d||d.to!==myId||d.from===myId)return;try{const pres=callPresenceRows(callChannel).find(x=>x.user_id===d.from)||{user_id:d.from,account:'用户'};const pc=await ensureCallPeer(d.from,pres,false);if(d.kind==='offer'){if(pc.signalingState!=='stable')await pc.setLocalDescription({type:'rollback'}).catch(()=>{});await pc.setRemoteDescription(d.sdp);for(const c of callPendingIce.get(d.from)||[])await pc.addIceCandidate(c).catch(()=>{});callPendingIce.delete(d.from);const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await callSendSignal(d.from,{kind:'answer',sdp:pc.localDescription})}else if(d.kind==='answer'){if(pc.signalingState==='have-local-offer'){await pc.setRemoteDescription(d.sdp);for(const c of callPendingIce.get(d.from)||[])await pc.addIceCandidate(c).catch(()=>{});callPendingIce.delete(d.from)}}else if(d.kind==='ice'&&d.candidate){if(pc.remoteDescription)await pc.addIceCandidate(d.candidate).catch(()=>{});else{const a=callPendingIce.get(d.from)||[];a.push(d.candidate);callPendingIce.set(d.from,a)}}}catch(e){console.warn('WebRTC signal',e)}}
 function dropCallPeer(uid){const p=callPeers.get(uid);if(p){try{p.pc.close()}catch(_){}callPeers.delete(uid)}renderCallGrid()}
 async function acquireCallStream(mode='video'){const audio={echoCancellation:true,noiseSuppression:true,autoGainControl:true};if(mode==='voice')return await navigator.mediaDevices.getUserMedia({audio,video:false});try{return await navigator.mediaDevices.getUserMedia({audio,video:{width:{ideal:640},height:{ideal:480},facingMode:callFacing}})}catch(e){if(e?.name==='NotAllowedError'||e?.name==='NotFoundError'||e?.name==='OverconstrainedError'){const a=await navigator.mediaDevices.getUserMedia({audio,video:false});toast('摄像头不可用，已改为仅语音加入');return a}throw e}}
-async function joinGroupCall(mode='video',button=null){if(callJoined)return;if(!navigator.mediaDevices?.getUserMedia)return toast('当前浏览器不支持音视频');if(!window.isSecureContext)return toast('音视频需要 HTTPS 安全连接');const btn=button||$('joinCallBtn');await withButtonBusy(btn,async()=>{const authSession=await ensureRealtimeAuth();if(!authSession?.access_token)throw new Error('登录状态已失效，无法加入通话');callLocalStream=await acquireCallStream(mode);callMic=callLocalStream.getAudioTracks().length>0;callCam=callLocalStream.getVideoTracks().length>0;callJoined=true;callJoinedAt=new Date().toISOString();callChannel=sb.channel(CALL_TOPIC,{config:{private:true,presence:{key:me.id}}}).on('broadcast',{event:'webrtc'},onCallSignal).on('presence',{event:'sync'},syncCallPresence).on('presence',{event:'join'},syncCallPresence).on('presence',{event:'leave'},syncCallPresence);await new Promise((resolve,reject)=>{let done=false;const t=setTimeout(()=>{if(!done)reject(new Error('通话房间连接超时'))},10000);callChannel.subscribe(async(status,err)=>{if(status==='SUBSCRIBED'&&!done){done=true;clearTimeout(t);await callTrackPresence();resolve()}else if((status==='CHANNEL_ERROR'||status==='TIMED_OUT')&&!done){done=true;clearTimeout(t);reject(err||new Error('无法连接通话房间'))}})});if($('callStatus'))$('callStatus').textContent=callCam?'视频通话中':'语音通话中';updateCallButtons();syncCallPresence()},'连接中...').catch(async e=>{await leaveGroupCall(true);toast(e.message||'无法加入音视频')})}
+async function joinGroupCall(mode='video',button=null){if(callJoined)return;if(!navigator.mediaDevices?.getUserMedia)return toast('当前浏览器不支持音视频');if(!window.isSecureContext)return toast('音视频需要 HTTPS 安全连接');const btn=button||$('joinCallBtn');await withButtonBusy(btn,async()=>{const authSession=await ensureRealtimeAuth();if(!authSession?.access_token||!await ensureAppIdentity())throw new Error('登录状态已失效，无法加入通话');const user=me;callLocalStream=await acquireCallStream(mode);callMic=callLocalStream.getAudioTracks().length>0;callCam=callLocalStream.getVideoTracks().length>0;callJoined=true;callJoinedAt=new Date().toISOString();callChannel=sb.channel(CALL_TOPIC,{config:{private:true,presence:{key:user.id}}}).on('broadcast',{event:'webrtc'},onCallSignal).on('presence',{event:'sync'},syncCallPresence).on('presence',{event:'join'},syncCallPresence).on('presence',{event:'leave'},syncCallPresence);await new Promise((resolve,reject)=>{let done=false;const t=setTimeout(()=>{if(!done)reject(new Error('通话房间连接超时'))},10000);callChannel.subscribe(async(status,err)=>{if(status==='SUBSCRIBED'&&!done){done=true;clearTimeout(t);await callTrackPresence();resolve()}else if((status==='CHANNEL_ERROR'||status==='TIMED_OUT')&&!done){done=true;clearTimeout(t);reject(err||new Error('无法连接通话房间'))}})});if($('callStatus'))$('callStatus').textContent=callCam?'视频通话中':'语音通话中';updateCallButtons();syncCallPresence()},'连接中...').catch(async e=>{await leaveGroupCall(true);toast(e.message||'无法加入音视频')})}
 async function leaveGroupCall(silent=false){callJoined=false;for(const [uid] of [...callPeers])dropCallPeer(uid);for(const t of callLocalStream?.getTracks()||[])t.stop();for(const t of callScreenStream?.getTracks()||[])t.stop();callLocalStream=null;callScreenStream=null;if(callChannel){try{await callChannel.untrack()}catch(_){}try{await sb.removeChannel(callChannel)}catch(_){}callChannel=null}callPendingIce.clear();callJoinedAt=null;callMic=false;callCam=false;if($('callStatus'))$('callStatus').textContent='未加入';if($('callMemberCount'))$('callMemberCount').textContent='0 人';updateCallButtons();renderCallGrid();if(!silent)toast('已离开音视频')}
 async function replaceTrackForPeers(kind,track){for(const {pc} of callPeers.values()){let sender=pc.getSenders().find(s=>s.track?.kind===kind);if(sender){await sender.replaceTrack(track)}else if(track&&callLocalStream){pc.addTrack(track,(callScreenStream&&kind==='video')?callScreenStream:callLocalStream);const offer=await pc.createOffer();await pc.setLocalDescription(offer);const peer=[...callPeers.entries()].find(([,v])=>v.pc===pc)?.[0];if(peer)await callSendSignal(peer,{kind:'offer',sdp:pc.localDescription})}}}
 async function toggleCallMic(){if(!callJoined)return;let track=callLocalStream?.getAudioTracks()[0];if(!track){try{const s=await navigator.mediaDevices.getUserMedia({audio:true,video:false});track=s.getAudioTracks()[0];callLocalStream.addTrack(track);await replaceTrackForPeers('audio',track);callMic=true}catch(e){return toast('无法打开麦克风')}}else{callMic=!callMic;track.enabled=callMic}await callTrackPresence();updateCallButtons();syncCallPresence()}
@@ -3563,7 +3602,7 @@ async function toggleCallCam(){if(!callJoined)return;let track=callLocalStream?.
 async function switchCallCamera(){if(!callJoined||!callCam)return;const old=callLocalStream?.getVideoTracks()[0];try{callFacing=callFacing==='user'?'environment':'user';const s=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:callFacing},width:{ideal:640},height:{ideal:480}}});const tr=s.getVideoTracks()[0];if(old){callLocalStream.removeTrack(old);old.stop()}callLocalStream.addTrack(tr);await replaceTrackForPeers('video',tr);renderCallGrid()}catch(e){callFacing=callFacing==='user'?'environment':'user';toast('切换摄像头失败')}}
 async function toggleCallScreen(){if(!callJoined||!navigator.mediaDevices?.getDisplayMedia)return toast('当前浏览器不支持屏幕共享');try{if(callScreenStream){await stopCallScreen();return}callScreenStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});const tr=callScreenStream.getVideoTracks()[0];await replaceTrackForPeers('video',tr);tr.onended=()=>stopCallScreen();if($('shareScreenBtn'))$('shareScreenBtn').textContent='停止共享'}catch(e){if(e.name!=='NotAllowedError')toast(e.message||'屏幕共享失败')}}
 async function stopCallScreen(){if(!callScreenStream)return;callScreenStream.getTracks().forEach(t=>t.stop());callScreenStream=null;const cam=callLocalStream?.getVideoTracks()[0]||null;await replaceTrackForPeers('video',cam);if($('shareScreenBtn'))$('shareScreenBtn').textContent='🖥 分享屏幕'}
-async function setupCallMonitor(){if(!isAdmin()||callMonitorChannel)return;const authSession=await ensureRealtimeAuth();if(!authSession?.access_token){if($('adminCallState'))$('adminCallState').textContent='登录失效';return}callMonitorChannel=sb.channel(CALL_TOPIC,{config:{private:true,presence:{key:'monitor-'+me.id+'-'+Math.random().toString(36).slice(2)}}});callMonitorChannel.on('presence',{event:'sync'},()=>{const rows=callPresenceRows(callMonitorChannel).filter(p=>p.user_id);renderAdminCallUsers(rows)}).subscribe(status=>{if($('adminCallState'))$('adminCallState').textContent=status==='SUBSCRIBED'?'实时监听':status==='CHANNEL_ERROR'?'连接失败':'连接中';});}
+async function setupCallMonitor(){if(!isAdmin()||callMonitorChannel)return;const authSession=await ensureRealtimeAuth();if(!authSession?.access_token||!await ensureAppIdentity(false)){if($('adminCallState'))$('adminCallState').textContent='登录失效';return}const user=me;callMonitorChannel=sb.channel(CALL_TOPIC,{config:{private:true,presence:{key:'monitor-'+user.id+'-'+Math.random().toString(36).slice(2)}}});callMonitorChannel.on('presence',{event:'sync'},()=>{const rows=callPresenceRows(callMonitorChannel).filter(p=>p.user_id);renderAdminCallUsers(rows)}).subscribe(status=>{if($('adminCallState'))$('adminCallState').textContent=status==='SUBSCRIBED'?'实时监听':status==='CHANNEL_ERROR'?'连接失败':'连接中';});}
 $('joinCallBtn')?.addEventListener('click',()=>joinGroupCall('video',$('joinCallBtn')));$('joinVoiceCallBtn')?.addEventListener('click',()=>joinGroupCall('voice',$('joinVoiceCallBtn')));$('leaveCallBtn')?.addEventListener('click',()=>leaveGroupCall());$('toggleMicBtn')?.addEventListener('click',toggleCallMic);$('toggleCamBtn')?.addEventListener('click',toggleCallCam);$('switchCameraBtn')?.addEventListener('click',switchCallCamera);$('shareScreenBtn')?.addEventListener('click',toggleCallScreen);
 window.addEventListener('beforeunload',()=>{for(const t of callLocalStream?.getTracks()||[])t.stop()});
 
@@ -3625,7 +3664,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 (function(){
   document.addEventListener('visibilitychange',()=>{
     if(!document.hidden && typeof loadMedia==='function'){
-      debounceRun('media',loadMedia,80);
+      if(session&&me?.id)debounceRun('media',loadMedia,80);
       if(session&&Date.now()-lastAppRecoveryAt>5000){
         lastAppRecoveryAt=Date.now();
         Promise.resolve(ensureRealtimeAuth()).then(()=>Promise.allSettled([setupRealtime(),setupPresence()])).catch(console.warn)
