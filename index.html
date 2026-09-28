@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -328,7 +329,7 @@ renderVisual=async function(p){
 <div class="field"><label>后台背景图（当前）</label>${backgroundPreview(a.admin_bg)}<input id="adminBgFile" type="file" accept="image/*"></div>
 <div class="field"><label>分享图标（当前）</label>${backgroundPreview(a.share_icon)}<input id="shareIconFile" type="file" accept="image/*"></div>
 </div><div class="tiny muted">背景与分享图将上传到 Supabase Storage / backgrounds。</div><button id="saveVisual" class="btn primary" style="margin-top:12px">保存视觉设置</button>`;
-  async function uploadVisual(input,key,max){const f=$(input).files[0];if(!f)return a[key]||'';if(!f.type.startsWith('image/'))throw new Error('视觉文件必须是图片');if(f.size>max)throw new Error('图片文件过大');const ext=(f.name.split('.').pop()||'bin').replace(/[^a-zA-Z0-9]/g,'');const path=`site/${key}_${Date.now()}.${ext}`;const up=await sb.storage.from('backgrounds').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;return sb.storage.from('backgrounds').getPublicUrl(path).data.publicUrl}
+  async function uploadVisual(input,key,max){const f=$(input).files[0];if(!f)return a[key]||'';if(!f.type.startsWith('image/'))throw new Error('视觉文件必须是图片');if(f.size>max)throw new Error('图片文件过大');const ext=(f.name.split('.').pop()||'bin').replace(/[^a-zA-Z0-9]/g,'');const path=`site/${key}_${Date.now()}.${ext}`;const up=await sb.storage.from('backgrounds').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;return sb.storage.from('backgrounds').getPublicUrl(path).data.publicUrl+'?v='+Date.now()}
   const previewAppearance=()=>{const live={...a,login_opacity:+$('#glassLogin').value,home_opacity:+$('#glassHome').value,admin_opacity:+$('#glassAdmin').value};window.qingyinAppearance=live;window.applyAppearance?.(live)};
   ['glassLogin','glassHome','glassAdmin'].forEach(id=>$('#'+id)?.addEventListener('input',previewAppearance));
   $('#saveVisual').onclick=async()=>{try{const maxBg=db.settings.runtime.background_max_upload_bytes||20971520,maxIcon=db.settings.runtime.share_icon_max_upload_bytes||5242880;const appearance={...a,title:$('#setTitle').value.trim()||'清音',login_opacity:+$('#glassLogin').value,home_opacity:+$('#glassHome').value,admin_opacity:+$('#glassAdmin').value};appearance.login_bg=await uploadVisual('#loginBgFile','login',maxBg);appearance.home_bg=await uploadVisual('#homeBgFile','home',maxBg);appearance.admin_bg=await uploadVisual('#adminBgFile','admin',maxBg);appearance.share_icon=await uploadVisual('#shareIconFile','share_icon',maxIcon);const rs=await Promise.all([sb.from('site_settings').upsert({key:'appearance',value:appearance}),sb.from('site_settings').upsert({key:'ticker',value:{text:$('#setTicker').value.trim()}}),sb.from('site_settings').upsert({key:'announcement',value:{text:$('#setAnn').value.trim()}})]);const er=rs.find(x=>x.error)?.error;if(er)throw er;cloudAppearance=appearance;window.qingyinAppearance=appearance;db.settings.title=appearance.title;db.settings.ticker=$('#setTicker').value.trim();db.settings.announcement=$('#setAnn').value.trim();applySettings();window.applyAppearance?.(appearance);toast('视觉设置、背景和透明度已保存并立即生效')}catch(e){toast('保存失败：'+errText(e))}};
@@ -444,7 +445,14 @@ async function currentAppearance(){
 window.applyAppearance=function(a={}){
   try{localStorage.setItem('qingyin-appearance-cache',JSON.stringify(a));}catch{}
   const clamp=v=>Math.max(0,Math.min(1,Number(v??0)));
-  const paint=(el,url,opacity,mode='cover',position='center center')=>{
+  const preload=url=>new Promise(resolve=>{
+    if(!url)return resolve(null);
+    const img=new Image();
+    img.onload=()=>resolve(url+'?v='+Date.now());
+    img.onerror=()=>resolve(null);
+    img.src=url+'?v='+Date.now();
+  });
+  const paint=async(el,url,opacity,mode='cover',position='center center')=>{
     if(!el)return;
     const alpha=clamp(opacity);
     el.style.backgroundColor='#060812';
@@ -452,13 +460,16 @@ window.applyAppearance=function(a={}){
     el.style.backgroundPosition=position;
     el.style.backgroundAttachment='fixed';
     el.style.backgroundSize=mode;
-    el.style.backgroundImage=url?`linear-gradient(rgba(6,8,18,${alpha}),rgba(6,8,18,${alpha})),url("${String(url).replace(/"/g,'%22')}")`:'none';
+    const ok=await preload(url);
+    if(ok){
+      el.style.backgroundImage=`linear-gradient(rgba(6,8,18,${alpha}),rgba(6,8,18,${alpha})),url("${ok}")`;
+    }
   };
-  paint($('#authView'),a.login_bg,a.login_opacity,'cover','center center');
-  paint($('#homeView'),a.home_bg,a.home_opacity,'cover','center center');
-  paint($('#adminModal'),a.admin_bg,a.admin_opacity,'cover','center center');
-  paint($('#adminPanel'),a.admin_bg,a.admin_opacity,'cover','center center');
-  paint($('#adminModal .modal'),a.admin_bg,a.admin_opacity,'cover','center center');
+  paint($('#authView'),a.login_bg,a.login_opacity);
+  paint($('#homeView'),a.home_bg,a.home_opacity);
+  paint($('#adminModal'),a.admin_bg,a.admin_opacity);
+  paint($('#adminPanel'),a.admin_bg,a.admin_opacity);
+  paint($('#adminModal .modal'),a.admin_bg,a.admin_opacity);
 }
 try{const cached=JSON.parse(localStorage.getItem('qingyin-appearance-cache')||'null');if(cached){window.qingyinAppearance=cached;window.applyAppearance?.(cached);}}catch{}
 currentAppearance().then(a=>{window.qingyinAppearance=a;window.applyAppearance?.(a)}).catch(()=>{});
