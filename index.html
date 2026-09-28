@@ -119,7 +119,7 @@ const toast=t=>{const el=$('#toast');el.textContent=t;el.classList.add('show');c
 const defaults={settings:{title:'清音',ticker:'欢迎来到清音 · 实时内容社区 · 请文明交流',announcement:'欢迎来到清音。',features:{registration_enabled:true,uploads_enabled:true,chat_enabled:true,similarity_enabled:true},runtime:{account_min_digits:4,account_max_digits:18,password_min_length:8,password_max_length:72,nickname_max_length:32,caption_max_length:180,chat_max_length:1000,profile_bio_max_length:240,feed_page_size:6,max_upload_bytes:104857600,avatar_max_upload_bytes:10485760,background_max_upload_bytes:20971520,share_icon_max_upload_bytes:5242880,similarity_auto_delete_threshold:24,similarity_display_threshold:48,storage_display_quota_bytes:107374182400}},users:[],media:[],messages:[]};
 function loadDB(){try{const x=JSON.parse(localStorage.getItem('qingyin-demo-db'));return x&&x.settings?x:structuredClone(defaults)}catch{return structuredClone(defaults)}}
 let db=loadDB();let session=JSON.parse(sessionStorage.getItem('qingyin-session')||'null');let state={cat:'video',page:0,viewer:null,chatChannel:'global',privateTarget:null,localStream:null,screenStream:null,callMode:null,facing:'user',callJoined:false,installPrompt:null};
-let publishFiles,openViewer,sendChat,joinCall,leaveCall,renderCallUI,renderUsers,renderVisual,renderContent,renderSystem,renderTools,scanExact,scanSimilar,renderCallAdmin;
+let publishFiles,openViewer,sendChat,joinCall,leaveCall,renderCallUI,renderUsers,renderVisual,renderContent,renderSystem,renderTools,scanExact,scanSimilar,renderCallAdmin,renderQR;
 function save(){} function me(){return db.users.find(u=>u.id===session?.user_id)} function isAdmin(){return ['admin','superadmin'].includes(me()?.role)} function isSuper(){return me()?.role==='superadmin'}
 function randomHash(){return Array.from({length:256},()=>Math.random()>.5?'1':'0').join('')};
 function applySettings(){document.title=db.settings.title+' · Qingyin';$('#loginBrand').textContent=db.settings.title+' QINGYIN';$('#topBrand').textContent=db.settings.title;$('#tickerTrack').textContent=db.settings.ticker+'　　'+db.settings.ticker;$('#announcement').textContent=db.settings.announcement||'';$('#announcement').classList.toggle('hidden',!db.settings.announcement);$$('[data-auth="register"]').forEach(x=>x.classList.toggle('hidden',!db.settings.features.registration_enabled));$('#similarHomeBtn').classList.toggle('hidden',!db.settings.features.similarity_enabled);$$('[data-open="uploadModal"]').forEach(x=>x.classList.toggle('hidden',!db.settings.features.uploads_enabled));$('#chatTopBtn').classList.toggle('hidden',!db.settings.features.chat_enabled);manifest();}
@@ -170,7 +170,7 @@ save=function(){}; // 云端版不再把用户/聊天数据落入 localStorage
 const remote={ready:false,channel:null};
 const errText=e=>e?.message||e?.error_description||e?.error||String(e||'未知错误');
 function mapRuntime(v={}){const r=v.registration||{},m=v.media||{},c=v.chat||{},s=v.storage||{},sim=v.similarity||{},ui=v.ui||{},a=v.admin||{},vid=v.video||{};return {account_min_digits:r.account_min_digits??4,account_max_digits:r.account_max_digits??18,password_min_length:r.password_min_length??8,password_max_length:r.password_max_length??72,nickname_max_length:r.nickname_max_length??30,caption_max_length:m.caption_max_length??180,chat_max_length:c.max_length??1000,chat_query_limit:c.query_limit??300,profile_bio_max_length:ui.profile_bio_max_length??240,feed_page_size:m.feed_page_size??40,feed_limit:m.feed_limit??1000,admin_list_limit:m.admin_list_limit??500,dedup_query_limit:m.dedup_query_limit??1000,max_upload_bytes:m.max_upload_bytes??104857600,avatar_max_upload_bytes:10485760,background_max_upload_bytes:20971520,share_icon_max_upload_bytes:5242880,similarity_auto_delete_threshold:sim.auto_delete_threshold??24,similarity_display_threshold:sim.display_threshold??48,storage_display_quota_bytes:s.display_quota_bytes??1073741824,primary_account:String(a.primary_account||'306680070'),video_height_480:vid.height_480??480,video_height_720:vid.height_720??720,video_bitrate_480:vid.bitrate_480??1200000,video_bitrate_720:vid.bitrate_720??2500000};}
-async function loadSettings(){const {data,error}=await sb.from('site_settings').select('key,value');if(error)throw error;const o=Object.fromEntries((data||[]).map(x=>[x.key,x.value||{}]));db.settings.title=o.appearance?.title||'清音';db.settings.ticker=o.ticker?.text||'欢迎来到清音';db.settings.announcement=o.announcement?.text||'';db.settings.features={registration_enabled:o.runtime?.features?.registration_enabled!==false,uploads_enabled:o.runtime?.features?.uploads_enabled!==false,chat_enabled:o.runtime?.features?.chat_enabled!==false,similarity_enabled:o.runtime?.features?.similarity_enabled!==false};db.settings.runtime=mapRuntime(o.runtime);applySettings();window.qingyinAppearance=o.appearance||{};if(typeof applyAppearance==='function')applyAppearance(window.qingyinAppearance);}
+async function loadSettings(){const {data,error}=await sb.from('site_settings').select('key,value');if(error)throw error;const o=Object.fromEntries((data||[]).map(x=>[x.key,x.value||{}]));db.settings.title=o.appearance?.title||'清音';db.settings.ticker=o.ticker?.text||'欢迎来到清音';db.settings.announcement=o.announcement?.text||'';db.settings.features={registration_enabled:o.runtime?.features?.registration_enabled!==false,uploads_enabled:o.runtime?.features?.uploads_enabled!==false,chat_enabled:o.runtime?.features?.chat_enabled!==false,similarity_enabled:o.runtime?.features?.similarity_enabled!==false};db.settings.runtime=mapRuntime(o.runtime);applySettings();window.qingyinAppearance=o.appearance||{};window.applyAppearance?.(window.qingyinAppearance);}
 function mapMedia(x){return {...x,type:x.media_type,duration:x.duration?formatDuration(x.duration):'',url:x.url||'',cover_url:x.cover_url||'',file_size:Number(x.file_size||0),play_count:Number(x.play_count||0)}}
 async function loadData(){const user=(await sb.auth.getUser()).data.user;if(!user)return;session={user_id:user.id,access_token:(await sb.auth.getSession()).data.session?.access_token};const mediaLimit=Math.max(1,Number(db.settings.runtime.feed_limit||1000)),chatLimit=Math.max(1,Number(db.settings.runtime.chat_query_limit||300));const [{data:profiles,error:pe},{data:media,error:me},{data:messages,error:ce},{data:locs,error:le}]=await Promise.all([sb.from('profiles').select('*'),sb.from('media_posts').select('*').order('created_at',{ascending:false}).limit(mediaLimit),sb.from('chat_messages').select('*').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:true}).limit(chatLimit),sb.from('user_locations').select('*')]);if(pe)throw pe;if(me)throw me;if(ce)throw ce;if(le)throw le;const primary=String(db.settings.runtime.primary_account||'306680070'),role=user.app_metadata?.role||((user.email||'').startsWith(primary+'@')?'superadmin':'user');db.users=(profiles||[]).map(p=>({id:p.id,account:p.account,nickname:p.nickname||'',bio:p.bio||'',role:p.id===user.id?role:'user',avatar:p.avatar_url||'',created_at:p.created_at,last_login:p.updated_at,location:(locs||[]).find(l=>l.user_id===p.id)||null}));db.media=(media||[]).map(mapMedia);db.messages=messages||[];showHome();}
 async function boot(){try{await loadSettings();const {data:{session:s}}=await sb.auth.getSession();if(s){session={user_id:s.user.id,access_token:s.access_token};await loadData()}else{session=null;showAuth()}subscribe();remote.ready=true}catch(e){console.error(e);toast('数据库连接失败：'+errText(e));showAuth()}}
@@ -205,7 +205,7 @@ const sb=window.qingyinSupabase;
 if(!sb){console.error('Supabase client missing');return;}
 const errText=e=>e?.message||e?.error_description||e?.error||String(e||'未知错误');
 let cloudRuntime={}, cloudAppearance={}, primaryAccount='306680070';
-const callCloud={channel:null,peers:new Map(),remoteStreams:new Map(),presence:{},joined:false,startedAt:null};
+const callCloud={channel:null,peers:new Map(),remoteStreams:new Map(),pendingIce:new Map(),presence:{},joined:false,startedAt:null};
 window.qingyinCallCloud=callCloud;
 
 async function refreshCloudConfig(){
@@ -219,7 +219,7 @@ async function refreshCloudConfig(){
   return o;
 }
 refreshCloudConfig().then(()=>{
-  if(typeof applyAppearance==='function')applyAppearance(window.qingyinAppearance||{});
+  window.applyAppearance?.(window.qingyinAppearance||{});
   if(cloudAppearance.share_icon){let f=document.querySelector('link[rel="icon"]');if(!f){f=document.createElement('link');f.rel='icon';document.head.appendChild(f)}f.href=cloudAppearance.share_icon}
 }).catch(console.error);
 
@@ -327,9 +327,9 @@ renderVisual=async function(p){
 <div class="field"><label>分享图标（当前）</label>${backgroundPreview(a.share_icon)}<input id="shareIconFile" type="file" accept="image/*"></div>
 </div><div class="tiny muted">背景与分享图将上传到 Supabase Storage / backgrounds。</div><button id="saveVisual" class="btn primary" style="margin-top:12px">保存视觉设置</button>`;
   async function uploadVisual(input,key,max){const f=$(input).files[0];if(!f)return a[key]||'';if(!f.type.startsWith('image/'))throw new Error('视觉文件必须是图片');if(f.size>max)throw new Error('图片文件过大');const ext=(f.name.split('.').pop()||'bin').replace(/[^a-zA-Z0-9]/g,'');const path=`site/${key}_${Date.now()}.${ext}`;const up=await sb.storage.from('backgrounds').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;return sb.storage.from('backgrounds').getPublicUrl(path).data.publicUrl}
-  const previewAppearance=()=>{const live={...a,login_opacity:+$('#glassLogin').value,home_opacity:+$('#glassHome').value,admin_opacity:+$('#glassAdmin').value};window.qingyinAppearance=live;if(typeof applyAppearance==='function')applyAppearance(live)};
+  const previewAppearance=()=>{const live={...a,login_opacity:+$('#glassLogin').value,home_opacity:+$('#glassHome').value,admin_opacity:+$('#glassAdmin').value};window.qingyinAppearance=live;window.applyAppearance?.(live)};
   ['glassLogin','glassHome','glassAdmin'].forEach(id=>$('#'+id)?.addEventListener('input',previewAppearance));
-  $('#saveVisual').onclick=async()=>{try{const maxBg=db.settings.runtime.background_max_upload_bytes||20971520,maxIcon=db.settings.runtime.share_icon_max_upload_bytes||5242880;const appearance={...a,title:$('#setTitle').value.trim()||'清音',login_opacity:+$('#glassLogin').value,home_opacity:+$('#glassHome').value,admin_opacity:+$('#glassAdmin').value};appearance.login_bg=await uploadVisual('#loginBgFile','login',maxBg);appearance.home_bg=await uploadVisual('#homeBgFile','home',maxBg);appearance.admin_bg=await uploadVisual('#adminBgFile','admin',maxBg);appearance.share_icon=await uploadVisual('#shareIconFile','share_icon',maxIcon);const rs=await Promise.all([sb.from('site_settings').upsert({key:'appearance',value:appearance}),sb.from('site_settings').upsert({key:'ticker',value:{text:$('#setTicker').value.trim()}}),sb.from('site_settings').upsert({key:'announcement',value:{text:$('#setAnn').value.trim()}})]);const er=rs.find(x=>x.error)?.error;if(er)throw er;cloudAppearance=appearance;window.qingyinAppearance=appearance;db.settings.title=appearance.title;db.settings.ticker=$('#setTicker').value.trim();db.settings.announcement=$('#setAnn').value.trim();applySettings();if(typeof applyAppearance==='function')applyAppearance(appearance);toast('视觉设置、背景和透明度已保存并立即生效')}catch(e){toast('保存失败：'+errText(e))}};
+  $('#saveVisual').onclick=async()=>{try{const maxBg=db.settings.runtime.background_max_upload_bytes||20971520,maxIcon=db.settings.runtime.share_icon_max_upload_bytes||5242880;const appearance={...a,title:$('#setTitle').value.trim()||'清音',login_opacity:+$('#glassLogin').value,home_opacity:+$('#glassHome').value,admin_opacity:+$('#glassAdmin').value};appearance.login_bg=await uploadVisual('#loginBgFile','login',maxBg);appearance.home_bg=await uploadVisual('#homeBgFile','home',maxBg);appearance.admin_bg=await uploadVisual('#adminBgFile','admin',maxBg);appearance.share_icon=await uploadVisual('#shareIconFile','share_icon',maxIcon);const rs=await Promise.all([sb.from('site_settings').upsert({key:'appearance',value:appearance}),sb.from('site_settings').upsert({key:'ticker',value:{text:$('#setTicker').value.trim()}}),sb.from('site_settings').upsert({key:'announcement',value:{text:$('#setAnn').value.trim()}})]);const er=rs.find(x=>x.error)?.error;if(er)throw er;cloudAppearance=appearance;window.qingyinAppearance=appearance;db.settings.title=appearance.title;db.settings.ticker=$('#setTicker').value.trim();db.settings.announcement=$('#setAnn').value.trim();applySettings();window.applyAppearance?.(appearance);toast('视觉设置、背景和透明度已保存并立即生效')}catch(e){toast('保存失败：'+errText(e))}};
 };
 
 renderContent=async function(p){
@@ -399,9 +399,10 @@ function makePeer(peerId){
 }
 async function sendSignal(to,data){if(!callCloud.channel)return;await callCloud.channel.send({type:'broadcast',event:'signal',payload:{from:me().id,to,...data}})}
 async function createOffer(peerId){const pc=makePeer(peerId);if(pc.signalingState!=='stable')return;const offer=await pc.createOffer();await pc.setLocalDescription(offer);await sendSignal(peerId,{type:'offer',sdp:offer})}
-async function handleSignal(msg){try{if(!callCloud.joined||!msg||msg.to!==me()?.id||msg.from===me()?.id)return;const pc=makePeer(msg.from);if(msg.type==='offer'){await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await sendSignal(msg.from,{type:'answer',sdp:ans})}else if(msg.type==='answer'){if(pc.signalingState==='have-local-offer')await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp))}else if(msg.type==='ice'&&msg.candidate){try{await pc.addIceCandidate(msg.candidate)}catch{}}}catch(e){console.error('signal',e)}}
+async function flushPendingIce(peerId,pc){const pending=callCloud.pendingIce.get(peerId)||[];for(const candidate of pending){try{await pc.addIceCandidate(candidate)}catch(e){console.warn('pending ice',e)}}callCloud.pendingIce.delete(peerId)}
+async function handleSignal(msg){try{if(!callCloud.joined||!msg||msg.to!==me()?.id||msg.from===me()?.id)return;const pc=makePeer(msg.from);if(msg.type==='offer'){await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));await flushPendingIce(msg.from,pc);const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await sendSignal(msg.from,{type:'answer',sdp:ans})}else if(msg.type==='answer'){if(pc.signalingState==='have-local-offer'){await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));await flushPendingIce(msg.from,pc)}}else if(msg.type==='ice'&&msg.candidate){if(pc.remoteDescription?.type){try{await pc.addIceCandidate(msg.candidate)}catch(e){console.warn('ice',e)}}else{const pending=callCloud.pendingIce.get(msg.from)||[];pending.push(msg.candidate);callCloud.pendingIce.set(msg.from,pending)}}}catch(e){console.error('signal',e)}}
 function handlePresence(){if(!callCloud.joined||!me())return;const ids=Object.keys(callCloud.presence).filter(id=>id!==me().id);for(const id of ids){if(me().id.localeCompare(id)<0&&!callCloud.peers.has(id))createOffer(id).catch(console.error)}for(const id of [...callCloud.peers.keys()])if(!ids.includes(id))closePeer(id)}
-function closePeer(id){const pc=callCloud.peers.get(id);if(pc){pc.ontrack=null;pc.close()}callCloud.peers.delete(id);callCloud.remoteStreams.delete(id)}
+function closePeer(id){const pc=callCloud.peers.get(id);if(pc){pc.ontrack=null;pc.close()}callCloud.peers.delete(id);callCloud.remoteStreams.delete(id);callCloud.pendingIce.delete(id)}
 joinCall=async function(mode){if(!window.isSecureContext)return toast('音视频需要 HTTPS 安全上下文');if(!navigator.mediaDevices?.getUserMedia)return toast('浏览器不支持 getUserMedia');try{state.localStream=await navigator.mediaDevices.getUserMedia(mode==='video'?{audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:{width:{ideal:640},height:{ideal:480},facingMode:state.facing}}:{audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});state.callJoined=true;state.callMode=mode;callCloud.joined=true;callCloud.startedAt=new Date().toISOString();const ch=await ensureCallChannel();await ch.track(callUser());handlePresence();renderCallUI();toast(mode==='video'?'已加入多人视频通话':'已加入多人语音通话')}catch(e){state.localStream?.getTracks().forEach(t=>t.stop());state.localStream=null;state.callJoined=false;callCloud.joined=false;toast('加入通话失败：'+errText(e))}};
 leaveCall=async function(silent=false){for(const id of [...callCloud.peers.keys()])closePeer(id);if(callCloud.channel&&callCloud.joined)try{await callCloud.channel.untrack()}catch{}state.localStream?.getTracks().forEach(t=>t.stop());state.screenStream?.getTracks().forEach(t=>t.stop());state.localStream=state.screenStream=null;state.callJoined=false;state.callMode=null;callCloud.joined=false;callCloud.startedAt=null;renderCallUI();if(!silent)toast('已离开多人通话并释放媒体 Track')};
 renderCallUI=function(){const joined=state.callJoined;['joinVideo','joinAudio'].forEach(id=>$('#'+id)?.classList.toggle('hidden',joined));['leaveCall','micBtn','camBtn','screenBtn'].forEach(id=>$('#'+id)?.classList.toggle('hidden',!joined));$('#switchCamBtn')?.classList.toggle('hidden',!joined||state.callMode!=='video');const participants=joined?Math.max(1,Object.keys(callCloud.presence||{}).length):0;if($('#callStatus'))$('#callStatus').textContent=joined?`已加入 · ${state.callMode==='video'?'视频':'仅语音'} · Realtime Presence ${participants} 人`:'未加入通话';const g=$('#callGrid');if(!g)return;g.innerHTML='';if(joined){const addTile=(stream,label,muted=false)=>{const tile=document.createElement('div');tile.className='call-tile';if(stream?.getVideoTracks().length){const v=document.createElement('video');v.autoplay=true;v.playsInline=true;v.muted=muted;v.srcObject=stream;tile.appendChild(v)}else tile.innerHTML='<div>🎧 仅语音</div>';const l=document.createElement('span');l.className='call-label';l.textContent=label;tile.appendChild(l);g.appendChild(tile)};addTile(state.screenStream||state.localStream,'你 · @'+me().account,true);for(const [id,s] of callCloud.remoteStreams){const inf=peerInfo(id);addTile(s,(inf.nickname||inf.account||id)+' · @'+(inf.account||''),false)}}};
@@ -409,7 +410,9 @@ $('#joinVideo').onclick=()=>joinCall('video'); $('#joinAudio').onclick=()=>joinC
 $('#micBtn').onclick=()=>{const t=state.localStream?.getAudioTracks()[0];if(!t)return toast('当前没有音频 Track');t.enabled=!t.enabled;toast(t.enabled?'麦克风已开启':'麦克风已关闭')};
 $('#camBtn').onclick=()=>{const t=state.localStream?.getVideoTracks()[0];if(!t)return toast('当前没有摄像头 Track');t.enabled=!t.enabled;toast(t.enabled?'摄像头已开启':'摄像头已关闭')};
 $('#switchCamBtn').onclick=async()=>{if(!state.callJoined)return;state.facing=state.facing==='user'?'environment':'user';try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:state.facing},audio:false});const nt=s.getVideoTracks()[0],ot=state.localStream.getVideoTracks()[0];if(ot){for(const pc of callCloud.peers.values()){const sender=pc.getSenders().find(x=>x.track===ot);if(sender)await sender.replaceTrack(nt)}state.localStream.removeTrack(ot);ot.stop()}state.localStream.addTrack(nt);renderCallUI();toast('摄像头已切换')}catch(e){toast('无法切换摄像头：'+errText(e))}};
-$('#screenBtn').onclick=async()=>{try{if(state.screenStream){state.screenStream.getTracks().forEach(t=>t.stop());state.screenStream=null;return renderCallUI()}const ss=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});state.screenStream=ss;const st=ss.getVideoTracks()[0],cam=state.localStream?.getVideoTracks()[0];for(const pc of callCloud.peers.values()){const sender=pc.getSenders().find(x=>x.track?.kind==='video');if(sender)await sender.replaceTrack(st)}st.onended=async()=>{for(const pc of callCloud.peers.values()){const sender=pc.getSenders().find(x=>x.track?.kind==='video');if(sender)await sender.replaceTrack(cam||null)}state.screenStream=null;renderCallUI();toast('屏幕共享已结束')};renderCallUI();toast('正在共享屏幕')}catch(e){toast('未开始屏幕共享：'+errText(e))}};
+async function renegotiatePeer(peerId,pc){if(pc.signalingState!=='stable')return;const offer=await pc.createOffer();await pc.setLocalDescription(offer);await sendSignal(peerId,{type:'offer',sdp:offer})}
+async function stopScreenShare(showToast=true){const currentCamera=state.localStream?.getVideoTracks()[0]||null;const screenTracks=state.screenStream?.getVideoTracks()||[];for(const [peerId,pc] of callCloud.peers){const screenSender=pc.getSenders().find(x=>screenTracks.includes(x.track));if(screenSender){if(currentCamera)await screenSender.replaceTrack(currentCamera);else{try{pc.removeTrack(screenSender)}catch{};await renegotiatePeer(peerId,pc)}}else{const videoSender=pc.getSenders().find(x=>x.track?.kind==='video');if(videoSender&&currentCamera)await videoSender.replaceTrack(currentCamera)}}state.screenStream?.getTracks().forEach(t=>{t.onended=null;t.stop()});state.screenStream=null;renderCallUI();if(showToast)toast('屏幕共享已结束')}
+$('#screenBtn').onclick=async()=>{try{if(state.screenStream)return await stopScreenShare(true);const ss=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});const st=ss.getVideoTracks()[0];state.screenStream=ss;for(const [peerId,pc] of callCloud.peers){const sender=pc.getSenders().find(x=>x.track?.kind==='video');if(sender)await sender.replaceTrack(st);else{pc.addTrack(st,ss);await renegotiatePeer(peerId,pc)}}st.onended=()=>{if(state.screenStream)stopScreenShare(true).catch(console.error)};renderCallUI();toast('正在共享屏幕')}catch(e){toast('未开始屏幕共享：'+errText(e))}};
 renderCallAdmin=function(p){const entries=Object.entries(callCloud.presence||{}).flatMap(([id,a])=>(a||[]).map(x=>({id,...x})));p.innerHTML=`<h3>音视频 Presence 监控</h3><div class="kpis"><div class="kpi"><div class="muted tiny">通话人数</div><b>${entries.length}</b></div><div class="kpi"><div class="muted tiny">视频人数</div><b>${entries.filter(x=>x.mode==='video').length}</b></div><div class="kpi"><div class="muted tiny">仅语音人数</div><b>${entries.filter(x=>x.mode==='audio').length}</b></div><div class="kpi"><div class="muted tiny">监控模式</div><b>Realtime</b></div></div><div class="notice">管理员页只读取 Presence 元数据，不接收、不播放、不录制其他人的通话媒体。</div><div class="table-wrap"><table><thead><tr><th>账号</th><th>昵称</th><th>加入时间</th><th>模式</th></tr></thead><tbody>${entries.length?entries.map(x=>`<tr><td>${esc(x.account||'')}</td><td>${esc(x.nickname||'')}</td><td>${x.joined_at?new Date(x.joined_at).toLocaleString('zh-CN'):'-'}</td><td>${x.mode==='video'?'视频':'仅语音'}</td></tr>`).join(''):'<tr><td colspan="4">当前无人通话</td></tr>'}</tbody></table></div>`};
 
 window.addEventListener('beforeunload',()=>{try{leaveCall(true)}catch{}});
@@ -436,7 +439,7 @@ async function currentAppearance(){
   const q=await sb.from('site_settings').select('value').eq('key','appearance').maybeSingle();
   return q.data?.value||{};
 }
-function applyAppearance(a={}){
+window.applyAppearance=function(a={}){
   const clamp=v=>Math.max(0,Math.min(1,Number(v??0)));
   const paint=(el,url,opacity,mode='cover',position='center center')=>{
     if(!el)return;
@@ -454,7 +457,7 @@ function applyAppearance(a={}){
   paint($('#adminPanel'),a.admin_bg,a.admin_opacity,'cover','center center');
   paint($('#adminModal .modal'),a.admin_bg,a.admin_opacity,'cover','center center');
 }
-currentAppearance().then(a=>{window.qingyinAppearance=a;applyAppearance(a)}).catch(()=>{});
+currentAppearance().then(a=>{window.qingyinAppearance=a;window.applyAppearance?.(a)}).catch(()=>{});
 
 // Remove misleading local-demo credentials from the real cloud build.
 try{
@@ -571,36 +574,18 @@ $('#saveProfile').onclick=async()=>{
 
 // Keep the admin background current whenever the admin modal opens.
 
-$('#adminBtn').onclick=async()=>{try{const a=await currentAppearance();window.qingyinAppearance=a;applyAppearance(a)}catch{};openModal('adminModal');renderAdmin('users')};
+$('#adminBtn').onclick=async()=>{try{const a=await currentAppearance();window.qingyinAppearance=a;window.applyAppearance?.(a)}catch{};openModal('adminModal');renderAdmin('users')};
 
 // Keep online count tied to call Presence when available instead of the demo constant.
 
-updateCounts=function(){oldUpdateCounts();try{const n=Object.values((typeof callCloud!=='undefined'&&callCloud.presence)||{}).reduce((a,x)=>a+(x?.length||0),0);if(n>0)$('#onlineCount').textContent=n}catch{}};
+const oldUpdateCounts=updateCounts;
+updateCounts=function(){oldUpdateCounts();try{const n=Object.values(window.qingyinCallCloud?.presence||{}).reduce((a,x)=>a+(x?.length||0),0);if(n>0)$('#onlineCount').textContent=n}catch{}};
 
 // Better install fallback on browsers that do not emit beforeinstallprompt.
 $('#installPwa').onclick=async()=>{if(state.installPrompt){await state.installPrompt.prompt();await state.installPrompt.userChoice;state.installPrompt=null}else toast('若浏览器未弹出安装提示，请使用浏览器菜单里的“安装应用/添加到主屏幕”')};
 })();
 </script>
 
-<script>
-// Background live sync fix: always load the latest appearance from Supabase
-(async()=>{
-  const refreshLiveBackground=async()=>{
-    try{
-      const client=window.qingyinSupabase;
-      if(!client)return;
-      const {data}=await client.from('site_settings').select('value').eq('key','appearance').maybeSingle();
-      const a=data?.value||{};
-      window.qingyinAppearance=a;
-      if(typeof applyAppearance==='function') applyAppearance(a);
-      const set=(sel,url)=>{const el=document.querySelector(sel);if(el&&url){el.style.backgroundImage=`linear-gradient(rgba(6,8,18,${Number(a[sel.includes('auth')?'login_opacity':sel.includes('home')?'home_opacity':'admin_opacity']||0)}),rgba(6,8,18,${Number(a[sel.includes('auth')?'login_opacity':sel.includes('home')?'home_opacity':'admin_opacity']||0)})),url("${url}")`;el.style.backgroundSize='cover';el.style.backgroundPosition='center center';el.style.backgroundRepeat='no-repeat';}}
-      set('#authView',a.login_bg);set('#homeView',a.home_bg);set('#adminModal',a.admin_bg);set('#adminModal .modal',a.admin_bg);
-    }catch(e){console.warn('live background sync',e)}
-  };
-  await refreshLiveBackground();
-  setInterval(refreshLiveBackground,5000);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshLiveBackground()});
-})();
-</script>
+
 </body>
 </html>
