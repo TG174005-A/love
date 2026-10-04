@@ -162,8 +162,8 @@ const qs=new URLSearchParams(location.search);if(qs.get('media')&&session)setTim
 <script>
 (async()=>{
 'use strict';
-const SUPABASE_URL='https://spqobzbamwpuphhxilmh.supabase.co';
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwcW9iemJhbXdwdXBoaHhpbG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwOTczNTgsImV4cCI6MjEwNjY3MzM1OH0.G0NsID4wjT115taWBif54Qc_HIFInsY2K4o7H-EDBiw';
+const SUPABASE_URL='https://uozrxjfboyecmoyydpki.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVvenJ4amZib3llY21veXlkcGtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNTA2MTAsImV4cCI6MjEwNjYyNjYxMH0.DRTQumjxvPlE7S-958XPepcE7OkhJgKnEHClK8NCCTI';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 async function safeGetSession(){try{const r=await sb.auth.getSession();if(r.error){await sb.auth.signOut().catch(()=>{});sessionStorage.clear();return null;}return r.data.session||null;}catch(e){await sb.auth.signOut().catch(()=>{});sessionStorage.clear();return null;}}
 sb.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){session=null;sessionStorage.removeItem('qingyin-session');}});
